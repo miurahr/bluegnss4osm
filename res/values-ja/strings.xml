@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
+	Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
+	  
+	This file is part of BluetoothGPS4Droid.
+	
+	BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	BluetoothGPS4Droid is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with BluetoothGPS4Droid. If not, see : http://www.gnu.org/licenses/.
+-->
+<resources>
+    <string name="pref_start_gps_title">GPS開始/停止</string>
+    <string name="pref_start_gps_summary_off">Bluetooth GPSはオフ</string>
+    <string name="pref_start_gps_summary_on">Bluetooth GPSはオン</string>
+    <string name="pref_start_gps_params_title">GPSオプション</string>
+    <string name="pref_gps_location_provider_title">ロケーションプロバイダ・オプション</string>
+    <string name="pref_gps_location_provider_summary">Bluetooth GPSの内部GPS置き換え</string>
+    <string name="pref_replace_std_gps_title">内部GPSの置き換え</string>
+    <string name="pref_replace_std_gps_summary_on">Bluetooth GPSは内部GPSを置き換える</string>
+    <string name="pref_replace_std_gps_summary_off">Bluetooth GPSは新しいロケーションプロバイダを使う</string>
+    <string name="pref_force_enable_provider_title">ロケーション・プロバイダを自動開始</string>
+    <string name="pref_force_enable_provider_summary_on">無効にされている場合でも、ロケーションプロバイダを自動的に開始する</string>
+    <string name="pref_force_enable_provider_summary_off">まだ存在していないときにのみ、ロケーションプロバイダを自動的に開始する</string>
+    <string name="pref_mock_gps_name_title">モックのロケーションプロバイダの名称</string>
+    <string name="pref_mock_gps_name_summary">Bluetooth GPS名称: %s</string>
+    <string name="pref_recording_title">NMEAログの有効/無効</string>
+    <string name="pref_recording_summary_off">トラック記録はオフです</string>
+    <string name="pref_recording_summary_on">トラック記録はオンです</string>
+    <string name="pref_recording_params_title">記録パラメータ</string>
+    <string name="pref_mintime_title">ログ間隔時間</string>
+    <string name="pref_mintime_summary">ログの間隔をミリ秒単位で時間指定</string>
+    <string name="pref_mindistance_title">ログ間隔距離</string>
+    <string name="pref_mindistance_summary">ログの間隔をメートルで指定</string>
+    <string name="pref_trackfile_prefix_title">トラックファイル名</string>
+    <string name="pref_trackfile_prefix_summary">トラックファイル名を選択</string>
+    <string name="pref_trackfile_directory_title">トラックファイル・ディレクトリ</string>
+    <string name="pref_trackfile_directory_summary">トラックファイルを格納するディレクトリを選択</string>
+    <string name="pref_bluetooth_device_title">Bluetooth GPSを選択</string>
+    <string name="pref_bluetooth_device_summary">"使用中の機器: %s"</string>    
+
+    <string name="msg_gps_provider_started">Bluetooth GPS...は開始しました</string>
+    <string name="msg_gps_provider_stopped">Bluetooth GPS...は停止しました</string>
+    <string name="msg_gps_provider_already_started">Bluetooth GPSは既にオンです</string>
+    <string name="msg_nmea_recording_started">GPS NMEA記録...は開始しました</string>
+    <string name="msg_nmea_recording_stopped">GPS NMEA記録...は停止されました</string>
+    <string name="msg_nmea_recording_already_started">GPSトラック記録...は既にオンです</string>
+    <string name="foreground_service_started_notification_title">BlueGps</string>
+    <string name="foreground_gps_provider_started_notification">BlueGpsサービスが開始しました</string>
+    <string name="foreground_nmea_recording_started_notification">BlueGps NMEA記録サービスが開始しました</string>
+</resources>
