@@ -175,10 +175,31 @@ public class BluetoothGpsMainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
         case R.id.menu_pref:
-            startActivity(new Intent(this, BluetoothGpsPreferenceActivity.class));
+            startActivity(new Intent(this, BluetoothGpsActivity.class));
+            return true;
+        case R.id.menu_about:
+            displayAboutDialog();
             return true;
         }
         return false;
+    }
+
+    private void displayAboutDialog(){
+        View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
+        // we need this to enable html links
+        TextView textView = (TextView) messageView.findViewById(R.id.about_license);
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
+        // When linking text, force to always use default color. This works
+        // around a pressed color state bug.
+        int defaultColor = textView.getTextColors().getDefaultColor();
+        textView.setTextColor(defaultColor);
+        textView = (TextView) messageView.findViewById(R.id.about_sources);
+        textView.setTextColor(defaultColor);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.about_title);
+        builder.setIcon(R.drawable.gplv3_icon);
+        builder.setView(messageView);
+        builder.show();
     }
 
   private class BluetoothGpsStatusListener implements GpsStatus.Listener {
