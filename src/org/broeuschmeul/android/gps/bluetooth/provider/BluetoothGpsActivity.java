@@ -179,9 +179,13 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 			if (pref.isChecked() != val){
 				pref.setChecked(val);
 			} else if (val){
-		        startService(new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER));
+				Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
+				i.setClass(BluetoothGpsPreferenceActivity.this, BluetoothGpsProviderService.class);
+				startService(i);
 			} else {
-				startService(new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER));
+				Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
+				i.setClass(BluetoothGpsPreferenceActivity.this, BluetoothGpsProviderService.class);
+				startService(i);
 			}
 		} else if (BluetoothGpsProviderService.PREF_TRACK_RECORDING.equals(key)){
 			boolean val = sharedPreferences.getBoolean(key, false);
@@ -217,6 +221,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 		} else {
 			Intent configIntent = new Intent(BluetoothGpsProviderService.ACTION_CONFIGURE_SIRF_GPS);
 			configIntent.putExtra(key, pref.isChecked());
+			configIntent.setClass(BluetoothGpsActivity.this, BluetoothGpsProviderService.class);
 			startService(configIntent);
 		}
 	}
