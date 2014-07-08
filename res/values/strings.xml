@@ -20,7 +20,29 @@
 -->
 <resources>
     <string name="app_name">BlueGps</string>
-    
+
+    <string name="switch_main">Main</string>
+    <string name="switch_preference">Preference</string>
+    <string name="switch_status">Status</string>
+
+    <string name="main_bluetooth_device_title">Current device:</string>
+    <string name="main_start">Start</string>
+    <string name="main_stop">Stop</string>
+    <string name="main_logging_start">Start</string>
+    <string name="main_logging_stop">Stop</string>
+    <string name="main_date_time_title">Date/Time</string>
+    <string name="main_lon_title">Longitude</string>
+    <string name="main_lat_title">Latitude</string>
+    <string name="main_speed_title">Speed</string>
+    <string name="main_dcop_title">DCOP</string>
+
+    <string name="main_bluetooth_device_name">N.A.</string>
+    <string name="main_date_time">N.A.</string>
+    <string name="main_lon">N.A.</string>
+    <string name="main_lat">N.A.</string>
+    <string name="main_speed">N.A.</string>
+    <string name="main_dcop">N.A.</string>
+
     <string name="pref_start_gps_title">Start/Stop GPS</string>
     <string name="pref_start_gps_summary_off">Bluetooth GPS is off</string>
     <string name="pref_start_gps_summary_on">Bluetooth GPS is on</string>

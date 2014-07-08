@@ -117,9 +117,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
         }
         prefDevices.setEntryValues(entryValues);
         prefDevices.setEntries(entries);
-        Preference pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_TRACK_RECORDING);
-        pref.setEnabled(sharedPref.getBoolean(BluetoothGpsProviderService.PREF_START_GPS_PROVIDER, false));
-        pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_MOCK_GPS_NAME);
+        Preference pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_MOCK_GPS_NAME);
         String mockProvider = sharedPref.getString(BluetoothGpsProviderService.PREF_MOCK_GPS_NAME, getString(R.string.defaultMockGpsName));
         pref.setSummary(getString(R.string.pref_mock_gps_name_summary,mockProvider));
         pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
@@ -178,24 +176,6 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 			CheckBoxPreference pref = (CheckBoxPreference)findPreference(key);
 			if (pref.isChecked() != val){
 				pref.setChecked(val);
-			} else if (val){
-				Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
-				i.setClass(BluetoothGpsPreferenceActivity.this, BluetoothGpsProviderService.class);
-				startService(i);
-			} else {
-				Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
-				i.setClass(BluetoothGpsPreferenceActivity.this, BluetoothGpsProviderService.class);
-				startService(i);
-			}
-		} else if (BluetoothGpsProviderService.PREF_TRACK_RECORDING.equals(key)){
-			boolean val = sharedPreferences.getBoolean(key, false);
-			CheckBoxPreference pref = (CheckBoxPreference)findPreference(key);
-			if (pref.isChecked() != val){
-				pref.setChecked(val);
-			} else if (val){
-		        startService(new Intent(BluetoothGpsProviderService.ACTION_START_TRACK_RECORDING));
-			} else {
-				startService(new Intent(BluetoothGpsProviderService.ACTION_STOP_TRACK_RECORDING));
 			}
 		} else if (BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
 			updateDevicePreferenceSummary();
