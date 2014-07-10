@@ -44,12 +44,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import android.location.Location;
-import android.location.LocationManager;
-import android.location.GpsStatus;
-import android.location.GpsStatus.Listener;
-import android.location.GpsSatellite;
-
 import android.util.Log;
 
 /**
@@ -60,10 +54,8 @@ import android.util.Log;
  */
 public class BluetoothGpsMainActivity extends Activity {
 
-    private static final String LOG_TAG = "BlueGPS";
-    private LocationManager locationManager = null;
+    private final static String LOG_TAG = "BlueGPS";
     private SharedPreferences sharedPref;
-    private GpsStatus.Listener gpsListener;
     private boolean conn_state = false;
     private boolean logging_state = false;
 
@@ -72,9 +64,6 @@ public class BluetoothGpsMainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        gpsListener = new BluetoothGpsStatusListener();
-        locationManager.addGpsStatusListener(gpsListener);
 
         setContentView(R.layout.main);
 
@@ -93,13 +82,13 @@ public class BluetoothGpsMainActivity extends Activity {
      */
     @Override
     protected void onResume() {
-        this.setBluetoothDeviceName();
         super.onResume();
+        this.setBluetoothDeviceName();
     }
  
     @Override
     protected void onDestroy() {
-        locationManager.removeGpsStatusListener(gpsListener);
+        super.onDestroy();
     }
 
     private void setBluetoothDeviceName() {
@@ -121,8 +110,10 @@ public class BluetoothGpsMainActivity extends Activity {
                 i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartStop: stop service");
+                // button -> "Start"
                 Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
                 btnStartStop.setText(R.string.main_start);
+                // Logging button disabled
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
                 btnStartLogging.setEnabled(false);
                 conn_state = false;
@@ -132,8 +123,10 @@ public class BluetoothGpsMainActivity extends Activity {
                 i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartStop: start service");
+                // button -> "Stop"
                 Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
                 btnStartStop.setText(R.string.main_stop);
+                // Logging button enabled
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
                 btnStartLogging.setEnabled(true);
                 conn_state = true;
@@ -201,122 +194,5 @@ public class BluetoothGpsMainActivity extends Activity {
         builder.setView(messageView);
         builder.show();
     }
-
-  private class BluetoothGpsStatusListener implements GpsStatus.Listener {
-
-    //private static final String LOG_TAG = "BlueGPS";
-
-    private static final int BLUEGPS_NA=0;
-    private static final int BLUEGPS_STARTED=1;
-    private static final int BLUEGPS_FIXED=2;
-    private static final int BLUEGPS_STOPPED=3;
-
-    private int bStatus;
-    private GpsStatus gpsStatus = null;
-    //private LocationManager locationManager;
-    
-    public void BluetoothGpsStatusListener() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-    }
-
-    private void setNumSatellites(int sat) {
-        Log.d(LOG_TAG, "BluetoothGpsStatusListener: NumSatellites: " + Integer.toString(sat));
-    }
-
-    private void setTTFF(int ttff) {
-        Log.d(LOG_TAG, "BluetoothGpsStatusListener: TTFF: " + Integer.toString(ttff) + " msec");
-    }
-
-    private void updateSatellites(){
-        Log.d(LOG_TAG, "BluetoothGpsStatusListener: enter updateSatellites()");
-        // assert status
-        if (bStatus == BLUEGPS_STOPPED) {
-            return;
-        }
-        if (gpsStatus == null) {
-            return;
-        }
-
-        //TextView tv = (TextView) findViewById(R.id.status_Gpsinfo);
-
-        int num_satellites = gpsStatus.getMaxSatellites();
-        setNumSatellites(num_satellites);
-        Iterable<GpsSatellite> satellites = gpsStatus.getSatellites();
-        Iterator<GpsSatellite> sat = satellites.iterator();
-        int i=0;
-        String strGpsStats = "";
-        while (sat.hasNext()) {
-            GpsSatellite satellite = sat.next();
-            strGpsStats+= (i++) + ": " + satellite.getPrn() + "," + satellite.usedInFix() + "," + satellite.getSnr() + "," + satellite.getAzimuth() + "," + satellite.getElevation()+ "\n\n";
-            }
-        Log.v(LOG_TAG, strGpsStats);
-        //tv.setText(strGpsStats);
-
-        Location loc = locationManager.getLastKnownLocation(null);
-        if (loc != null) {
-            if (bStatus == BLUEGPS_STARTED) {
-                // time
-                Time sat_time = new Time();
-                sat_time.set(loc.getTime());
-                TextView tv = (TextView) findViewById(R.id.main_date_time);
-                tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
-            } else if (bStatus == BLUEGPS_FIXED) {
-                // lat
-                double lat = loc.getLatitude();
-                TextView tv = (TextView) findViewById(R.id.main_lat);
-                tv.setText(Double.toString(lat));
-                // lon
-                double lon = loc.getLongitude();
-                tv = (TextView) findViewById(R.id.main_lon);
-                tv.setText(Double.toString(lon));
-                // time
-                Time sat_time = new Time();
-                sat_time.set(loc.getTime());
-                tv = (TextView) findViewById(R.id.main_date_time);
-                tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
-                // format float
-                DecimalFormat dec = new DecimalFormat("#.0");
-                // dcop(accuracy)
-                tv = (TextView) findViewById(R.id.main_dcop);
-                float acc = loc.getAccuracy();
-                tv.setText(dec.format(acc) + " m");
-                // speed,   nnn.n km/h
-                tv = (TextView) findViewById(R.id.main_speed);
-                float speed = loc.getSpeed();
-                tv.setText(dec.format(speed/1000) + " km/h");
-            }
-        } else {
-            Log.d(LOG_TAG, "BluetoothGpsStatusListener: BUG: loc is null");
-        }
-         
-        Log.d(LOG_TAG, "BluetoothGpsStatusListener: exit updateSatellites()");
-    }
-
-    @Override
-    public void onGpsStatusChanged(int event){
-        gpsStatus = locationManager.getGpsStatus(gpsStatus);
-        switch(event) {
-            case GpsStatus.GPS_EVENT_STARTED:
-                bStatus = BLUEGPS_STARTED;
-                Log.d(LOG_TAG, "BluetoothGpsStatusListener: GPS_EVENT_STARTED.");
-                updateSatellites();
-                return;
-            case GpsStatus.GPS_EVENT_STOPPED:
-                bStatus = BLUEGPS_STOPPED;
-                Log.d(LOG_TAG, "BluetoothGpsStatusListener: GPS_EVENT_STOPPED.");
-                return;
-            case GpsStatus.GPS_EVENT_FIRST_FIX:
-                bStatus = BLUEGPS_FIXED;
-                Log.d(LOG_TAG, "BluetoothGpsStatusListener: GPS_EVENT_FIXED.");
-                int ttff = gpsStatus.getTimeToFirstFix ();
-                setTTFF(ttff);
-                updateSatellites();
-                return;
-            case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                updateSatellites();
-                return;
-        }
-    }
-  }
 
 }
