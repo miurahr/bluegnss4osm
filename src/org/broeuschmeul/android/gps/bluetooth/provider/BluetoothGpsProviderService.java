@@ -59,7 +59,7 @@ import android.widget.Toast;
  * @author Herbert von Broeuschmeul
  *
  */
-public class BluetoothGpsProviderService extends Service implements NmeaListener, LocationListener {
+public class BluetoothGpsProviderService extends Service implements NmeaListener {
 
 	public static final String ACTION_START_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.START_TRACK_RECORDING";
 	public static final String ACTION_STOP_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.STOP_TRACK_RECORDING";
@@ -512,10 +512,10 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
             }
         }
     }
-    private void sendGpsUpdate(Location loc) {
+    private void sendGpsUpdate(String data) {
         for (int i=mClients.size()-1; i>=0; i--) {
             try {
-                Message msg = Message.obtain(null, MSG_UPDATED, loc);
+                Message msg = Message.obtain(null, MSG_UPDATED, data);
                 mClients.get(i).send(msg);
             } catch (RemoteException e) {
                 // The client is dead.
@@ -524,28 +524,6 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
             }
         }
     }
-
-	@Override
-	public void onLocationChanged(Location location) {
-	    sendGpsUpdate(location);
-  }
-
-	@Override
-	public void onProviderDisabled(String provider) {
-		Log.i(LOG_TAG, "The GPS has been disabled.....stopping the NMEA tracker service.");
-    sendGpsDisconnected();
-		stopSelf();
-	}
-
-	@Override
-	public void onProviderEnabled(String provider) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub		
-	}
 
 	@Override
 	public void onNmeaReceived(long timestamp, String data) {
