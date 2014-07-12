@@ -26,11 +26,18 @@ import java.text.DecimalFormat;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.text.format.Time;
 import android.text.method.LinkMovementMethod;
 
@@ -58,6 +65,25 @@ public class BluetoothGpsMainActivity extends Activity {
     private SharedPreferences sharedPref;
     private boolean conn_state = false;
     private boolean logging_state = false;
+    private Messenger mService = null;
+    boolean mIsBound;
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
+
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case BluetoothGpsProviderService.MSG_UPDATED:
+                //loc = (String) msg.obj;
+                break;
+            case BluetoothGpsProviderService.MSG_DISCONNECTED:
+                stopProviderService();
+                break;
+            default:
+                super.handleMessage(msg);
+            }
+        }
+    }
 
     /** Called when the activity is first created. */
     @Override
@@ -69,16 +95,70 @@ public class BluetoothGpsMainActivity extends Activity {
 
         this.setBluetoothDeviceName();
 
-        Button button = (Button)findViewById(R.id.btn_start_stop);
-        button.setOnClickListener(mStartStop);
+        restoreMe(savedInstanceState);
+        CheckIfServiceIsRunning();
 
-        button = (Button)findViewById(R.id.btn_start_logging);
-        button.setEnabled(false);
-        button.setOnClickListener(mStartLogging);
+        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
+        btnStartStop.setOnClickListener(mStartStop);
+
+        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
+        btnStartLogging.setOnClickListener(mStartLogging);
+
+        if (logging_state) {
+            btnStartLogging.setText(R.string.main_logging_stop);
+        } else {
+            btnStartLogging.setText(R.string.main_logging_start);
+        }
+        if (conn_state) {
+            btnStartLogging.setEnabled(true);
+            btnStartStop.setText(R.string.main_stop);
+        } else {
+            btnStartLogging.setEnabled(false);
+            btnStartStop.setText(R.string.main_start);
+        }
+
     }
-    
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("connStatus", Boolean.toString(conn_state));
+        outState.putString("loggingStatus", Boolean.toString(logging_state));
+    }
+
+    private void restoreMe(Bundle state) {
+        if (state!=null) {
+            conn_state = Boolean.valueOf(state.getString("connStatus"));
+            logging_state = Boolean.valueOf(state.getString("LoggingStatus"));
+        }
+    }
+    private void CheckIfServiceIsRunning() {
+        if (BluetoothGpsProviderService.isRunning()) {
+            doBindService();
+        }
+    }
+    void doBindService() {
+        bindService(new Intent(this, BluetoothGpsProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+    void doUnbindService() {
+        if (mIsBound) {
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null, BluetoothGpsProviderService.MSG_UNREGISTER_CLIENT);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service has crashed.
+                }
+            }
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
     /* (non-Javadoc)
-	   * @see android.app.Activity#onResume()
+     * @see android.app.Activity#onResume()
      */
     @Override
     protected void onResume() {
@@ -101,35 +181,58 @@ public class BluetoothGpsMainActivity extends Activity {
             }
         }
     }
+    private boolean checkBluetoothDevice() {
+        String deviceAddress = sharedPref.getString(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE, null);
+        return (deviceAddress == null)?false:true;
+    }
+
+    private void stopProviderService() {
+        doUnbindService();
+        // stop service
+        Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
+        i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+        startService(i);
+        // button -> "Start"
+        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
+        btnStartStop.setText(R.string.main_start);
+        // Logging button disabled
+        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
+        btnStartLogging.setEnabled(false);
+        conn_state = false;
+    }
+    private void startProviderService() {
+        // start service
+        Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
+        i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+        startService(i);
+        // wait 1000ms.
+        try{
+            Thread.sleep(2000);
+        }catch(InterruptedException e){}
+        // Bound service.
+        doBindService();
+        conn_state = true;
+        // button -> "Stop"
+        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
+        btnStartStop.setText(R.string.main_stop);
+        // Logging button enabled
+        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
+        btnStartLogging.setEnabled(true);
+        if (BluetoothGpsProviderService.isRunning()) {
+            Log.d(LOG_TAG, "Cannot detect Service running");
+        }
+    }
 
     private OnClickListener mStartStop = new OnClickListener() {
         public void onClick(View v) {
             if (conn_state) {
-                // stop service
-                Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
-                i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
-                startService(i);
                 Log.d(LOG_TAG, "mStartStop: stop service");
-                // button -> "Start"
-                Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
-                btnStartStop.setText(R.string.main_start);
-                // Logging button disabled
-                Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-                btnStartLogging.setEnabled(false);
-                conn_state = false;
-            } else {
-                // start service
-                Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
-                i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
-                startService(i);
+                stopProviderService();
+            } else if (checkBluetoothDevice()) {
                 Log.d(LOG_TAG, "mStartStop: start service");
-                // button -> "Stop"
-                Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
-                btnStartStop.setText(R.string.main_stop);
-                // Logging button enabled
-                Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-                btnStartLogging.setEnabled(true);
-                conn_state = true;
+                startProviderService();
+            } else {
+                // do nothing
             }
         }
     };
@@ -195,4 +298,23 @@ public class BluetoothGpsMainActivity extends Activity {
         builder.show();
     }
 
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mService = new Messenger(service);
+            try {
+                Message msg = Message.obtain(null, BluetoothGpsProviderService.MSG_REGISTER_CLIENT);
+                msg.replyTo = mMessenger;
+                mService.send(msg);
+            } catch (RemoteException e) {
+                // In this case the service has crashed before we could even do anything with it
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mService = null;
+        }
+    };
+
 }
+
+// vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

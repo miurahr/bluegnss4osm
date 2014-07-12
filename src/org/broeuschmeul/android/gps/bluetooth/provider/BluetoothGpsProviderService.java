@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Notification;
@@ -42,7 +43,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.GpsStatus.NmeaListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Config;
 import android.util.Log;
@@ -72,7 +77,12 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final String PREF_TRACK_FILE_PREFIX = "trackFilePrefix";
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
 	public static final String PREF_ABOUT = "about";
-	
+
+	public static final int MSG_REGISTER_CLIENT   = 1;
+	public static final int MSG_UNREGISTER_CLIENT = 2;
+	public static final int MSG_DISCONNECTED      = 3;
+	public static final int MSG_UPDATED           = 4;
+
 	/**
 	 * Tag used for log messages
 	 */
@@ -94,12 +104,16 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	private PrintWriter writer;
 	private File trackFile;
 	private boolean preludeWritten = false;
-	private Toast toast ;
+	private Toast toast;
+	private static boolean isRunning = false;
+	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
+  private static Location currentLocation;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-	    toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);		
+		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
+		isRunning = true;
 	}
 
 	@Override
@@ -139,9 +153,11 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 						toast.setText(this.getString(R.string.msg_gps_provider_started));
 						toast.show();	
 					} else {
+            sendGpsDisconnected();
 						stopSelf();
 					}
 				} else {
+          //sendGpsDisconnected();
 					stopSelf();
 				}
 			} else {
@@ -416,6 +432,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 			edit.putBoolean(PREF_START_GPS_PROVIDER,false);
 			edit.commit();
 		}
+    isRunning = false;
 		super.onDestroy();
 	}
 
@@ -456,6 +473,10 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 			writer.print(data);
 		}
 	}
+    public static boolean isRunning()
+    {
+        return isRunning;
+    }
 	/* (non-Javadoc)
 	 * @see android.app.Service#onBind(android.content.Intent)
 	 */
@@ -466,15 +487,53 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		}				
 		return null;
 	}
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case MSG_REGISTER_CLIENT:
+                mClients.add(msg.replyTo);
+                break;
+            case MSG_UNREGISTER_CLIENT:
+                mClients.remove(msg.replyTo);
+                break;
+            default:
+                super.handleMessage(msg);
+            }
+        }
+    }
+    private void sendGpsDisconnected() {
+        for (int i=mClients.size()-1; i>=0; i--) {
+            try {
+                mClients.get(i).send(Message.obtain(null, MSG_DISCONNECTED, 0, 0));
+            } catch (RemoteException e) {
+                // The client is dead.
+                mClients.remove(i);
+            }
+        }
+    }
+    private void sendGpsUpdate(Location loc) {
+        for (int i=mClients.size()-1; i>=0; i--) {
+            try {
+                Message msg = Message.obtain(null, MSG_UPDATED, loc);
+                mClients.get(i).send(msg);
+            } catch (RemoteException e) {
+                // The client is dead.
+                mClients.remove(i);
+
+            }
+        }
+    }
 
 	@Override
 	public void onLocationChanged(Location location) {
-		// TODO Auto-generated method stub
-	}
+	    sendGpsUpdate(location);
+  }
 
 	@Override
 	public void onProviderDisabled(String provider) {
 		Log.i(LOG_TAG, "The GPS has been disabled.....stopping the NMEA tracker service.");
+    sendGpsDisconnected();
 		stopSelf();
 	}
 
