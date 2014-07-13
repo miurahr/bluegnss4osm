@@ -62,9 +62,11 @@ import android.util.Log;
 public class BluetoothGpsMainActivity extends Activity {
 
     private final static String LOG_TAG = "BlueGPS";
+
     private SharedPreferences sharedPref;
     private boolean conn_state = false;
     private boolean logging_state = false;
+
     private Messenger mService = null;
     boolean mIsBound;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -132,6 +134,10 @@ public class BluetoothGpsMainActivity extends Activity {
             logging_state = Boolean.valueOf(state.getString("LoggingStatus"));
         }
     }
+
+    /*
+     * Service communications
+     */
     private void CheckIfServiceIsRunning() {
         if (BluetoothGpsProviderService.isRunning()) {
             doBindService();
@@ -186,6 +192,9 @@ public class BluetoothGpsMainActivity extends Activity {
         return (deviceAddress == null)?false:true;
     }
 
+    /*
+     * Start/Stop service and logging button.
+     */
     private void stopProviderService() {
         doUnbindService();
         // stop service
@@ -259,6 +268,9 @@ public class BluetoothGpsMainActivity extends Activity {
         }
     };
 
+    /*
+     * Option Menu preparation
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -298,6 +310,9 @@ public class BluetoothGpsMainActivity extends Activity {
         builder.show();
     }
 
+    /*
+     * For bind to ProviderService
+     */
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
