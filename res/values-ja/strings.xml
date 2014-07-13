@@ -37,10 +37,6 @@
     <string name="pref_recording_summary_off">トラック記録はオフです</string>
     <string name="pref_recording_summary_on">トラック記録はオンです</string>
     <string name="pref_recording_params_title">記録パラメータ</string>
-    <string name="pref_mintime_title">ログ間隔時間</string>
-    <string name="pref_mintime_summary">ログの間隔をミリ秒単位で時間指定</string>
-    <string name="pref_mindistance_title">ログ間隔距離</string>
-    <string name="pref_mindistance_summary">ログの間隔をメートルで指定</string>
     <string name="pref_trackfile_prefix_title">トラックファイル名</string>
     <string name="pref_trackfile_prefix_summary">トラックファイル名を選択</string>
     <string name="pref_trackfile_directory_title">トラックファイル・ディレクトリ</string>
