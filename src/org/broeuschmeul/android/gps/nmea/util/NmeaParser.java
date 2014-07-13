@@ -288,12 +288,12 @@ public class NmeaParser {
 						notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
 					}				
 					if (! time.equals(fixTime)){
-						notifyFix(fix);
+						//notifyFix(fix);
 						fix = new Location(mockLocationProvider);
 						fixTime = time;
 						fixTimestamp = parseNmeaTime(time);
 						fix.setTime(fixTimestamp);				
-						Log.v(LOG_TAG, "Fix: "+fix);
+						//Log.v(LOG_TAG, "Fix: "+fix);
 					}
 					if (lat != null && !lat.equals("")){
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
@@ -368,12 +368,12 @@ public class NmeaParser {
 						notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
 					}				
 					if (! time.equals(fixTime)){
-						notifyFix(fix);
+						//notifyFix(fix);
 						fix = new Location(mockLocationProvider);
 						fixTime = time;
 						fixTimestamp = parseNmeaTime(time);
 						fix.setTime(fixTimestamp);					
-						Log.v(LOG_TAG, "Fix: "+fix);
+						//Log.v(LOG_TAG, "Fix: "+fix);
 					} 
 					if (lat != null && !lat.equals("")){
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
