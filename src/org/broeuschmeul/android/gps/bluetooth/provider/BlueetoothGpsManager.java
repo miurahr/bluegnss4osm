@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.broeuschmeul.android.gps.nmea.util.NmeaParser;
 import org.broeuschmeul.android.gps.sirf.util.SirfUtils;
+import org.broeuschmeul.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -144,7 +145,7 @@ public class BlueetoothGpsManager {
 				}
 			} catch (IOException e) {
 				Log.e(LOG_TAG, "error while getting data", e);
-				setMockLocationProviderOutOfService();
+				mockProvider.setMockLocationProviderOutOfService();
 			} finally {
 				// cleanly closing everything...
 				this.close();
@@ -218,12 +219,12 @@ public class BlueetoothGpsManager {
 	private Service callingService;
 	private BluetoothSocket gpsSocket;
 	private String gpsDeviceAddress;
-	private NmeaParser parser = new NmeaParser(10f);
+	private NmeaParser parser = null ;
 	private boolean enabled = false;
 	private ExecutorService notificationPool;
 	private ScheduledExecutorService connectionAndReadingPool;
 	private List<NmeaListener> nmeaListeners = Collections.synchronizedList(new LinkedList<NmeaListener>()); 
-	private LocationManager locationManager;
+  private BluetoothGpsMockProvider mockProvider;
 	private SharedPreferences sharedPreferences;
 	private ConnectedGps connectedGps;
 	private int disableReason = 0;
@@ -246,10 +247,8 @@ public class BlueetoothGpsManager {
 		this.maxConnectionRetries = maxRetries;
 		this.nbRetriesRemaining = 1+maxRetries;
 		this.appContext = callingService.getApplicationContext();
-		locationManager = (LocationManager)callingService.getSystemService(Context.LOCATION_SERVICE);
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(callingService);
 		notificationManager = (NotificationManager)callingService.getSystemService(Context.NOTIFICATION_SERVICE);
-		parser.setLocationManager(locationManager);	
 		
 		connectionProblemNotification = new Notification();
 		connectionProblemNotification.icon = R.drawable.ic_stat_notify;
@@ -272,6 +271,14 @@ public class BlueetoothGpsManager {
 		disableReason = reasonId;
 	}
 	
+  public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
+    this.mockProvider = mockProvider;
+  }
+  public void setNMEAParser(NmeaParser nmeaParser){
+    this.parser = nmeaParser;
+  }
+
+
 	/**
 	 * @return
 	 */
@@ -300,18 +307,11 @@ public class BlueetoothGpsManager {
 	        	Log.e(LOG_TAG, "Device does not support Bluetooth");
 	        	disable(R.string.msg_bluetooth_unsupported);
 	        } else if (!bluetoothAdapter.isEnabled()) {
-	        	// Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-	        	// startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 	        	Log.e(LOG_TAG, "Bluetooth is not enabled");
 	        	disable(R.string.msg_bluetooth_disabled);
 	        } else if (Settings.Secure.getInt(callingService.getContentResolver(),Settings.Secure.ALLOW_MOCK_LOCATION, 0)==0){
 	        	Log.e(LOG_TAG, "Mock location provider OFF");
 	        	disable(R.string.msg_mock_location_disabled);
-//	        } else if ( (! locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-//	        		 && (sharedPreferences.getBoolean(BluetoothGpsProviderService.PREF_REPLACE_STD_GPS, true))
-//	        			) {
-//	        	Log.e(LOG_TAG, "GPS location provider OFF");
-//	        	disable(R.string.msg_gps_provider_disabled);
 	        } else {
 				final BluetoothDevice gpsDevice = bluetoothAdapter.getRemoteDevice(gpsDeviceAddress);
 				if (gpsDevice == null){
@@ -507,7 +507,7 @@ public class BlueetoothGpsManager {
 			};
 			notificationPool.execute(closeAndShutdown);
 			nmeaListeners.clear();
-			disableMockLocationProvider();
+			mockProvider.disableMockLocationProvider();
 			notificationPool.shutdown();
 //			connectionAndReadingPool.shutdown();
 			callingService.stopSelf();
@@ -515,90 +515,6 @@ public class BlueetoothGpsManager {
 		}
 	}
 
-  /**
-   * Enables the Mock GPS Location Provider used for the bluetooth GPS.
-   * In fact, it delegates to the NMEA parser. 
-   * 
-   * @see NmeaParser#enableMockLocationProvider(java.lang.String)
-
-   * @param force		true if we want to force auto-activation of the mock location provider (and bypass user preference).
-   */
-  public void enableMockLocationProvider(boolean force){
-    if (parser != null){
-      Log.d(LOG_TAG, "enabling mock locations provider, forcing is "+(force?"true":"false"));
-      parser.enableMockLocationProvider(force);
-    }
-  }
-
-	/**
-	 * Enables the Mock GPS Location Provider used for the bluetooth GPS.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#enableMockLocationProvider(java.lang.String)
-	 */
-	public void enableMockLocationProvider(){
-		if (parser != null){
-	       	Log.d(LOG_TAG, "enabling mock locations provider.");
-	    	boolean force = sharedPreferences.getBoolean(BluetoothGpsProviderService.PREF_FORCE_ENABLE_PROVIDER, false);
-			parser.enableMockLocationProvider(force);
-		}
-	}
-
-	/**
-	 * Disables the current Mock GPS Location Provider used for the bluetooth GPS.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#disableMockLocationProvider()
-	 */
-	public void disableMockLocationProvider(){
-		if (parser != null){
-			Log.d(LOG_TAG, "disabling mock locations provider");
-			parser.disableMockLocationProvider();
-		}
-	}
-
-	/**
-	 * Getter use to know if the Mock GPS Listener used for the bluetooth GPS is enabled or not.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#isMockGpsEnabled()
-	 * 
-	 * @return 	true if the Mock GPS Listener used for the bluetooth GPS is enabled.
-	 */
-	public boolean isMockGpsEnabled() {
-		boolean mockGpsEnabled = false;
-		if (parser != null){
-			mockGpsEnabled = parser.isMockGpsEnabled();
-		}
-		return mockGpsEnabled;
-	}
-	/**
-	 * Getter for the name of the current Mock Location Provider in use.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#getMockLocationProvider()
-	 * 
-	 * @return the Mock Location Provider name used for the bluetooth GPS
-	 */
-	public String getMockLocationProvider() {
-		String  mockLocationProvider = null;
-		if (parser != null){
-			mockLocationProvider = parser.getMockLocationProvider();
-		}
-		return mockLocationProvider;
-	}
-
-	/**
-	 * Indicates that the bluetooth GPS Provider is out of service.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#setMockLocationProviderOutOfService()
-	 */
-	private void setMockLocationProviderOutOfService(){
-		if (parser != null){
-			parser.setMockLocationProviderOutOfService();
-		}
-	}
 
 	/**
 	 * Adds an NMEA listener.
