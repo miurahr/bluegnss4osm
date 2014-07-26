@@ -36,6 +36,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -47,6 +48,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Config;
@@ -108,12 +110,15 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	private static boolean isRunning = false;
 	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
   private static Location currentLocation;
+  private static PowerManager.WakeLock wl;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
+    PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
+    wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
 	}
 
 	@Override
@@ -141,6 +146,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 						edit.commit();
 					}
 					if (enabled) {
+            wl.acquire();
 						gpsManager.enableMockLocationProvider(mockProvider);
 						Notification notification = new Notification(R.drawable.ic_stat_notify, this.getString(R.string.foreground_gps_provider_started_notification),  System.currentTimeMillis());
 						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
@@ -202,6 +208,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				edit.putBoolean(PREF_START_GPS_PROVIDER,false);
 				edit.commit();
 			}
+      wl.release();
 			stopSelf();
 		} else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
 			if (gpsManager != null){
