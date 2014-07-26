@@ -55,6 +55,8 @@ import android.util.Config;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.broeuschmeul.android.gps.nmea.util.NmeaParser;
+
 /**
  * A Service used to replace Android internal GPS with a bluetooth GPS and/or write GPS NMEA data in a File.
  * 
@@ -99,6 +101,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final String PREF_SIRF_ENABLE_STATIC_NAVIGATION = "enableStaticNavigation";
 
 	private BlueetoothGpsManager gpsManager = null;
+  private BluetoothGpsMockProvider gpsMockProvider = null;
 	private PrintWriter writer;
 	private File trackFile;
 	private boolean preludeWritten = false;
@@ -106,6 +109,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	private static boolean isRunning = false;
 	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
   private static Location currentLocation;
+ 	private NmeaParser nmeaParser;
   private static PowerManager.WakeLock wl;
 
 	@Override
@@ -130,12 +134,26 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		if (ACTION_START_GPS_PROVIDER.equals(intent.getAction())){
 			if (gpsManager == null){
 				if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
+          /*
+           * Instanciate btgps manager, mock provider and nmea parser
+           */
 					gpsManager = new BlueetoothGpsManager(this, deviceAddress, maxConRetries);
+          gpsMockProvider = new BluetoothGpsMockProvider();
+ 	        nmeaParser = new NmeaParser(10f);
+          // register
+          gpsManager.setGpsMockProvider(gpsMockProvider);
+          gpsManager.setNMEAParser(nmeaParser);
+          nmeaParser.setGpsMockProvider(gpsMockProvider);
+
+          // now ready to enable it.
+
 					boolean enabled = gpsManager.enable();
 //					Bundle extras = intent.getExtras();
+
 					if (enabled) {
             wl.acquire();
-						gpsManager.enableMockLocationProvider();
+            boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
+						gpsMockProvider.enableMockLocationProvider(force);
 						Notification notification = new Notification(R.drawable.ic_stat_notify, this.getString(R.string.foreground_gps_provider_started_notification),  System.currentTimeMillis());
 						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
 						PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -397,7 +415,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				toast.show();
 			}
 			manager.removeNmeaListener(this);
-			manager.disableMockLocationProvider();
+			gpsMockProvider.disableMockLocationProvider();
 			manager.disable();
 		}
 		endTrack();
