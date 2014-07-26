@@ -117,24 +117,9 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
         }
         prefDevices.setEntryValues(entryValues);
         prefDevices.setEntries(entries);
-        Preference pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_MOCK_GPS_NAME);
-        String mockProvider = sharedPref.getString(BluetoothGpsProviderService.PREF_MOCK_GPS_NAME, getString(R.string.defaultMockGpsName));
-        pref.setSummary(getString(R.string.pref_mock_gps_name_summary,mockProvider));
-        pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
+        Preference pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
         String maxConnRetries = sharedPref.getString(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
         pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));
-        pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_GPS_LOCATION_PROVIDER);
-        if (sharedPref.getBoolean(BluetoothGpsProviderService.PREF_REPLACE_STD_GPS, true)){
-        	String s = getString(R.string.pref_gps_location_provider_summary);
-        	pref.setSummary(s);
-        	Log.v(LOG_TAG, "loc. provider: "+s);
-        	Log.v(LOG_TAG, "loc. provider: "+pref.getSummary());               	
-        } else {
-        	String s = getString(R.string.pref_mock_gps_name_summary, mockProvider);
-        	pref.setSummary(s);
-        	Log.v(LOG_TAG, "loc. provider: "+s);
-        	Log.v(LOG_TAG, "loc. provider: "+pref.getSummary());  
-    }
         this.onContentChanged();
     }
     
@@ -171,13 +156,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (BluetoothGpsProviderService.PREF_START_GPS_PROVIDER.equals(key)){
-			boolean val = sharedPreferences.getBoolean(key, false);
-			CheckBoxPreference pref = (CheckBoxPreference)findPreference(key);
-			if (pref.isChecked() != val){
-				pref.setChecked(val);
-			}
-		} else if (BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
+		if (BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
 			updateDevicePreferenceSummary();
 		} else if (BluetoothGpsProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
 				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_GGA.equals(key)

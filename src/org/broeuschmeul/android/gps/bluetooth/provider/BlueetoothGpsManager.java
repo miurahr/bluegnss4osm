@@ -515,35 +515,32 @@ public class BlueetoothGpsManager {
 		}
 	}
 
+  /**
+   * Enables the Mock GPS Location Provider used for the bluetooth GPS.
+   * In fact, it delegates to the NMEA parser. 
+   * 
+   * @see NmeaParser#enableMockLocationProvider(java.lang.String)
+
+   * @param force		true if we want to force auto-activation of the mock location provider (and bypass user preference).
+   */
+  public void enableMockLocationProvider(boolean force){
+    if (parser != null){
+      Log.d(LOG_TAG, "enabling mock locations provider, forcing is "+(force?"true":"false"));
+      parser.enableMockLocationProvider(force);
+    }
+  }
+
 	/**
 	 * Enables the Mock GPS Location Provider used for the bluetooth GPS.
 	 * In fact, it delegates to the NMEA parser. 
 	 * 
 	 * @see NmeaParser#enableMockLocationProvider(java.lang.String)
-
-	 * @param gpsName	the name of the Location Provider to use for the bluetooth GPS
-	 * @param force		true if we want to force auto-activation of the mock location provider (and bypass user preference).
 	 */
-	public void enableMockLocationProvider(String gpsName, boolean force){
+	public void enableMockLocationProvider(){
 		if (parser != null){
-	       	Log.d(LOG_TAG, "enabling mock locations provider: "+gpsName);
-			parser.enableMockLocationProvider(gpsName, force);
-		}
-	}
-
-	/**
-	 * Enables the Mock GPS Location Provider used for the bluetooth GPS.
-	 * In fact, it delegates to the NMEA parser. 
-	 * 
-	 * @see NmeaParser#enableMockLocationProvider(java.lang.String)
-
-	 * @param gpsName	the name of the Location Provider to use for the bluetooth GPS
-	 */
-	public void enableMockLocationProvider(String gpsName){
-		if (parser != null){
-	       	Log.d(LOG_TAG, "enabling mock locations provider: "+gpsName);
+	       	Log.d(LOG_TAG, "enabling mock locations provider.");
 	    	boolean force = sharedPreferences.getBoolean(BluetoothGpsProviderService.PREF_FORCE_ENABLE_PROVIDER, false);
-			parser.enableMockLocationProvider(gpsName, force);
+			parser.enableMockLocationProvider(force);
 		}
 	}
 
@@ -555,7 +552,7 @@ public class BlueetoothGpsManager {
 	 */
 	public void disableMockLocationProvider(){
 		if (parser != null){
-	       	Log.d(LOG_TAG, "disabling mock locations provider");
+			Log.d(LOG_TAG, "disabling mock locations provider");
 			parser.disableMockLocationProvider();
 		}
 	}
