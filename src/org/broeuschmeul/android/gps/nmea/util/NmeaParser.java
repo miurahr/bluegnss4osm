@@ -172,13 +172,10 @@ public class NmeaParser {
 	
 	private void notifyFix(Location fix) throws SecurityException {
 		fixTime = null;
-		hasGGA = false;
-		hasRMC=false;
 		if (fix != null){
 			Log.v(LOG_TAG, "New Fix: "+System.currentTimeMillis()+" "+fix);
 			if (lm != null && mockGpsEnabled){
 				lm.setTestProviderLocation(mockLocationProvider, fix);
-				Log.v(LOG_TAG, "New Fix notified to Location Manager: "+mockLocationProvider);
 			}
 			this.fix = null;
 		}
@@ -187,14 +184,12 @@ public class NmeaParser {
 	private void notifyStatusChanged(int status, Bundle extras, long updateTime){
 		fixTime = null;
 		hasGGA = false;
-		hasRMC=false;
+		hasRMC = false;
 		if (this.mockStatus != status){
-			Log.d(LOG_TAG, "New mockStatus: "+System.currentTimeMillis()+" "+status);
+			Log.v(LOG_TAG, "New mockStatus: "+System.currentTimeMillis()+" "+status);
 			if (lm != null && mockGpsEnabled){
 				lm.setTestProviderStatus(mockLocationProvider, status, extras, updateTime);
-				// lm.setTestProviderStatus(mockLocationProvider, status, extras, SystemClock.elapsedRealtime());
-				// lm.setTestProviderStatus(mockLocationProvider, status, extras, 50);
-				Log.v(LOG_TAG, "New mockStatus notified to Location Manager: " + status + " "+mockLocationProvider);
+				Log.d(LOG_TAG, "New mockStatus notified to Location Manager: "+status);
 			}
 			this.fix = null;
 			this.mockStatus = status;
@@ -280,12 +275,10 @@ public class NmeaParser {
 						notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
 					}				
 					if (! time.equals(fixTime)){
-						//notifyFix(fix);
 						fix = new Location(mockLocationProvider);
 						fixTime = time;
 						fixTimestamp = parseNmeaTime(time);
-						fix.setTime(fixTimestamp);				
-						//Log.v(LOG_TAG, "Fix: "+fix);
+						fix.setTime(fixTimestamp);
 					}
 					fix.setElapsedRealtimeNanos(ern);
 					if (lat != null && !lat.equals("")){
@@ -305,11 +298,9 @@ public class NmeaParser {
 						extras.putInt("satellites", Integer.parseInt(nbSat));
 						fix.setExtras(extras);
 					}
-					Log.v(LOG_TAG, "Fix: "+System.currentTimeMillis()+" "+fix);
+				  //	Log.v(LOG_TAG, "Fix: "+System.currentTimeMillis()+" "+fix);
 					hasGGA = true;
-					if (hasGGA && hasRMC){
-						notifyFix(fix);
-					}
+					notifyFix(fix);
 				} else if(quality.equals("0")){
 					if (this.mockStatus != LocationProvider.TEMPORARILY_UNAVAILABLE){
 						long updateTime = parseNmeaTime(time);
@@ -359,14 +350,12 @@ public class NmeaParser {
 					if (this.mockStatus != LocationProvider.AVAILABLE){
 						long updateTime = parseNmeaTime(time);
 						notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-					}				
+					}
 					if (! time.equals(fixTime)){
-						//notifyFix(fix);
 						fix = new Location(mockLocationProvider);
 						fixTime = time;
 						fixTimestamp = parseNmeaTime(time);
-						fix.setTime(fixTimestamp);					
-						//Log.v(LOG_TAG, "Fix: "+fix);
+						fix.setTime(fixTimestamp);
 					} 
 					fix.setElapsedRealtimeNanos(ern);
 					if (lat != null && !lat.equals("")){
@@ -381,11 +370,10 @@ public class NmeaParser {
 					if (bearing != null && !bearing.equals("")){
 						fix.setBearing(Float.parseFloat(bearing));
 					}
-					Log.v(LOG_TAG, "Fix: "+System.currentTimeMillis()+" "+fix);
 					hasRMC = true;
-					if (hasGGA && hasRMC){
-						notifyFix(fix);
-					}
+          if (! hasGGA) {
+					  notifyFix(fix);
+          }
 				} else if(status.equals("V")){
 					if (this.mockStatus != LocationProvider.TEMPORARILY_UNAVAILABLE){
 						long updateTime = parseNmeaTime(time);
