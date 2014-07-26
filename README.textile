@@ -1,0 +1,17 @@
+h1. Bluetooth GPS connector for Android
+
+h2. Description
+
+Connect external Bluetooth GPS reciever to your Android device.
+You can use an external GPS reciever as same as internal one.
+
+h2. License
+
+BlueGPS4Droid is licensed by GPLv3 and later
+
+h2. Copyright Notices
+
+Copyright 2014 Hiroshi Miura <miurahr@linux.com>
+Copyright 2010-2013, Herbert von Broeuschmeul
+Copyright 2010-2013, BluetoothGPS4Droid Project
+
