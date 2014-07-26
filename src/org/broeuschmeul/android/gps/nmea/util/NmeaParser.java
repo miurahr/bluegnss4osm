@@ -32,6 +32,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
@@ -214,6 +215,7 @@ public class NmeaParser {
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
 		Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+gpsSentence);
+		long ern = SystemClock.elapsedRealtimeNanos();
 		Pattern xx = Pattern.compile("\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?\r\n");
 		Matcher m = xx.matcher(gpsSentence);
 		if (m.matches()){
@@ -295,6 +297,7 @@ public class NmeaParser {
 						fix.setTime(fixTimestamp);				
 						//Log.v(LOG_TAG, "Fix: "+fix);
 					}
+					fix.setElapsedRealtimeNanos(ern);
 					if (lat != null && !lat.equals("")){
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
 					}
@@ -375,6 +378,7 @@ public class NmeaParser {
 						fix.setTime(fixTimestamp);					
 						//Log.v(LOG_TAG, "Fix: "+fix);
 					} 
+					fix.setElapsedRealtimeNanos(ern);
 					if (lat != null && !lat.equals("")){
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
 					}
