@@ -60,7 +60,7 @@ public class NmeaParser {
 	private float precision = 10f;
 	private boolean mockGpsAutoEnabled = false;
 	private boolean mockGpsEnabled = false;
-	private String mockLocationProvider = null;
+	private String mockLocationProvider = LocationManager.GPS_PROVIDER;
 
 	private int mockStatus = LocationProvider.OUT_OF_SERVICE;
 
@@ -77,43 +77,34 @@ public class NmeaParser {
 		this.lm = lm;
 	}
 
-	public void enableMockLocationProvider(String gpsName, boolean force){
+	public void enableMockLocationProvider(boolean force){
 		try {
 			LocationProvider prov;
-			if (gpsName != null && gpsName != "" ){
-				if (! gpsName.equals(mockLocationProvider)){
-					disableMockLocationProvider();
-					mockLocationProvider = gpsName;
-				}
-				if (! mockGpsEnabled){
-					prov = lm.getProvider(mockLocationProvider);
-					if (prov != null){
-						Log.v(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
-						try {
-							lm.removeTestProvider(mockLocationProvider);
-						} catch (IllegalArgumentException e){
-							Log.d(LOG_TAG, "unable to remove current provider Mock provider: "+mockLocationProvider);
-						}
+			if (! mockGpsEnabled){
+				prov = lm.getProvider(mockLocationProvider);
+				if (prov != null){
+					Log.v(LOG_TAG, "Mock provider(1): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					try {
+						lm.removeTestProvider(mockLocationProvider);
+					} catch (IllegalArgumentException e){
+						Log.d(LOG_TAG, "unable to remove current provider.");
 					}
-					prov = lm.getProvider(mockLocationProvider);
-					lm.addTestProvider(mockLocationProvider, false, true,false, false, true, true, true, Criteria.POWER_MEDIUM, Criteria.ACCURACY_FINE);
-					if ( force 
-							|| (prov == null)  
-							// || (! LocationManager.GPS_PROVIDER.equals(mockLocationProvider))
-					){
-						Log.d(LOG_TAG, "enabling Mock provider: "+mockLocationProvider);
+				}
+				prov = lm.getProvider(mockLocationProvider);
+				lm.addTestProvider(mockLocationProvider, false, true,false, false, true, true, true, Criteria.POWER_MEDIUM, Criteria.ACCURACY_FINE);
+				if ( force || (prov == null)){
+						Log.d(LOG_TAG, "enabling Mock provider.");
 						lm.setTestProviderEnabled(mockLocationProvider, true);
 						mockGpsAutoEnabled = true;
 					}
 					mockGpsEnabled = true;
 				} else {
-					Log.d(LOG_TAG, "Mock provider already enabled: "+mockLocationProvider);
+					Log.d(LOG_TAG, "Mock provider already enabled.");
 				}
 				prov = lm.getProvider(mockLocationProvider);
 				if (prov != null){
-					Log.e(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					Log.e(LOG_TAG, "Mock provider(2): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
 				}
-			}
 		} catch (SecurityException e){
 			Log.e(LOG_TAG, "Error while enabling Mock Mocations Provider", e);
 			disableMockLocationProvider();
@@ -123,39 +114,38 @@ public class NmeaParser {
 	public void disableMockLocationProvider(){
 		try {
 			LocationProvider prov;
-			if (mockLocationProvider != null && mockLocationProvider != "" && mockGpsEnabled){
+			if (mockGpsEnabled){
 				prov = lm.getProvider(mockLocationProvider);
 				if (prov != null){
-					Log.v(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					Log.v(LOG_TAG, "Mock provider(3): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
 				}
 				mockGpsEnabled = false;
 				if ( mockGpsAutoEnabled )  { 
-					Log.d(LOG_TAG, "disabling Mock provider: "+mockLocationProvider);
+					Log.d(LOG_TAG, "disabling Mock provider.");
 					lm.setTestProviderEnabled(mockLocationProvider, false);
 				}
 				prov = lm.getProvider(mockLocationProvider);
 				if (prov != null){
-					Log.v(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					Log.v(LOG_TAG, "Mock provider(4): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
 				}
 				lm.clearTestProviderEnabled(mockLocationProvider);
 				prov = lm.getProvider(mockLocationProvider);
 				if (prov != null){
-					Log.v(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					Log.v(LOG_TAG, "Mock provider(5): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
 				}
 				lm.clearTestProviderStatus(mockLocationProvider);
 				lm.removeTestProvider(mockLocationProvider);
 				prov = lm.getProvider(mockLocationProvider);
 				if (prov != null){
-					Log.v(LOG_TAG, "Mock provider: "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
+					Log.v(LOG_TAG, "Mock provider(6): "+prov.getName()+" "+prov.getPowerRequirement()+" "+prov.getAccuracy()+" "+lm.isProviderEnabled(mockLocationProvider));
 				}
 				Log.d(LOG_TAG, "removed mock GPS");
 			} else {
-				Log.d(LOG_TAG, "Mock provider already disabled: "+mockLocationProvider);			
+				Log.d(LOG_TAG, "Mock provider already disabled.");
 			}
 		} catch (SecurityException e){
 			Log.e(LOG_TAG, "Error while enabling Mock Mocations Provider", e);
 		} finally {
-			mockLocationProvider = null;
 			mockGpsEnabled = false;
 			mockGpsAutoEnabled = false;
 			mockStatus = LocationProvider.OUT_OF_SERVICE;

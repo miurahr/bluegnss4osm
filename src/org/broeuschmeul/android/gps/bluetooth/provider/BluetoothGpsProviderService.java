@@ -68,13 +68,9 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final String ACTION_START_GPS_PROVIDER = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.START_GPS_PROVIDER";
 	public static final String ACTION_STOP_GPS_PROVIDER = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.STOP_GPS_PROVIDER";
 	public static final String ACTION_CONFIGURE_SIRF_GPS = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.CONFIGURE_SIRF_GPS";
-	public static final String PREF_START_GPS_PROVIDER = "startGps";
 	public static final String PREF_GPS_LOCATION_PROVIDER = "gpsLocationProviderKey";
-	public static final String PREF_REPLACE_STD_GPS = "replaceStdtGps";
 	public static final String PREF_FORCE_ENABLE_PROVIDER = "forceEnableProvider";
-	public static final String PREF_MOCK_GPS_NAME = "mockGpsName";
 	public static final String PREF_CONNECTION_RETRIES = "connectionRetries";
-	public static final String PREF_TRACK_RECORDING = "trackRecording";
 	public static final String PREF_TRACK_FILE_DIR = "trackFileDirectory";
 	public static final String PREF_TRACK_FILE_PREFIX = "trackFilePrefix";
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
@@ -134,20 +130,12 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		if (ACTION_START_GPS_PROVIDER.equals(intent.getAction())){
 			if (gpsManager == null){
 				if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
-					String mockProvider = LocationManager.GPS_PROVIDER;
-					if (! sharedPreferences.getBoolean(PREF_REPLACE_STD_GPS, true)){
-						mockProvider = sharedPreferences.getString(PREF_MOCK_GPS_NAME, getString(R.string.defaultMockGpsName));
-					}
 					gpsManager = new BlueetoothGpsManager(this, deviceAddress, maxConRetries);
 					boolean enabled = gpsManager.enable();
 //					Bundle extras = intent.getExtras();
-					if (sharedPreferences.getBoolean(PREF_START_GPS_PROVIDER, false) != enabled){
-						edit.putBoolean(PREF_START_GPS_PROVIDER,enabled);
-						edit.commit();
-					}
 					if (enabled) {
             wl.acquire();
-						gpsManager.enableMockLocationProvider(mockProvider);
+						gpsManager.enableMockLocationProvider();
 						Notification notification = new Notification(R.drawable.ic_stat_notify, this.getString(R.string.foreground_gps_provider_started_notification),  System.currentTimeMillis());
 						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
 						PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -175,18 +163,10 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				if (gpsManager != null){
 					beginTrack();
 					gpsManager.addNmeaListener(this);
-					if (! sharedPreferences.getBoolean(PREF_TRACK_RECORDING, false)){
-						edit.putBoolean(PREF_TRACK_RECORDING,true);
-						edit.commit();
-					}
 					toast.setText(this.getString(R.string.msg_nmea_recording_started));
-					toast.show();				
+					toast.show();
 				} else {
 					endTrack();
-					if ( sharedPreferences.getBoolean(PREF_TRACK_RECORDING, true)){
-						edit.putBoolean(PREF_TRACK_RECORDING,false);
-						edit.commit();
-					}
 				}
 			} else {
 				toast.setText(this.getString(R.string.msg_nmea_recording_already_started));
@@ -199,15 +179,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				toast.setText(this.getString(R.string.msg_nmea_recording_stopped));
 				toast.show();
 			}
-			if (sharedPreferences.getBoolean(PREF_TRACK_RECORDING, true)){
-				edit.putBoolean(PREF_TRACK_RECORDING,false);
-				edit.commit();
-			}
 		} else if (ACTION_STOP_GPS_PROVIDER.equals(intent.getAction())){
-			if (sharedPreferences.getBoolean(PREF_START_GPS_PROVIDER, true)){
-				edit.putBoolean(PREF_START_GPS_PROVIDER,false);
-				edit.commit();
-			}
       wl.release();
 			stopSelf();
 		} else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
@@ -431,14 +403,6 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		endTrack();
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor edit = sharedPreferences.edit();
-		if (sharedPreferences.getBoolean(PREF_TRACK_RECORDING, true)){
-			edit.putBoolean(PREF_TRACK_RECORDING,false);
-			edit.commit();
-		}
-		if (sharedPreferences.getBoolean(PREF_START_GPS_PROVIDER, true)){
-			edit.putBoolean(PREF_START_GPS_PROVIDER,false);
-			edit.commit();
-		}
     isRunning = false;
 		super.onDestroy();
 	}

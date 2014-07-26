@@ -26,39 +26,19 @@
 		android:title="@string/pref_bluetooth_device_title" 
 		android:key="@string/pref_bluetooth_device_key" 	
 		android:summary="@string/pref_bluetooth_device_summary" />
-	<PreferenceScreen
-		android:shouldDisableView="true"
-		android:key="@string/pref_gps_location_provider_key"
-		android:summary="@string/pref_gps_location_provider_summary"
-		android:title="@string/pref_gps_location_provider_title" >
-		<CheckBoxPreference 
-			android:key="@string/pref_replace_std_gps_key"
-			android:persistent="true"
-			android:disableDependentsState="true"
-			android:defaultValue="true"
-			android:title="@string/pref_replace_std_gps_title"
-			android:summaryOn="@string/pref_replace_std_gps_summary_on"
-			android:summaryOff="@string/pref_replace_std_gps_summary_off" />
-		<CheckBoxPreference
-			android:key="@string/pref_force_enable_provider_key"
-			android:persistent="true"
-			android:defaultValue="false"
-			android:title="@string/pref_force_enable_provider_title"
-			android:summaryOn="@string/pref_force_enable_provider_summary_on"
-			android:summaryOff="@string/pref_force_enable_provider_summary_off" />
-		<EditTextPreference
-			android:dependency="@string/pref_replace_std_gps_key"
-			android:key="@string/pref_mock_gps_name_key"
-			android:title="@string/pref_mock_gps_name_title"
-			android:defaultValue="@string/defaultMockGpsName"
-			android:summary="@string/pref_mock_gps_name_summary" />
-		<EditTextPreference
-			android:key="@string/pref_connection_retries_key"
-			android:title="@string/pref_connection_retries_title"
-			android:defaultValue="@string/defaultConnectionRetries"
-			android:inputType="numberDecimal"
-			android:summary="@string/pref_connection_retries_summary" />
-	</PreferenceScreen>
+	<CheckBoxPreference
+		android:key="@string/pref_force_enable_provider_key"
+		android:persistent="true"
+		android:defaultValue="false"
+		android:title="@string/pref_force_enable_provider_title"
+		android:summaryOn="@string/pref_force_enable_provider_summary_on"
+		android:summaryOff="@string/pref_force_enable_provider_summary_off" />
+	<EditTextPreference
+		android:key="@string/pref_connection_retries_key"
+		android:title="@string/pref_connection_retries_title"
+		android:defaultValue="@string/defaultConnectionRetries"
+		android:inputType="numberDecimal"
+		android:summary="@string/pref_connection_retries_summary" />
 	<CheckBoxPreference 
 		android:key="@string/pref_sirf_gps_key"
 		android:persistent="true"
