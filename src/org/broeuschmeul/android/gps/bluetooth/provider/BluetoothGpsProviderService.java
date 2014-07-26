@@ -138,7 +138,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
            * Instanciate btgps manager, mock provider and nmea parser
            */
 					gpsManager = new BlueetoothGpsManager(this, deviceAddress, maxConRetries);
-          gpsMockProvider = new BluetoothGpsMockProvider();
+          gpsMockProvider = new BluetoothGpsMockProvider(this);
  	        nmeaParser = new NmeaParser(10f);
           // register
           gpsManager.setGpsMockProvider(gpsMockProvider);

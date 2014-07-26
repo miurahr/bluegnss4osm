@@ -49,7 +49,7 @@ public class BluetoothGpsMockProvider {
   private boolean mockGpsEnabled = false;
 	private int mockStatus = LocationProvider.OUT_OF_SERVICE;
  
-  BluetoothGpsMockProvider() {
+  BluetoothGpsMockProvider(Service callingService) {
     this.callingService = callingService;
 	  this.appContext = callingService.getApplicationContext();
     this.lm = (LocationManager)callingService.getSystemService(Context.LOCATION_SERVICE);
