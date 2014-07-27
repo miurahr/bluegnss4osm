@@ -45,13 +45,13 @@ public class BluetoothGpsMockProvider {
   private Service callingService;
   private Context appContext;
   private LocationManager lm;
-	private boolean mockGpsAutoEnabled = false;
+  private boolean mockGpsAutoEnabled = false;
   private boolean mockGpsEnabled = false;
-	private int mockStatus = LocationProvider.OUT_OF_SERVICE;
+  private int mockStatus = LocationProvider.OUT_OF_SERVICE;
  
   BluetoothGpsMockProvider(Service callingService) {
     this.callingService = callingService;
-	  this.appContext = callingService.getApplicationContext();
+    this.appContext = callingService.getApplicationContext();
     this.lm = (LocationManager)callingService.getSystemService(Context.LOCATION_SERVICE);
   }
 
@@ -124,7 +124,11 @@ public class BluetoothGpsMockProvider {
 	public boolean isMockGpsEnabled() {
 		return mockGpsEnabled;
 	}
-	
+
+	public boolean isMockStatus(int status) {
+		return (this.mockStatus == status);
+	}
+
 	public void setMockLocationProviderOutOfService(){
 		notifyStatusChanged(LocationProvider.OUT_OF_SERVICE, null, System.currentTimeMillis());
 	}
@@ -141,7 +145,7 @@ public class BluetoothGpsMockProvider {
 			}
 		}
   }
-	
+
 	public void notifyStatusChanged(int status, Bundle extras, long updateTime){
 	  if (this.mockStatus != status){
 			Log.v(LOG_TAG, "New mockStatus: "+System.currentTimeMillis()+" "+status);
