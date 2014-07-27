@@ -82,6 +82,8 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final int MSG_UNREGISTER_CLIENT = 2;
 	public static final int MSG_DISCONNECTED      = 3;
 	public static final int MSG_UPDATED           = 4;
+	public static final int MSG_CONNECTED         = 5;
+
 
 	/**
 	 * Tag used for log messages
@@ -101,24 +103,24 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final String PREF_SIRF_ENABLE_STATIC_NAVIGATION = "enableStaticNavigation";
 
 	private BlueetoothGpsManager gpsManager = null;
-  private BluetoothGpsMockProvider gpsMockProvider = null;
+	private BluetoothGpsMockProvider gpsMockProvider = null;
 	private PrintWriter writer;
 	private File trackFile;
 	private boolean preludeWritten = false;
 	private Toast toast;
 	private static boolean isRunning = false;
 	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
-  private static Location currentLocation;
- 	private NmeaParser nmeaParser;
-  private static PowerManager.WakeLock wl;
+	private static Location currentLocation;
+	private NmeaParser nmeaParser;
+	private static PowerManager.WakeLock wl;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
-    PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
-    wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
+		PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
 	}
 
 	@Override
@@ -134,25 +136,24 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		if (ACTION_START_GPS_PROVIDER.equals(intent.getAction())){
 			if (gpsManager == null){
 				if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
-          /*
-           * Instanciate btgps manager, mock provider and nmea parser
-           */
+				/*
+				 * Instanciate btgps manager, mock provider and nmea parser
+				 */
 					gpsManager = new BlueetoothGpsManager(this, deviceAddress, maxConRetries);
-          gpsMockProvider = new BluetoothGpsMockProvider(this);
- 	        nmeaParser = new NmeaParser(10f);
-          // register
-          gpsManager.setGpsMockProvider(gpsMockProvider);
-          gpsManager.setNMEAParser(nmeaParser);
-          nmeaParser.setGpsMockProvider(gpsMockProvider);
+					gpsMockProvider = new BluetoothGpsMockProvider(this);
+					nmeaParser = new NmeaParser(10f);
+					// register
+					gpsManager.setGpsMockProvider(gpsMockProvider);
+					gpsManager.setNMEAParser(nmeaParser);
+					nmeaParser.setGpsMockProvider(gpsMockProvider);
 
-          // now ready to enable it.
-
+					// now ready to enable it.
 					boolean enabled = gpsManager.enable();
 //					Bundle extras = intent.getExtras();
 
 					if (enabled) {
-            wl.acquire();
-            boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
+						wl.acquire();
+						boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
 						gpsMockProvider.enableMockLocationProvider(force);
 						Notification notification = new Notification(R.drawable.ic_stat_notify, this.getString(R.string.foreground_gps_provider_started_notification),  System.currentTimeMillis());
 						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
@@ -165,11 +166,11 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 						toast.setText(this.getString(R.string.msg_gps_provider_started));
 						toast.show();	
 					} else {
-            sendGpsDisconnected();
+						sendGpsDisconnected();
 						stopSelf();
 					}
 				} else {
-          //sendGpsDisconnected();
+					sendGpsDisconnected();
 					stopSelf();
 				}
 			} else {
@@ -198,7 +199,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				toast.show();
 			}
 		} else if (ACTION_STOP_GPS_PROVIDER.equals(intent.getAction())){
-      wl.release();
+			wl.release();
 			stopSelf();
 		} else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
 			if (gpsManager != null){

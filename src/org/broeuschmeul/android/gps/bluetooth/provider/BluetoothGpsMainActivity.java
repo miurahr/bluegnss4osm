@@ -143,11 +143,11 @@ public class BluetoothGpsMainActivity extends Activity {
             doBindService();
         }
     }
-    void doBindService() {
+    private void doBindService() {
         bindService(new Intent(this, BluetoothGpsProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
-    void doUnbindService() {
+    private void doUnbindService() {
         if (mIsBound) {
             if (mService != null) {
                 try {

@@ -224,7 +224,7 @@ public class BlueetoothGpsManager {
 	private ExecutorService notificationPool;
 	private ScheduledExecutorService connectionAndReadingPool;
 	private List<NmeaListener> nmeaListeners = Collections.synchronizedList(new LinkedList<NmeaListener>()); 
-  private BluetoothGpsMockProvider mockProvider;
+	private BluetoothGpsMockProvider mockProvider;
 	private SharedPreferences sharedPreferences;
 	private ConnectedGps connectedGps;
 	private int disableReason = 0;
