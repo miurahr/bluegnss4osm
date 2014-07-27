@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.location.Criteria;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -55,11 +56,18 @@ public class NmeaParser {
 
 	private String fixTime = null;
 	private long fixTimestamp;
+  private long firstFixTimestamp;
+  private boolean fixed = false;
 
 	private boolean hasGGA = false;
 	private boolean hasRMC = false;
 	private float precision = 10f;
 	private Location fix = null;
+
+  private final int GPS_NONE        = 0;
+  private final int GPS_FIXED       = 3;
+  private final int GPS_NOTIFIED    = 4;
+  private int currentGpsStatus = GPS_NONE;
 
 	private BluetoothGpsMockProvider mockProvider;
 
@@ -155,6 +163,8 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+            firstFixTimestamp = updateTime;
+            currentGpsStatus = GPS_FIXED;
 					}				
 					if (! time.equals(fixTime)){
 						fix = new Location(LocationManager.GPS_PROVIDER);
@@ -240,6 +250,8 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+	          firstFixTimestamp = updateTime;
+            currentGpsStatus = GPS_FIXED;
 					}
 					if (! time.equals(fixTime)){
 						fix = new Location(LocationManager.GPS_PROVIDER);
@@ -273,6 +285,7 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+            // currentGpsStatus = GPS_STARTED;
 					}
 				}
 			} else if (command.equals("GPGSA")){
@@ -358,10 +371,40 @@ public class NmeaParser {
 				String status = splitter.next();
 				// for NMEA 0183 version 3.00 active the Mode indicator field is added
 				// Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
-			}
+			} else if (command.equals("GPGSV")){
+        /*   $GPGSV,2,1,08,01,40,083,46,02,17,308,41,12,07,344,39,14,22,228,45*75
+
+            Where:
+                GSV          Satellites in view
+                2            Number of sentences for full data
+                1            sentence 1 of 2
+                08           Number of satellites in view
+
+                01           Satellite PRN number
+                40           Elevation, degrees
+                083          Azimuth, degrees
+                46           SNR - higher is better
+                             for up to 4 satellites per sentence
+                *75          the checksum data, always begins with *
+         */
+        String numGsvSentence = splitter.next();
+        String gsvSentence = splitter.next();
+        String numSatellites = splitter.next();
+        for (int i =0; i < 4; i++){
+        }
+      }
 		}
 		return nmeaSentence;
 	}
+
+  public int getGpsStatusChange(){
+    if (currentGpsStatus == GPS_NOTIFIED){
+      return GpsStatus.GPS_EVENT_SATELLITE_STATUS;
+    } else if (currentGpsStatus == GPS_FIXED){
+      return GpsStatus.GPS_EVENT_FIRST_FIX;
+    }
+    return 0;
+  }
 
 	public double parseNmeaLatitude(String lat,String orientation){
 		double latitude = 0.0;
