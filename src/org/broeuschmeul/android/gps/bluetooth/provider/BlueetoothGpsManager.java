@@ -135,7 +135,7 @@ public class BlueetoothGpsManager {
 				while((enabled) && (now < lastRead+5000 )){
 					if (reader.ready()){
 						s = reader.readLine();
-						Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+s);
+						//Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+s);
 						notifyNmeaSentence(s+"\r\n");
 						ready = true;
 						lastRead = SystemClock.uptimeMillis();
@@ -570,7 +570,7 @@ public class BlueetoothGpsManager {
 	 */
 	private void notifyNmeaSentence(final String nmeaSentence){
 		if (enabled){
-	       	Log.v(LOG_TAG, "parsing and notifying NMEA sentence: "+nmeaSentence);
+	    //   	Log.v(LOG_TAG, "parsing and notifying NMEA sentence: "+nmeaSentence);
 			String sentence = null;
       int gpsStatus = 0;
 			try {

@@ -99,7 +99,6 @@ public class NmeaParser {
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
-		Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+gpsSentence);
 		long ern = SystemClock.elapsedRealtimeNanos();
 		Pattern xx = Pattern.compile("\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?\r\n");
 		Matcher m = xx.matcher(gpsSentence);
@@ -472,8 +471,13 @@ public class NmeaParser {
 				String status = splitter.next();
 				// for NMEA 0183 version 3.00 active the Mode indicator field is added
 				// Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
-			}
-		}
+			} else {
+        // unknown command
+		    Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
+      }
+		} else {
+		  Log.v(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
+    }
 		return nmeaSentence;
 	}
 
