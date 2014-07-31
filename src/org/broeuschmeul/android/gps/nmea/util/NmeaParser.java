@@ -492,13 +492,26 @@ public class NmeaParser {
     if (! "1".equals(fixType)) {
       prnList.clear();
       String prn;
+      boolean multi_seq = false;
       for (int i=0 ; i<12  ; i++){
         prn = splitter.next();
         if (prn != null && !prn.equals("")){
-          prnList.add(Integer.parseInt(prn));
+          if (i == 0){
+            Integer numPrn = Integer.parseInt(prn);
+            prnList.add(numPrn);
+            if (numPrn > 32){
+              multi_seq = true;
+            }
+          } else {
+            prnList.add(Integer.parseInt(prn));
+          }
         }
       }
-      gnssStatus.setTrackedSatellites(prnList, gType);
+      if (gType == GPS || !multi_seq){
+        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_OVERRIDE);
+      } else {
+        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_APPEND);
+      }
       // Position dilution of precision (float)
       String pdop = splitter.next();
       // Horizontal dilution of precision (float)

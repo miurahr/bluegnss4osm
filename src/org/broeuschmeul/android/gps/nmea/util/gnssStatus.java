@@ -61,6 +61,7 @@ public class gnssStatus {
   private String mode;
 
   private HashMap<Integer, gnssSatellite> gnssSatellitesList = new HashMap<Integer, gnssSatellite>();
+  private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
   // satallite list
   // accessor
@@ -90,14 +91,23 @@ public class gnssStatus {
     return gnssSatellitesList.get(rpn);
   }
 
-  public void setTrackedSatellites(ArrayList<Integer> rpnList){
-    for (Integer rpn  : gnssSatellitesList.keySet()){
-      if (rpnList.contains(rpn)){
-        gnssSatellitesList.get(rpn).usedinFix();
-      } else {
-        gnssSatellitesList.get(rpn).unusedinFix();
+  public static final int SAT_LIST_OVERRIDE = 1;
+  public static final int SAT_LIST_APPEND = 2;
+
+  public void setTrackedSatellites(ArrayList<Integer> rpnList, int mode){
+    if (mode == SAT_LIST_OVERRIDE){
+      satellitesPrnListInFix = new ArrayList<Integer>(rpnList);
+    } else if (mode == SAT_LIST_APPEND){
+      for (Integer rpn : rpnList){
+        satellitesPrnListInFix.add(rpn);
       }
+    } else {
+      // unexcepted call.
     }
+  }
+
+  public void setTrackedSatellites(ArrayList<Integer> rpnList){
+    setTrackedSatellites(rpnList, SAT_LIST_OVERRIDE);
   }
   // timestamps
   public void clearTTFF(){

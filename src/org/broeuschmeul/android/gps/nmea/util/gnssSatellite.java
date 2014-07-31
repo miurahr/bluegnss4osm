@@ -26,8 +26,6 @@ public class gnssSatellite {
   public float azimuth;
   public float elevation;
   public float snr;
-  public boolean usedinFix = false;
-  public boolean tracked = false;
 
   // cannot change rpn
   private int rpn;
@@ -66,11 +64,4 @@ public class gnssSatellite {
     this.snr = snr;
   }
 
-  public void usedinFix(){
-    this.usedinFix = true;
-  }
-
-  public void unusedinFix(){
-    this.usedinFix = false;
-  }
 }
