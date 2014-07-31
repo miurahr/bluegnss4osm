@@ -1,4 +1,5 @@
 /*
+ * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
