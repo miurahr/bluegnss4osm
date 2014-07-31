@@ -123,14 +123,14 @@ public class NmeaParser {
         parseRMC(splitter);
 			} else if (command.equals("GPGSA")){
         // GPS active satellites
-				parseGSA(splitter, GPS);
+				parseGSA(splitter);
       } else if (command.equals("GNGSA")){
         // gps/glonass active satellites
         // two GNGSA will be generated.
-        parseGSA(splitter, GLONASS);
+        parseGSA(splitter);
       } else if (command.equals("QZGSA")){
         // QZSS active satellites
-        parseGSA(splitter, QZSS);
+        parseGSA(splitter);
 			} else if (command.equals("GPGSV")){
         // GPS satellites in View
 				parseGSV(splitter);
@@ -470,7 +470,7 @@ public class NmeaParser {
     }
 	}
 
-	private void parseGSA(SimpleStringSplitter splitter, gnssType gType){
+	private void parseGSA(SimpleStringSplitter splitter){
     /*  $GPGSA,A,3,04,05,,09,12,,,24,,,,,2.5,1.3,2.1*39
 
       Where:
@@ -499,7 +499,7 @@ public class NmeaParser {
           if (i == 0){
             Integer numPrn = Integer.parseInt(prn);
             prnList.add(numPrn);
-            if (numPrn > 32){
+            if (numPrn > 32){ // GPS RPN should be 01-32
               multi_seq = true;
             }
           } else {
@@ -507,10 +507,10 @@ public class NmeaParser {
           }
         }
       }
-      if (gType == GPS || !multi_seq){
-        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_OVERRIDE);
-      } else {
+      if (multi_seq){
         gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_APPEND);
+      } else {
+        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_OVERRIDE);
       }
       // Position dilution of precision (float)
       String pdop = splitter.next();
