@@ -22,12 +22,16 @@ package org.broeuschmeul.android.gps.nmea.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.location.Criteria;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -55,29 +59,46 @@ public class NmeaParser {
 
 	private String fixTime = null;
 	private long fixTimestamp;
+	private long firstFixTimestamp;
+	private boolean fixed = false;
 
 	private boolean hasGGA = false;
 	private boolean hasRMC = false;
 	private float precision = 10f;
 	private Location fix = null;
 
+	private final int GPS_NONE      = 0;
+	private final int GPS_FIXED     = 3;
+	private final int GPS_NOTIFY    = 4;
+	private int currentGpsStatus = GPS_NONE;
+  private boolean gpsFixNotified = false;
+
 	private BluetoothGpsMockProvider mockProvider;
+
+	private gnssStatus gnssStatus;
+	private ArrayList<Integer> activeSatellites = new ArrayList<Integer>();
+	private ArrayList<Integer> prnList = new ArrayList<Integer>();
 
 	public NmeaParser(){
 		this(5f);
 	}
+
 	public NmeaParser(float precision){
 		this.precision = precision;
+		this.gnssStatus = new gnssStatus();
 	}
 
 	public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
 		this.mockProvider = mockProvider;
 	}
 
+	public gnssStatus getGnssStatus(){
+		return this.gnssStatus;
+	}
+
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
-		Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+gpsSentence);
 		long ern = SystemClock.elapsedRealtimeNanos();
 		Pattern xx = Pattern.compile("\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?\r\n");
 		Matcher m = xx.matcher(gpsSentence);
@@ -135,7 +156,7 @@ public class NmeaParser {
 					6 = estimated (dead reckoning) (2.3 feature)
 					7 = Manual input mode
 					8 = Simulation mode
-				 */			 
+				 */
 				String quality = splitter.next();
 				// Number of satellites being tracked
 				String nbSat = splitter.next();
@@ -143,10 +164,14 @@ public class NmeaParser {
 				String hdop = splitter.next();
 				// Altitude, Meters, above mean sea level
 				String alt = splitter.next();
+				String altUnit = splitter.next();
 				// Height of geoid (mean sea level) above WGS84 ellipsoid
 				String geoAlt = splitter.next();
+				String geoUnit = splitter.next();
 				// time in seconds since last DGPS update
 				// DGPS station ID number
+				//
+				// Update GNSS object status
 				if (quality != null && !quality.equals("") && !quality.equals("0") ){
 					if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
 						long updateTime = parseNmeaTime(time);
@@ -155,7 +180,11 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-					}				
+						firstFixTimestamp = updateTime;
+						if (!gpsFixNotified) {
+							currentGpsStatus = GPS_FIXED;
+						}
+					}
 					if (! time.equals(fixTime)){
 						fix = new Location(LocationManager.GPS_PROVIDER);
 						fixTime = time;
@@ -163,22 +192,31 @@ public class NmeaParser {
 						fix.setTime(fixTimestamp);
 					}
 					fix.setElapsedRealtimeNanos(ern);
+					gnssStatus.setQuality(Integer.parseInt(quality));
 					if (lat != null && !lat.equals("")){
+						gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
 					}
 					if (lon != null && !lon.equals("")){
+						gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
 						fix.setLongitude(parseNmeaLongitude(lon,lonDir));
 					}
 					if (hdop != null && !hdop.equals("")){
+						gnssStatus.setHDOP(Float.parseFloat(hdop));
 						fix.setAccuracy(Float.parseFloat(hdop)*precision);
 					}
 					if (alt != null && !alt.equals("")){
+						gnssStatus.setAltitude(Double.parseDouble(alt));
 						fix.setAltitude(Double.parseDouble(alt));
 					}
 					if (nbSat != null && !nbSat.equals("")){
 						Bundle extras = new Bundle();
 						extras.putInt("satellites", Integer.parseInt(nbSat));
+						gnssStatus.setNbSat(Integer.parseInt(nbSat));
 						fix.setExtras(extras);
+					}
+					if (geoAlt != null & !geoAlt.equals("")){
+						gnssStatus.setHeight(Float.parseFloat(geoAlt));
 					}
 					hasGGA = true;
 					mockProvider.notifyFix(fix);
@@ -232,6 +270,7 @@ public class NmeaParser {
 				String magnDir = splitter.next();
 				// for NMEA 0183 version 3.00 active the Mode indicator field is added
 				// Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
+				gnssStatus.setMode(status);
 				if (status != null && !status.equals("") && status.equals("A") ){
 					if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
 						long updateTime = parseNmeaTime(time);
@@ -240,24 +279,33 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+						firstFixTimestamp = updateTime;
+						if (!gpsFixNotified){
+							currentGpsStatus = GPS_FIXED;
+						}
 					}
 					if (! time.equals(fixTime)){
 						fix = new Location(LocationManager.GPS_PROVIDER);
 						fixTime = time;
 						fixTimestamp = parseNmeaTime(time);
 						fix.setTime(fixTimestamp);
+					  gnssStatus.setFixTimestamp(fixTimestamp);
 					} 
 					fix.setElapsedRealtimeNanos(ern);
 					if (lat != null && !lat.equals("")){
+						gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
 						fix.setLatitude(parseNmeaLatitude(lat,latDir));
 					}
 					if (lon != null && !lon.equals("")){
+						gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
 						fix.setLongitude(parseNmeaLongitude(lon,lonDir));
 					}
-					if (speed != null && !speed.equals("")){
+				if (speed != null && !speed.equals("")){
+						gnssStatus.setSpeed(parseNmeaSpeed(speed, "N"));
 						fix.setSpeed(parseNmeaSpeed(speed, "N"));
-					} 
+					}
 					if (bearing != null && !bearing.equals("")){
+						gnssStatus.setAngle(Float.parseFloat(bearing));
 						fix.setBearing(Float.parseFloat(bearing));
 					}
 					hasRMC = true;
@@ -273,6 +321,7 @@ public class NmeaParser {
 						hasRMC = false;
 						fix = null;
 						mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+						// currentGpsStatus = GPS_STARTED;
 					}
 				}
 			} else if (command.equals("GPGSA")){
@@ -294,16 +343,80 @@ public class NmeaParser {
 				String mode = splitter.next();
 				// fix type  : 1 - no fix / 2 - 2D / 3 - 3D
 				String fixType = splitter.next();
-				// discard PRNs of satellites used for fix (space for 12) 
-				for (int i=0 ; ((i<12)&&(! "1".equals(fixType)))  ; i++){
-					splitter.next();
+				if (! "1".equals(fixType)) {
+					prnList.clear();
+					String prn;
+					for (int i=0 ; i<12  ; i++){
+						prn = splitter.next();
+						if (prn != null && !prn.equals("")){
+							prnList.add(Integer.parseInt(prn));
+						}
+					}
+					gnssStatus.setTrackedSatellites(prnList);
+					// Position dilution of precision (float)
+					String pdop = splitter.next();
+					// Horizontal dilution of precision (float)
+					String hdop = splitter.next();
+					// Vertical dilution of precision (float)
+					String vdop = splitter.next();
+					gnssStatus.setPDOP(Float.parseFloat(pdop));
+					gnssStatus.setHDOP(Float.parseFloat(hdop));
+					gnssStatus.setVDOP(Float.parseFloat(vdop));
 				}
-				// Position dilution of precision (float)
-				String pdop = splitter.next();
-				// Horizontal dilution of precision (float)
-				String hdop = splitter.next();
-				// Vertical dilution of precision (float)
-				String vdop = splitter.next();			
+			} else if (command.equals("GPGSV")){
+				/*   $GPGSV,2,1,08,01,40,083,46,02,17,308,41,12,07,344,39,14,22,228,45*75
+
+				    Where:
+				        GSV          Satellites in view
+				        2            Number of sentences for full data
+				        1            sentence 1 of 2
+				        08           Number of satellites in view
+
+				        01           Satellite PRN number
+				        40           Elevation, degrees
+				        083          Azimuth, degrees
+				        46           SNR - higher is better
+				                     for up to 4 satellites per sentence
+				        *75          the checksum data, always begins with *
+				 */
+				String totalGsvSentence = splitter.next();
+				String currentGsvSentence = splitter.next();
+				String satellitesInView = splitter.next();
+
+        Integer numCurrentGsvSentence = Integer.parseInt(currentGsvSentence);
+        Integer numTotalGsvSentence   = Integer.parseInt(totalGsvSentence);
+        Integer numSatellitesInView   = Integer.parseInt(satellitesInView);
+
+        if (numCurrentGsvSentence.equals("1")){ // first sentence
+					activeSatellites.clear();
+				}
+				gnssStatus.setNumSatellites(numSatellitesInView);
+
+        int numRecord = 4;
+				if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
+          numRecord = numSatellitesInView % 4;
+          if (numRecord == 0){
+            numRecord = 4;
+          }
+        }
+				for (int i =0; i < numRecord; i++){
+					String prn = splitter.next();
+          if (prn != null && !prn.equals("")){
+            String elevation = splitter.next();
+            String azimuth = splitter.next();
+            String snr = splitter.next();
+            gnssSatellite sat = new gnssSatellite(Integer.parseInt(prn));
+            sat.setStatus(parseNmeaFloat(elevation),parseNmeaFloat(azimuth),parseNmeaFloat(snr));
+            gnssStatus.addSatellite(sat);
+            activeSatellites.add(Integer.parseInt(prn));
+          } else {
+            break;
+          }
+				}
+				if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
+		      currentGpsStatus = GPS_NOTIFY;
+					gnssStatus.clearSatellitesList(activeSatellites);
+				}
 			} else if (command.equals("GPVTG")){
 				/*  $GPVTG,054.7,T,034.4,M,005.5,N,010.2,K*48
 					
@@ -358,9 +471,25 @@ public class NmeaParser {
 				String status = splitter.next();
 				// for NMEA 0183 version 3.00 active the Mode indicator field is added
 				// Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
-			}
-		}
+			} else {
+        // unknown command
+		    Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
+      }
+		} else {
+		  Log.v(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
+    }
 		return nmeaSentence;
+	}
+
+	public int getGpsStatusChange(){
+		if (currentGpsStatus == GPS_NOTIFY){
+      currentGpsStatus = GPS_NONE;
+			return GpsStatus.GPS_EVENT_SATELLITE_STATUS;
+		} else if (currentGpsStatus == GPS_FIXED && !gpsFixNotified){
+      gpsFixNotified = true;
+			return GpsStatus.GPS_EVENT_FIRST_FIX;
+		}
+		return 0;
 	}
 
 	public double parseNmeaLatitude(String lat,String orientation){
@@ -436,4 +565,18 @@ public class NmeaParser {
 		}
 		return checksum;
 	}
+  private float parseNmeaFloat(String s){
+    if (s!=null &&!s.equals("")){
+      return Float.parseFloat(s);
+    } else {
+      return Float.NaN;
+    }
+  }
+  private int parseNmeaInt(String s){
+    if (s!=null &&!s.equals("")){
+      return Integer.parseInt(s);
+    } else {
+      return 0;
+    }
+  }
 }

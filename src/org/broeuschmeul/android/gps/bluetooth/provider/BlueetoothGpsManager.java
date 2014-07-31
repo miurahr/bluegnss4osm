@@ -51,6 +51,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.location.GpsStatus;
+import android.location.GpsStatus.Listener;
 import android.location.GpsStatus.NmeaListener;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -133,7 +135,7 @@ public class BlueetoothGpsManager {
 				while((enabled) && (now < lastRead+5000 )){
 					if (reader.ready()){
 						s = reader.readLine();
-						Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+s);
+						//Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+s);
 						notifyNmeaSentence(s+"\r\n");
 						ready = true;
 						lastRead = SystemClock.uptimeMillis();
@@ -224,6 +226,7 @@ public class BlueetoothGpsManager {
 	private ExecutorService notificationPool;
 	private ScheduledExecutorService connectionAndReadingPool;
 	private List<NmeaListener> nmeaListeners = Collections.synchronizedList(new LinkedList<NmeaListener>()); 
+	private List<Listener> gpsStatusListeners = Collections.synchronizedList(new LinkedList<Listener>());
 	private BluetoothGpsMockProvider mockProvider;
 	private SharedPreferences sharedPreferences;
 	private ConnectedGps connectedGps;
@@ -507,6 +510,7 @@ public class BlueetoothGpsManager {
 			};
 			notificationPool.execute(closeAndShutdown);
 			nmeaListeners.clear();
+      gpsStatusListeners.clear();
 			mockProvider.disableMockLocationProvider();
 			notificationPool.shutdown();
 //			connectionAndReadingPool.shutdown();
@@ -532,6 +536,15 @@ public class BlueetoothGpsManager {
 		return true;
 	}
 
+  //GpsStatus.Listener
+  public boolean addGpsStatusListener(Listener listener){
+    if (!gpsStatusListeners.contains(listener)){
+      Log.d(LOG_TAG, "adding new GpsStatus Listener");
+      gpsStatusListeners.add(listener);
+    }
+    return true;
+  }
+
 	/**
 	 * Removes an NMEA listener.
 	 * In fact, it delegates to the NMEA parser. 
@@ -544,6 +557,12 @@ public class BlueetoothGpsManager {
 		nmeaListeners.remove(listener);
 	}
 
+  // GpsStatus.Listener
+  public void removeGpsStatusListener(Listener listener){
+    Log.d(LOG_TAG, "removing GpsStatus Listener");
+    gpsStatusListeners.remove(listener);
+  }
+
 	/**
 	 * Notifies the reception of a NMEA sentence from the bluetooth GPS to registered NMEA listeners.
 	 * 
@@ -551,14 +570,17 @@ public class BlueetoothGpsManager {
 	 */
 	private void notifyNmeaSentence(final String nmeaSentence){
 		if (enabled){
-	       	Log.v(LOG_TAG, "parsing and notifying NMEA sentence: "+nmeaSentence);
+	    //   	Log.v(LOG_TAG, "parsing and notifying NMEA sentence: "+nmeaSentence);
 			String sentence = null;
+      int gpsStatus = 0;
 			try {
 				sentence = parser.parseNmeaSentence(nmeaSentence);
+        gpsStatus = parser.getGpsStatusChange();
 			} catch (SecurityException e){
 		       	Log.e(LOG_TAG, "error while parsing NMEA sentence: "+nmeaSentence, e);
 				// a priori Mock Location is disabled
 				sentence = null;
+        gpsStatus = 0;
 				disable(R.string.msg_mock_location_disabled);
 			}
 			final String recognizedSentence = sentence;
@@ -576,8 +598,22 @@ public class BlueetoothGpsManager {
 					}
 				}
 			}
+      final int recognizedGpsStatus = gpsStatus;
+      if (recognizedGpsStatus != 0){
+        Log.v(LOG_TAG, "notified GpsStatus: "+recognizedGpsStatus);
+        synchronized(gpsStatusListeners) {
+          for(final Listener listener : gpsStatusListeners){
+            notificationPool.execute(new Runnable(){
+              @Override
+              public void run() {
+                listener.onGpsStatusChanged(recognizedGpsStatus);
+              }
+            });
+          }
+        }
+      }
 		}
-	}	
+	}
 
 	/**
 	 * Sends a NMEA sentence to the bluetooth GPS.
