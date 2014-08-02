@@ -250,22 +250,6 @@ public class BlueetoothGpsManager {
 		this.nbRetriesRemaining = 1+maxRetries;
 		this.appContext = callingService.getApplicationContext();
 		this.notificationManager = (NotificationManager)callingService.getSystemService(Context.NOTIFICATION_SERVICE);
-		
-		connectionProblemNotification = new Notification();
-		connectionProblemNotification.icon = R.drawable.ic_stat_notify;
-		Intent stopIntent = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
-		// PendingIntent stopPendingIntent = PendingIntent.getService(appContext, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		PendingIntent stopPendingIntent = PendingIntent.getService(appContext, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		connectionProblemNotification.contentIntent = stopPendingIntent;
-
-		serviceStoppedNotification = new Notification();
-		serviceStoppedNotification.icon=R.drawable.ic_stat_notify;
-		Intent restartIntent = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
-		PendingIntent restartPendingIntent = PendingIntent.getService(appContext, 0, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		serviceStoppedNotification.setLatestEventInfo(appContext, 
-				appContext.getString(R.string.service_closed_because_connection_problem_notification_title), 
-				appContext.getString(R.string.service_closed_because_connection_problem_notification), 
-				restartPendingIntent);
 	}
 
 	private void setDisableReason(int reasonId){
@@ -418,18 +402,19 @@ public class BlueetoothGpsManager {
 			if (nbRetriesRemaining > 0){
 				// Unable to connect
 				Log.e(LOG_TAG, "Unable to establish connection");
-				connectionProblemNotification.when = System.currentTimeMillis();
+        Intent stopIntent = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
+        PendingIntent stopPendingIntent = PendingIntent.getService(appContext, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 				String pbMessage = appContext.getResources().getQuantityString(R.plurals.connection_problem_notification, nbRetriesRemaining, nbRetriesRemaining);
-				connectionProblemNotification.setLatestEventInfo(appContext, 
-						appContext.getString(R.string.connection_problem_notification_title), 
-						pbMessage, 
-						connectionProblemNotification.contentIntent);
-				connectionProblemNotification.number = 1 + maxConnectionRetries - nbRetriesRemaining;
+        connectionProblemNotification = new Notification.Builder(appContext)
+		                          .setSmallIcon(R.drawable.ic_stat_notify)
+		                          .setContentIntent(stopPendingIntent)
+				                      .setWhen(System.currentTimeMillis())
+						                  .setContentTitle(appContext.getString(R.string.connection_problem_notification_title)) 
+						                  .setContentText(pbMessage)
+				                      .setNumber(1 + maxConnectionRetries - nbRetriesRemaining)
+                              .build();
 				notificationManager.notify(R.string.connection_problem_notification_title, connectionProblemNotification);
 			} else {
-//				notificationManager.cancel(R.string.connection_problem_notification_title);
-//				serviceStoppedNotification.when = System.currentTimeMillis();
-//				notificationManager.notify(R.string.service_closed_because_connection_problem_notification_title, serviceStoppedNotification);
 				disable(R.string.msg_two_many_connection_problems);
 			}
 		}
@@ -471,11 +456,18 @@ public class BlueetoothGpsManager {
 	public synchronized void disable() {
 		notificationManager.cancel(R.string.connection_problem_notification_title);
 		if (getDisableReason() != 0){
-			serviceStoppedNotification.when = System.currentTimeMillis();
-			serviceStoppedNotification.setLatestEventInfo(appContext, 
-					appContext.getString(R.string.service_closed_because_connection_problem_notification_title), 
-					appContext.getString(R.string.service_closed_because_connection_problem_notification, appContext.getString(getDisableReason())),
-					serviceStoppedNotification.contentIntent);
+      Intent restartIntent = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
+      PendingIntent restartPendingIntent = PendingIntent.getService(appContext, 0, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+      serviceStoppedNotification = new Notification.Builder(appContext)
+                    .setSmallIcon(R.drawable.ic_stat_notify)
+                    .setContentTitle(appContext.getString(R.string.service_closed_because_connection_problem_notification_title))
+                    .setContentText(appContext.getString(R.string.service_closed_because_connection_problem_notification)) 
+                    .setContentIntent(restartPendingIntent)
+                    .setWhen(System.currentTimeMillis())
+                    .setContentTitle(appContext.getString(R.string.service_closed_because_connection_problem_notification_title)) 
+                    .setContentText(appContext.getString(R.string.service_closed_because_connection_problem_notification,
+                                                         appContext.getString(getDisableReason())))
+                    .build();
 			notificationManager.notify(R.string.service_closed_because_connection_problem_notification_title, serviceStoppedNotification);
 		}
 		if (enabled){
