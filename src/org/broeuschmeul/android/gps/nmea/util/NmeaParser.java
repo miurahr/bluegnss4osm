@@ -91,12 +91,12 @@ public class NmeaParser {
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
-		Pattern xx = Pattern.compile("\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?\r\n");
+		Pattern xx = Pattern.compile("(\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?)\r\n");
 		Matcher m = xx.matcher(gpsSentence);
 		if (m.matches()){
-			nmeaSentence = m.group(0);
-			String sentence = m.group(1);
-			String checkSum = m.group(2);
+			nmeaSentence = m.group(1);
+			String sentence = m.group(2);
+			String checkSum = m.group(3);
 			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",parserUtil.computeChecksum(sentence)));
 			splitter = new TextUtils.SimpleStringSplitter(',');
 			splitter.setString(sentence);
@@ -168,10 +168,12 @@ public class NmeaParser {
           Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
         }
       } catch (Exception e){
+        // not propergate to caller.
         Log.d(LOG_TAG, "Caught exception on NmeaParser");
       }
 		} else {
-			Log.v(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
+      // no returns the mismatched data.
+			Log.d(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
 		}
 		return nmeaSentence;
 	}
