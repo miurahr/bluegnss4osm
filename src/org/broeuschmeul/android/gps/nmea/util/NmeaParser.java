@@ -135,6 +135,8 @@ public class NmeaParser {
             if (testFix(fix)){
               mockProvider.notifyFix(fix);
               gpsFixNotified = true;
+            } else {
+              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix is broken");
             }
           } else {
             if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
