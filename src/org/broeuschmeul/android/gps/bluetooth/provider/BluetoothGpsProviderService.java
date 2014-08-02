@@ -102,7 +102,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	public static final String PREF_SIRF_ENABLE_NMEA = "enableNMEA";
 	public static final String PREF_SIRF_ENABLE_STATIC_NAVIGATION = "enableStaticNavigation";
 
-	private BlueetoothGpsManager gpsManager = null;
+	private BluetoothGnssManager gpsManager = null;
 	private BluetoothGpsMockProvider gpsMockProvider = null;
 	private PrintWriter writer;
 	private File trackFile;
@@ -139,7 +139,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				/*
 				 * Instanciate btgps manager, mock provider and nmea parser
 				 */
-					gpsManager = new BlueetoothGpsManager(this, deviceAddress, maxConRetries);
+					gpsManager = new BluetoothGnssManager(this, deviceAddress, maxConRetries);
 					gpsMockProvider = new BluetoothGpsMockProvider(this);
 					nmeaParser = new NmeaParser(10f);
 					// register
@@ -405,7 +405,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 
 	@Override
 	public void onDestroy() {
-		BlueetoothGpsManager manager = gpsManager;
+		BluetoothGnssManager manager = gpsManager;
 		gpsManager  = null;
 		if (manager != null){
 			if (manager.getDisableReason() != 0){
