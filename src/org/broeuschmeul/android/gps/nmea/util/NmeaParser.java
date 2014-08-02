@@ -21,17 +21,12 @@
 
 package org.broeuschmeul.android.gps.nmea.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
@@ -54,7 +49,6 @@ public class NmeaParser {
 	private static final String LOG_TAG = "BlueGPS";
 
 	private long firstFixTimestamp;
-	private float precision = 10f;
   private NmeaState currentNmeaStatus = new NmeaState();
 
 	private final int GPS_NONE      = 0;
@@ -66,6 +60,7 @@ public class NmeaParser {
 	private BluetoothGpsMockProvider mockProvider;
 
 	private GnssStatus gnssStatus;
+  private NmeaParserUtil parserUtil;
 	private ArrayList<Integer> activeSatellites = new ArrayList<Integer>();
 	private ArrayList<Integer> prnList = new ArrayList<Integer>();
 
@@ -76,8 +71,9 @@ public class NmeaParser {
 	}
 
 	public NmeaParser(float precision){
-		this.precision = precision;
 		this.gnssStatus = new GnssStatus();
+		gnssStatus.setPrecision(precision);
+    this.parserUtil = new NmeaParserUtil();
 	}
 
 	public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
@@ -101,7 +97,7 @@ public class NmeaParser {
 			nmeaSentence = m.group(0);
 			String sentence = m.group(1);
 			String checkSum = m.group(2);
-			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",computeChecksum(sentence)));
+			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",parserUtil.computeChecksum(sentence)));
 			splitter = new TextUtils.SimpleStringSplitter(',');
 			splitter.setString(sentence);
 			String command = splitter.next();
@@ -190,110 +186,6 @@ public class NmeaParser {
 		return 0;
 	}
 
-	public double parseNmeaLatitude(String lat,String orientation){
-		double latitude = 0.0;
-		if (lat != null && orientation != null && !lat.equals("") && !orientation.equals("")){
-			double temp1 = Double.parseDouble(lat);
-			double temp2 = Math.floor(temp1/100); 
-			double temp3 = (temp1/100 - temp2)/0.6;
-			if (orientation.equals("S")){
-				latitude = -(temp2+temp3);
-			} else if (orientation.equals("N")){
-				latitude = (temp2+temp3);
-			}
-		}
-		return latitude;
-	}
-	public double parseNmeaLongitude(String lon,String orientation){
-		double longitude = 0.0;
-		if (lon != null && orientation != null && !lon.equals("") && !orientation.equals("")){
-			double temp1 = Double.parseDouble(lon);
-			double temp2 = Math.floor(temp1/100); 
-			double temp3 = (temp1/100 - temp2)/0.6;
-			if (orientation.equals("W")){
-				longitude = -(temp2+temp3);
-			} else if (orientation.equals("E")){
-				longitude = (temp2+temp3);
-			}
-		}
-		return longitude;
-	}
-	public float parseNmeaSpeed(String speed,String metric){
-		float meterSpeed = 0.0f;
-		if (speed != null && metric != null && !speed.equals("") && !metric.equals("")){
-			float temp1 = Float.parseFloat(speed)/3.6f;
-			if (metric.equals("K")){
-				meterSpeed = temp1;
-			} else if (metric.equals("N")){
-				meterSpeed = temp1*1.852f;
-			}
-		}
-		return meterSpeed;
-	}
-	public long parseNmeaTime(String time){
-		long timestamp = 0;
-		SimpleDateFormat fmt = new SimpleDateFormat("HHmmss.SSS");
-		fmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-		try {
-			if (time != null && time != null){
-				long now = System.currentTimeMillis();
-				long today = now - (now %86400000L);
-				long temp1;
-				// sometime we don't have millisecond in the time string, so we have to reformat it 
-				temp1 = fmt.parse(String.format((Locale)null,"%010.3f", Double.parseDouble(time))).getTime();
-				long temp2 = today+temp1;
-				// if we're around midnight we could have a problem...
-				if (temp2 - now > 43200000L) {
-					timestamp  = temp2 - 86400000L;
-				} else if (now - temp2 > 43200000L){
-					timestamp  = temp2 + 86400000L;
-				} else {
-					timestamp  = temp2;
-				}
-			}
-		} catch (ParseException e) {
-			Log.e(LOG_TAG, "Error while parsing NMEA time", e);
-		}
-		return timestamp;
-	}
-	public byte computeChecksum(String s){
-		byte checksum = 0;
-		for (char c : s.toCharArray()){
-			checksum ^= (byte)c;			
-		}
-		return checksum;
-	}
-
-  private Double parseNmeaAlt(String s, String u){
-    if (s != null && u != null && !s.equals("") && !u.equals("")){
-      if (u.equals("M") || u.equals("m")){
-			  return Double.parseDouble(s);
-      } else if (u.equals("KM") || u.equals("km")){
-			  return Double.parseDouble(s) * 1000.0;
-      } else {
-			  return Double.parseDouble(s);
-      }
-		} else {
-			return Double.NaN;
-		}
-  }
-
-	private float parseNmeaFloat(String s){
-		if (s!=null &&!s.equals("")){
-			return Float.parseFloat(s);
-		} else {
-			return Float.NaN;
-		}
-	}
-
-	private int parseNmeaInt(String s){
-		if (s!=null &&!s.equals("")){
-			return Integer.parseInt(s);
-		} else {
-			return 0;
-		}
-	}
-
   /*
    * @return true if fixed.
    */
@@ -360,27 +252,27 @@ public class NmeaParser {
     //
     // Update GNSS object status
     if (quality != null && !quality.equals("") && !quality.equals("0") ){
-      long timestamp = parseNmeaTime(time);
+      long timestamp = parserUtil.parseNmeaTime(time);
       currentNmeaStatus.recvGGA(true, timestamp);
       gnssStatus.setFixTimestamp(timestamp);
-      gnssStatus.setQuality(parseNmeaInt(quality));
+      gnssStatus.setQuality(parserUtil.parseNmeaInt(quality));
       if (lat != null && !lat.equals("")){
-        gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
+        gnssStatus.setLatitude(parserUtil.parseNmeaLatitude(lat,latDir));
       }
       if (lon != null && !lon.equals("")){
-        gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
+        gnssStatus.setLongitude(parserUtil.parseNmeaLongitude(lon,lonDir));
       }
       if (hdop != null && !hdop.equals("")){
-        gnssStatus.setHDOP(parseNmeaFloat(hdop));
+        gnssStatus.setHDOP(parserUtil.parseNmeaFloat(hdop));
       }
       if (alt != null && !alt.equals("")){
-        gnssStatus.setAltitude(parseNmeaAlt(alt, altUnit));
+        gnssStatus.setAltitude(parserUtil.parseNmeaAlt(alt, altUnit));
       }
       if (nbSat != null && !nbSat.equals("")){
-        gnssStatus.setNbSat(parseNmeaInt(nbSat));
+        gnssStatus.setNbSat(parserUtil.parseNmeaInt(nbSat));
       }
       if (geoAlt != null & !geoAlt.equals("")){
-        gnssStatus.setHeight(parseNmeaFloat(geoAlt));
+        gnssStatus.setHeight(parserUtil.parseNmeaFloat(geoAlt));
       }
       return true;
     } else if(quality.equals("0")){
@@ -434,21 +326,21 @@ public class NmeaParser {
     // for NMEA 0183 version 3.00 active the Mode indicator field is added
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
     gnssStatus.setMode(status);
-    long timestamp = parseNmeaTime(time);
+    long timestamp = parserUtil.parseNmeaTime(time);
     if (status != null && !status.equals("") && status.equals("A") ){
       gnssStatus.setFixTimestamp(timestamp);
       currentNmeaStatus.recvRMC(true, timestamp);
       if (lat != null && !lat.equals("")){
-        gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
+        gnssStatus.setLatitude(parserUtil.parseNmeaLatitude(lat,latDir));
       }
       if (lon != null && !lon.equals("")){
-        gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
+        gnssStatus.setLongitude(parserUtil.parseNmeaLongitude(lon,lonDir));
       }
     if (speed != null && !speed.equals("")){
-        gnssStatus.setSpeed(parseNmeaSpeed(speed, "N"));
+        gnssStatus.setSpeed(parserUtil.parseNmeaSpeed(speed, "N"));
       }
       if (bearing != null && !bearing.equals("")){
-        gnssStatus.setAngle(parseNmeaFloat(bearing));
+        gnssStatus.setAngle(parserUtil.parseNmeaFloat(bearing));
       }
       return true;
     } else if(status.equals("V")){
@@ -475,6 +367,7 @@ public class NmeaParser {
      */
     // mode : A Auto selection of 2D or 3D fix / M = manual
     String mode = splitter.next();
+    gnssStatus.setMode(mode);
     // fix type  : 1 - no fix / 2 - 2D / 3 - 3D
     String fixType = splitter.next();
     if (! "1".equals(fixType)) {
@@ -553,7 +446,9 @@ public class NmeaParser {
         String azimuth = splitter.next();
         String snr = splitter.next();
         gnssSatellite sat = new gnssSatellite(Integer.parseInt(prn));
-        sat.setStatus(parseNmeaFloat(elevation),parseNmeaFloat(azimuth),parseNmeaFloat(snr));
+        sat.setStatus(parserUtil.parseNmeaFloat(elevation),
+                      parserUtil.parseNmeaFloat(azimuth),
+                      parserUtil.parseNmeaFloat(snr));
         gnssStatus.addSatellite(sat);
         activeSatellites.add(Integer.parseInt(prn));
         } else {
@@ -633,7 +528,7 @@ public class NmeaParser {
 
     // for NMEA 0183 version 3.00 active the Mode indicator field is 
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=
-    currentNmeaStatus.recvGLL(parseNmeaTime(time));
+    currentNmeaStatus.recvGLL(parserUtil.parseNmeaTime(time));
   }
 
   private boolean testFix(Location fix){
