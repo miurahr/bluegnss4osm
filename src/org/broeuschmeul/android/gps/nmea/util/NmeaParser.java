@@ -24,14 +24,11 @@ package org.broeuschmeul.android.gps.nmea.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
@@ -80,6 +77,8 @@ public class NmeaParser {
 	private ArrayList<Integer> activeSatellites = new ArrayList<Integer>();
 	private ArrayList<Integer> prnList = new ArrayList<Integer>();
 
+	private	SimpleStringSplitter splitter;
+
 	public NmeaParser(){
 		this(5f);
 	}
@@ -97,10 +96,13 @@ public class NmeaParser {
 		return this.gnssStatus;
 	}
 
+  public long getFirstFixTimestamp(){
+    return this.firstFixTimestamp;
+  }
+
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
-		long ern = SystemClock.elapsedRealtimeNanos();
 		Pattern xx = Pattern.compile("\\$([^*$]*)(?:\\*([0-9A-F][0-9A-F]))?\r\n");
 		Matcher m = xx.matcher(gpsSentence);
 		if (m.matches()){
@@ -108,45 +110,49 @@ public class NmeaParser {
 			String sentence = m.group(1);
 			String checkSum = m.group(2);
 			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",computeChecksum(sentence)));
-			SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
+			splitter = new TextUtils.SimpleStringSplitter(',');
 			splitter.setString(sentence);
 			String command = splitter.next();
-			if (command.equals("GPGGA")){
-        // common fix data
-				parseGGA(splitter);
-			} else if (command.equals("GPVTG")){
-				parseVTG(splitter);
-			} else if (command.equals("GPRMC")){
-        // gps only fix
-				parseRMC(splitter);
-      } else if (command.equals("GNRMC")){
-        // multi-gnss or glonass/qzss fix
-        parseRMC(splitter);
-			} else if (command.equals("GPGSA")){
-        // GPS active satellites
-				parseGSA(splitter);
-      } else if (command.equals("GNGSA")){
-        // gps/glonass active satellites
-        // two GNGSA will be generated.
-        parseGSA(splitter);
-      } else if (command.equals("QZGSA")){
-        // QZSS active satellites
-        parseGSA(splitter);
-			} else if (command.equals("GPGSV")){
-        // GPS satellites in View
-				parseGSV(splitter);
-      } else if (command.equals("GLGSV")){
-        // Glonass satellites in View
-        parseGSV(splitter);
-			} else if (command.equals("GPGLL")){
-        // GPS fix
-				parseGLL(splitter);
-      } else if (command.equals("GNGLL")){
-        // multi-GNSS fix or glonass/qzss fix
-        parseGLL(splitter);
-			} else {
-				Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
-			}
+      try {
+        if (command.equals("GPGGA")){
+          parseGGA();
+        } else if (command.equals("GPVTG")){
+          parseVTG();
+        } else if (command.equals("GPRMC")){
+          // gps only fix
+          Log.d(LOG_TAG, "RMC nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
+          parseRMC();
+        } else if (command.equals("GNRMC")){
+          // multi-gnss or glonass/qzss fix
+          parseRMC();
+        } else if (command.equals("GPGSA")){
+          // GPS active satellites
+          parseGSA();
+        } else if (command.equals("GNGSA")){
+          // gps/glonass active satellites
+          // two GNGSA will be generated.
+          parseGSA();
+        } else if (command.equals("QZGSA")){
+          // QZSS active satellites
+          parseGSA();
+        } else if (command.equals("GPGSV")){
+          // GPS satellites in View
+          parseGSV();
+        } else if (command.equals("GLGSV")){
+          // Glonass satellites in View
+          parseGSV();
+        } else if (command.equals("GPGLL")){
+          // GPS fix
+          parseGLL();
+        } else if (command.equals("GNGLL")){
+          // multi-GNSS fix or glonass/qzss fix
+          parseGLL();
+        } else {
+          Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
+        }
+      } catch (Exception e){
+        Log.d(LOG_TAG, "Caught exception on NmeaParser");
+      }
 		} else {
 			Log.v(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
 		}
@@ -238,6 +244,20 @@ public class NmeaParser {
 		return checksum;
 	}
 
+  private Double parseNmeaAlt(String s, String u){
+    if (s != null && u != null && !s.equals("") && !u.equals("")){
+      if (u.equals("M") || u.equals("m")){
+			  return Double.parseDouble(s);
+      } else if (u.equals("KM") || u.equals("km")){
+			  return Double.parseDouble(s) * 1000.0;
+      } else {
+			  return Double.parseDouble(s);
+      }
+		} else {
+			return Double.NaN;
+		}
+  }
+
 	private float parseNmeaFloat(String s){
 		if (s!=null &&!s.equals("")){
 			return Float.parseFloat(s);
@@ -254,7 +274,7 @@ public class NmeaParser {
 		}
 	}
 
-	private void parseGGA(SimpleStringSplitter splitter){
+	private void parseGGA(){
     /* $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
       
       Where:
@@ -335,8 +355,8 @@ public class NmeaParser {
         fixTimestamp = parseNmeaTime(time);
         fix.setTime(fixTimestamp);
       }
-      fix.setElapsedRealtimeNanos(ern);
-      gnssStatus.setQuality(Integer.parseInt(quality));
+      fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+      gnssStatus.setQuality(parseNmeaInt(quality));
       if (lat != null && !lat.equals("")){
         gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
         fix.setLatitude(parseNmeaLatitude(lat,latDir));
@@ -346,21 +366,21 @@ public class NmeaParser {
         fix.setLongitude(parseNmeaLongitude(lon,lonDir));
       }
       if (hdop != null && !hdop.equals("")){
-        gnssStatus.setHDOP(Float.parseFloat(hdop));
-        fix.setAccuracy(Float.parseFloat(hdop)*precision);
+        gnssStatus.setHDOP(parseNmeaFloat(hdop));
+        fix.setAccuracy(parseNmeaFloat(hdop)*precision);
       }
       if (alt != null && !alt.equals("")){
-        gnssStatus.setAltitude(Double.parseDouble(alt));
-        fix.setAltitude(Double.parseDouble(alt));
+        gnssStatus.setAltitude(parseNmeaAlt(alt, altUnit));
+        fix.setAltitude(parseNmeaAlt(alt, altUnit));
       }
       if (nbSat != null && !nbSat.equals("")){
         Bundle extras = new Bundle();
-        extras.putInt("satellites", Integer.parseInt(nbSat));
-        gnssStatus.setNbSat(Integer.parseInt(nbSat));
+        extras.putInt("satellites", parseNmeaInt(nbSat));
+        gnssStatus.setNbSat(parseNmeaInt(nbSat));
         fix.setExtras(extras);
       }
       if (geoAlt != null & !geoAlt.equals("")){
-        gnssStatus.setHeight(Float.parseFloat(geoAlt));
+        gnssStatus.setHeight(parseNmeaFloat(geoAlt));
       }
       hasGGA = true;
       mockProvider.notifyFix(fix);
@@ -374,10 +394,12 @@ public class NmeaParser {
         long updateTime = parseNmeaTime(time);
         mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
       }
+    } else {
+      Log.e(LOG_TAG, "Unknown status of GGA quality");
     }
 	}
 
-	private void parseRMC(SimpleStringSplitter splitter){
+	private void parseRMC(){
     /* $GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A
 
        Where:
@@ -437,7 +459,7 @@ public class NmeaParser {
         fix.setTime(fixTimestamp);
         gnssStatus.setFixTimestamp(fixTimestamp);
       } 
-      fix.setElapsedRealtimeNanos(ern);
+      fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
       if (lat != null && !lat.equals("")){
         gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
         fix.setLatitude(parseNmeaLatitude(lat,latDir));
@@ -451,13 +473,15 @@ public class NmeaParser {
         fix.setSpeed(parseNmeaSpeed(speed, "N"));
       }
       if (bearing != null && !bearing.equals("")){
-        gnssStatus.setAngle(Float.parseFloat(bearing));
-        fix.setBearing(Float.parseFloat(bearing));
+        gnssStatus.setAngle(parseNmeaFloat(bearing));
+        fix.setBearing(parseNmeaFloat(bearing));
       }
       hasRMC = true;
       if (! hasGGA) {
-        mockProvider.notifyFix(fix);
-        fix = null;
+        if (testFix(fix)){
+          mockProvider.notifyFix(fix);
+          fix = null;
+        }
       }
     } else if(status.equals("V")){
       if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
@@ -471,7 +495,7 @@ public class NmeaParser {
     }
 	}
 
-	private void parseGSA(SimpleStringSplitter splitter){
+	private void parseGSA(){
     /*  $GPGSA,A,3,04,05,,09,12,,,24,,,,,2.5,1.3,2.1*39
 
       Where:
@@ -525,7 +549,7 @@ public class NmeaParser {
     }
 	}
 
-	private void parseGSV(SimpleStringSplitter splitter){
+	private void parseGSV(){
     /*   $GPGSV,2,1,08,01,40,083,46,02,17,308,41,12,07,344,39,14,22,228,45*75
         Where:
             GSV          Satellites in view
@@ -579,7 +603,7 @@ public class NmeaParser {
     }
   }
 
-	private void parseVTG(SimpleStringSplitter splitter){
+	private void parseVTG(){
     /*  $GPVTG,054.7,T,034.4,M,005.5,N,010.2,K*48
       
       where:
@@ -610,7 +634,7 @@ public class NmeaParser {
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
 	}
 
-  private void parseGLL(SimpleStringSplitter splitte){
+  private void parseGLL(){
     /*  $GPGLL,4916.45,N,12311.12,W,225444,A,*1D
       Where:
 			       GLL          Geographic position, Latitude and Longi
@@ -636,4 +660,7 @@ public class NmeaParser {
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=
   }
 
+  private boolean testFix(Location fix){
+    return (fix.hasAccuracy() && fix.hasAltitude() && fix.hasBearing() && fix.hasSpeed());
+  }
 }
