@@ -37,7 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.broeuschmeul.android.gps.bluetooth.provider.R;
+import org.da_cha.android.gps.bluetooth.provider.R;
 import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
 import org.da_cha.android.gps.sirf.util.SirfUtils;
@@ -473,7 +473,7 @@ public class BluetoothGnssManager {
       notificationManager.notify(R.string.service_closed_because_connection_problem_notification_title, serviceStoppedNotification);
     }
     if (enabled){
-          Log.d(LOG_TAG, "disabling Bluetooth GPS manager");
+      Log.d(LOG_TAG, "disabling Bluetooth GPS/GNSS manager");
       enabled = false;
       connectionAndReadingPool.shutdown();
       Runnable closeAndShutdown = new Runnable() {        
@@ -491,7 +491,7 @@ public class BluetoothGnssManager {
             }
             if ((gpsSocket != null) && ((connectedGps == null) || (connectedGps.socket != gpsSocket))){
               try {
-                Log.d(LOG_TAG, "closing Bluetooth GPS socket");
+                Log.d(LOG_TAG, "closing Bluetooth GPS/GNSS socket");
                 gpsSocket.close();
               } catch (IOException closeException) {
                 Log.e(LOG_TAG, "error while closing socket", closeException);

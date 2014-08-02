@@ -23,7 +23,7 @@ package org.da_cha.android.gps.bluetooth.provider;
 import java.util.Iterator;
 import java.text.DecimalFormat;
 
-import org.broeuschmeul.android.gps.bluetooth.provider.R;
+import org.da_cha.android.gps.bluetooth.provider.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;

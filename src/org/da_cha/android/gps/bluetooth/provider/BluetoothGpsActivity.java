@@ -23,7 +23,7 @@ package org.da_cha.android.gps.bluetooth.provider;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.broeuschmeul.android.gps.bluetooth.provider.R;
+import org.da_cha.android.gps.bluetooth.provider.R;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;

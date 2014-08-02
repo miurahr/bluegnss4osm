@@ -55,7 +55,7 @@ import android.util.Config;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.broeuschmeul.android.gps.bluetooth.provider.R;
+import org.da_cha.android.gps.bluetooth.provider.R;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
 
 /**
