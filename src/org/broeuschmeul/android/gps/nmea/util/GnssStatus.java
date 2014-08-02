@@ -25,7 +25,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-public class gnssStatus {
+import android.os.Bundle;
+import android.os.SystemClock;
+import android.location.Location;
+import android.location.LocationManager;
+
+public class GnssStatus {
 
 	private long fixTimestamp;
   private long startTimestamp;
@@ -33,6 +38,7 @@ public class gnssStatus {
   private float PDOP;
   private float HDOP;
   private float VDOP;
+  private float precision;
   private double latitude;
   private double longitude;
   private double altitude;
@@ -60,11 +66,12 @@ public class gnssStatus {
   // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
   private String mode;
 
-  private HashMap<Integer, gnssSatellite> gnssSatellitesList = new HashMap<Integer, gnssSatellite>();
+  private HashMap<Integer, GnssSatellite> gnssSatellitesList = new HashMap<Integer, GnssSatellite>();
+  private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
   // satallite list
   // accessor
-  public void addSatellite(gnssSatellite sat){
+  public void addSatellite(GnssSatellite sat){
     gnssSatellitesList.put(sat.getRpn(), sat);
   }
   // clear list at all
@@ -83,21 +90,30 @@ public class gnssStatus {
     }
   }
   // clear sat data, return cleared satellite
-  public gnssSatellite removeSatellite(int rpn){
+  public GnssSatellite removeSatellite(int rpn){
     return gnssSatellitesList.remove(rpn);
   }
-  public gnssSatellite getSatellite(int rpn){
+  public GnssSatellite getSatellite(int rpn){
     return gnssSatellitesList.get(rpn);
   }
 
-  public void setTrackedSatellites(ArrayList<Integer> rpnList){
-    for (Integer rpn  : gnssSatellitesList.keySet()){
-      if (rpnList.contains(rpn)){
-        gnssSatellitesList.get(rpn).usedinFix();
-      } else {
-        gnssSatellitesList.get(rpn).unusedinFix();
+  public static final int SAT_LIST_OVERRIDE = 1;
+  public static final int SAT_LIST_APPEND = 2;
+
+  public void setTrackedSatellites(ArrayList<Integer> rpnList, int mode){
+    if (mode == SAT_LIST_OVERRIDE){
+      satellitesPrnListInFix = new ArrayList<Integer>(rpnList);
+    } else if (mode == SAT_LIST_APPEND){
+      for (Integer rpn : rpnList){
+        satellitesPrnListInFix.add(rpn);
       }
+    } else {
+      // unexcepted call.
     }
+  }
+
+  public void setTrackedSatellites(ArrayList<Integer> rpnList){
+    setTrackedSatellites(rpnList, SAT_LIST_OVERRIDE);
   }
   // timestamps
   public void clearTTFF(){
@@ -130,6 +146,7 @@ public class gnssStatus {
     clearSatellitesList();
     startTimestamp = 0;
 	  fixTimestamp = 0;
+    precision = 10f;
     PDOP = 0f;
     HDOP = 0f;
     VDOP = 0f;
@@ -145,6 +162,24 @@ public class gnssStatus {
     fixMode = 0;
     quality = 0;
     mode = "N";
+  }
+
+  /*
+   * @return Location fix
+   */
+  public Location getFixLocation(){
+    Location fix = new Location(LocationManager.GPS_PROVIDER);
+    fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+    fix.setLatitude(this.latitude);
+    fix.setLongitude(this.longitude);
+    fix.setAccuracy(this.HDOP*this.precision);
+    fix.setTime(this.fixTimestamp);
+    fix.setAltitude(this.altitude);
+    Bundle extras = new Bundle();
+    extras.putInt("satellites", this.nbsat);
+    fix.setExtras(extras);
+
+    return fix;
   }
   // accessors
   // 
@@ -166,7 +201,13 @@ public class gnssStatus {
   }
   public void setAltitude(double alt){ this.altitude = alt;
   }
-  // DOP
+  // DOP/precision
+  public float getPrecision(){
+    return this.precision;
+  }
+  public void setPrecision(float p){
+    this.precision = p;
+  }
   public double getPDOP(){
     return this.PDOP;
   }

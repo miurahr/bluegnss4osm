@@ -195,7 +195,7 @@ public class BlueetoothGpsManager {
 		public void close(){
 			ready = false;
 			try {
-	        	Log.d(LOG_TAG, "closing Bluetooth GPS output sream");
+	        	Log.d(LOG_TAG, "closing Bluetooth GPS output stream");
 				in.close();
 			} catch (IOException e) {
 				Log.e(LOG_TAG, "error while closing GPS NMEA output stream", e);

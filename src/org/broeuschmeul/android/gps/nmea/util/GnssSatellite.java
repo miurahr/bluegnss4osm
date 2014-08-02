@@ -22,17 +22,15 @@ package org.broeuschmeul.android.gps.nmea.util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class gnssSatellite {
+public class GnssSatellite {
   public float azimuth;
   public float elevation;
   public float snr;
-  public boolean usedinFix = false;
-  public boolean tracked = false;
 
   // cannot change rpn
   private int rpn;
 
-  public gnssSatellite(int rpn){
+  public GnssSatellite(int rpn){
     this.rpn = rpn;
   }
 
@@ -54,10 +52,10 @@ public class gnssSatellite {
     if (o == this){
       return true;
     }
-    if (! (o instanceof gnssSatellite)) {
+    if (! (o instanceof GnssSatellite)) {
       return false;
     }
-    return (((gnssSatellite)o).getRpn() == this.rpn);
+    return (((GnssSatellite)o).getRpn() == this.rpn);
   }
 
   public void setStatus(float azimuth, float elevation, float snr){
@@ -66,11 +64,4 @@ public class gnssSatellite {
     this.snr = snr;
   }
 
-  public void usedinFix(){
-    this.usedinFix = true;
-  }
-
-  public void unusedinFix(){
-    this.usedinFix = false;
-  }
 }
