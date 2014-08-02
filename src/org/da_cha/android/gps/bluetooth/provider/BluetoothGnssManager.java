@@ -19,7 +19,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.broeuschmeul.android.gps.bluetooth.provider;
+package org.da_cha.android.gps.bluetooth.provider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,9 +37,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.broeuschmeul.android.gps.nmea.util.NmeaParser;
-import org.broeuschmeul.android.gps.sirf.util.SirfUtils;
-import org.broeuschmeul.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
+import org.broeuschmeul.android.gps.bluetooth.provider.R;
+import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
+import org.da_cha.android.gps.nmea.util.NmeaParser;
+import org.da_cha.android.gps.sirf.util.SirfUtils;
 
 import android.app.Notification;
 import android.app.NotificationManager;

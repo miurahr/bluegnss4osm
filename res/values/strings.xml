@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 
-	Copyright (C) 2010, 2011, 2012, 2013 Herbert von Broeuschmeul
-	Copyright (C) 2010, 2011, 2012, 2013 BluetoothGPS4Droid Project
-	  
-	This file is part of BluetoothGPS4Droid.
-	
-	BluetoothGPS4Droid is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-	
-	BluetoothGPS4Droid is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with BluetoothGPS4Droid. If not, see : http://www.gnu.org/licenses/.
+<!--
+  Copyright 2014, Hiroshi Miura <miurahr@linux.com>
+  Copyright 2014, Bluetooth GNSS for OSM Project
+
+
+  ** ORIGINAL COPYRIGHT NOTIFICATION **
+  Copyright (C) 2010, 2011, 2012, 2013 Herbert von Broeuschmeul
+  Copyright (C) 2010, 2011, 2012, 2013 BluetoothGPS4Droid Project
+
+  This file is part of BluetoothGPS4Droid.
+
+  BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  BluetoothGPS4Droid is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with BluetoothGPS4Droid. If not, see : http://www.gnu.org/licenses/.
 -->
 <resources>
-    <string name="app_name">BlueGps</string>
+    <string name="app_name">BlueGnss</string>
 
     <string name="switch_main">Main</string>
     <string name="switch_preference">Preference</string>
@@ -43,20 +48,20 @@
     <string name="main_speed">N.A.</string>
     <string name="main_dcop">N.A.</string>
 
-    <string name="pref_start_gps_title">Start/Stop GPS</string>
-    <string name="pref_start_gps_summary_off">Bluetooth GPS is off</string>
-    <string name="pref_start_gps_summary_on">Bluetooth GPS is on</string>
+    <string name="pref_start_gps_title">Start/Stop GPS/GNSS</string>
+    <string name="pref_start_gps_summary_off">Bluetooth GPS/GNSS is off</string>
+    <string name="pref_start_gps_summary_on">Bluetooth GPS/GNSS is on</string>
     <string name="pref_start_gps_params_title">GPS Options (SiRF)</string>
     <string name="pref_gps_location_provider_title">Location provider options</string>
-    <string name="pref_gps_location_provider_summary">Bluetooth GPS will replace internal GPS</string>
+    <string name="pref_gps_location_provider_summary">Bluetooth GPS/GNSS receiver will replace internal GPS</string>
     <string name="pref_replace_std_gps_title">Replace internal GPS</string>
-    <string name="pref_replace_std_gps_summary_on">Bluetooth GPS will replace internal GPS</string>
-    <string name="pref_replace_std_gps_summary_off">Bluetooth GPS will use a new location provider</string>
+    <string name="pref_replace_std_gps_summary_on">Bluetooth GPS/GNSS receiver will replace internal GPS</string>
+    <string name="pref_replace_std_gps_summary_off">Bluetooth GPS/GNSS receiver will use a new location provider</string>
     <string name="pref_force_enable_provider_title">Auto-enable location provider</string>
     <string name="pref_force_enable_provider_summary_on">Auto-enable the location provider, even if it has been disabled</string>
     <string name="pref_force_enable_provider_summary_off">Auto-enable the location provider only if it doesn\'t exist yet</string>
     <string name="pref_mock_gps_name_title">Mock location provider name</string>
-    <string name="pref_mock_gps_name_summary">Bluetooth GPS name: %s</string>
+    <string name="pref_mock_gps_name_summary">Bluetooth GPS/GNSS name: %s</string>
     <string name="pref_connection_retries_title">Connection retry number</string>
     <string name="pref_connection_retries_summary">Number of attempts before exiting: %s</string>
     <string name="pref_recording_title">Enable/Disable NMEA log</string>
@@ -67,10 +72,10 @@
     <string name="pref_trackfile_prefix_summary">Select the prefix for the track files</string>
     <string name="pref_trackfile_directory_title">Trackfiles directory</string>
     <string name="pref_trackfile_directory_summary">Select the directory for the track files</string>
-    <string name="pref_bluetooth_device_title">Choose Bluetooth GPS</string>
-    <string name="pref_bluetooth_device_summary">"Current device: %s"</string>    
+    <string name="pref_bluetooth_device_title">Choose Bluetooth GPS/GNSS receiver</string>
+    <string name="pref_bluetooth_device_summary">"Current device: %s"</string>
     <string name="pref_about_title">About</string>
-    <string name="pref_about_summary"></string>    
+    <string name="pref_about_summary"></string>
 
     <string name="pref_sirf_gps_title">SiRF GPS</string>
     <string name="pref_sirf_gps_summary_off">"Don't use SiRF Options"</string>
@@ -108,41 +113,43 @@
     <string name="pref_enable_static_navigation_summary_off">Static Navigation disabled</string>
     <string name="pref_enable_static_navigation_summary_on">Static Navigation enabled</string>
 
-    <string name="msg_gps_provider_started">Bluetooth GPS… started</string>
-    <string name="msg_gps_provider_stopped">Bluetooth GPS… stopped</string>
-    <string name="msg_gps_provider_already_started">Bluetooth GPS… is already on</string>
+    <string name="msg_gps_provider_started">Bluetooth GPS/GNSS… started</string>
+    <string name="msg_gps_provider_stopped">Bluetooth GPS/GNSS… stopped</string>
+    <string name="msg_gps_provider_already_started">Bluetooth GPS/GNSS… is already on</string>
     <string name="msg_gps_provider_stopped_by_problem">"Cannot start: %s"</string>
     <string name="msg_two_many_connection_problems">Too many connection problems</string>
-    <string name="msg_gps_provider_disabled">GPS is disabled</string>
+    <string name="msg_gps_provider_disabled">GPS/GNSS is disabled</string>
     <string name="msg_bluetooth_unsupported">Bluetooth is not supported</string>
     <string name="msg_bluetooth_disabled">Bluetooth is disabled</string>
     <string name="msg_mock_location_disabled">Mock locations disabled</string>
-    <string name="msg_bluetooth_gps_unavaible">Cannot connect to bluetooth GPS</string>
-    <string name="msg_nmea_recording_started">GPS NMEA recording… started</string>
-    <string name="msg_nmea_recording_stopped">GPS NMEA recording… stopped</string>
-    <string name="msg_nmea_recording_already_started">GPS track recording… is already on</string>
-    <string name="foreground_service_started_notification_title">BlueGps</string>
-    <string name="foreground_gps_provider_started_notification">BlueGps service started</string>
-    <string name="foreground_nmea_recording_started_notification">BlueGps NMEA recording service started</string>
-    <string name="connection_problem_notification_title">BlueGps: connection problem</string>
+    <string name="msg_bluetooth_gps_unavaible">Cannot connect to bluetooth GPS/GNSS</string>
+    <string name="msg_nmea_recording_started">GPS/GNSS NMEA recording… started</string>
+    <string name="msg_nmea_recording_stopped">GPS/GNSS NMEA recording… stopped</string>
+    <string name="msg_nmea_recording_already_started">GPS/GNSS track recording… is already on</string>
+    <string name="foreground_service_started_notification_title">BlueGnss</string>
+    <string name="foreground_gps_provider_started_notification">BlueGnss service started</string>
+    <string name="foreground_nmea_recording_started_notification">BlueGnss NMEA recording service started</string>
+    <string name="connection_problem_notification_title">BlueGnss: connection problem</string>
     <plurals name="connection_problem_notification">
-    	<item quantity="one">Will retry one more time before closing</item>
-    	<item quantity="other">Will retry %d more times before closing</item>
+      <item quantity="one">Will retry one more time before closing</item>
+      <item quantity="other">Will retry %d more times before closing</item>
     </plurals>
     <string name="service_closed_because_connection_problem_notification_title">BlueGps stopped</string>
     <string name="service_closed_because_connection_problem_notification">"Reason: %s"</string>
-    
+
     <string name="about_title">About</string>
-    <string name="about_version">BluetoothGPS4Droid version</string>
-    <string name="about_copyright_1">Copyright (C) 2010-2013 Herbert von Broeuschmeul</string>
-    <string name="about_copyright_2">Copyright (C) 2010-2013 BluetoothGPS4Droid Project</string>
-    <string name="about_app_desc">Bluetooth GPS for Android is an application 
-    	for using an external bluetooth GPS on Android devices.
+    <string name="about_version">BluetoothGNSS4OSM version</string>
+    <string name="about_copyright_1">Copyright 2014, Hiroshi Miura</string>
+    <string name="about_copyright_2">Copyright 2014, Bluetooth GNSS for OSM Project</string>
+    <string name="about_copyright_3">Copyright (C) 2010-2013 Herbert von Broeuschmeul</string>
+    <string name="about_copyright_4">Copyright (C) 2010-2013 BluetoothGPS4Droid Project</string>
+    <string name="about_app_desc">Bluetooth GNSS for OSM is an application
+      for using an external bluetooth GPS/GNSS on Android devices for OSM Mappers.
     </string>
-    <string name="about_license">It is open source software 
-    	distributed free of charge under the terms of the <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html"><b>GNU General Public License</b></a>.
+    <string name="about_license">It is free software
+      distributed under the terms of the <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html"><b>GNU General Public License v3</b></a>.
     </string>
-    <string name="about_sources">The source code is available from Git repository on the project website: 
-		http://sourceforge.net/p/bluegps4droid
+    <string name="about_sources">The source code is available from Git repository on the project website:
+      https://github.com/miurahr/bluegnss4osm
     </string>
 </resources>

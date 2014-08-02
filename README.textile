@@ -1,17 +1,20 @@
-h1. Bluetooth GPS connector for Android
+h1. Bluetooth GPS/GNSS connector on Android for OpenStreetMap Mappers
 
 h2. Description
 
-Connect external Bluetooth GPS reciever to your Android device.
-You can use an external GPS reciever as same as internal one.
+You can use an external GPS/GNSS reciever as same as internal one.
+Connect external Bluetooth Global Navigation Satellite System (GNSS)
+receivers, using the GPS, GLONASS, Galileo, Beidou or QZSS system,
+to your Android device.
 
 h2. License
 
-BlueGPS4Droid is licensed by GPLv3 and later
+BlueGNSS4OSM is licensed by GPLv3 and later
 
 h2. Copyright Notices
 
 Copyright 2014 Hiroshi Miura <miurahr@linux.com>
+Copyright 2014 Bluetooth GNSS for OSM Mappers Project
 Copyright 2010-2013, Herbert von Broeuschmeul
 Copyright 2010-2013, BluetoothGPS4Droid Project
 
