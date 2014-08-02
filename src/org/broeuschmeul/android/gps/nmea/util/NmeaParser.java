@@ -33,8 +33,6 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
@@ -55,15 +53,9 @@ public class NmeaParser {
 	 */
 	private static final String LOG_TAG = "BlueGPS";
 
-	private String fixTime = null;
-	private long fixTimestamp;
 	private long firstFixTimestamp;
-	private boolean fixed = false;
-
-	private boolean hasGGA = false;
-	private boolean hasRMC = false;
 	private float precision = 10f;
-	private Location fix = null;
+  private NmeaState currentNmeaStatus = new NmeaState();
 
 	private final int GPS_NONE      = 0;
 	private final int GPS_FIXED     = 3;
@@ -73,7 +65,7 @@ public class NmeaParser {
 
 	private BluetoothGpsMockProvider mockProvider;
 
-	private gnssStatus gnssStatus;
+	private GnssStatus gnssStatus;
 	private ArrayList<Integer> activeSatellites = new ArrayList<Integer>();
 	private ArrayList<Integer> prnList = new ArrayList<Integer>();
 
@@ -85,14 +77,14 @@ public class NmeaParser {
 
 	public NmeaParser(float precision){
 		this.precision = precision;
-		this.gnssStatus = new gnssStatus();
+		this.gnssStatus = new GnssStatus();
 	}
 
 	public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
 		this.mockProvider = mockProvider;
 	}
 
-	public gnssStatus getGnssStatus(){
+	public GnssStatus getGnssStatus(){
 		return this.gnssStatus;
 	}
 
@@ -115,16 +107,44 @@ public class NmeaParser {
 			String command = splitter.next();
       try {
         if (command.equals("GPGGA")){
-          parseGGA();
+          if (parseGGA()){ // when fixed
+            if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
+              long updateTime = currentNmeaStatus.getTimestamp(); 
+              firstFixTimestamp = updateTime;
+              mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+              if (!gpsFixNotified) {
+                currentGpsStatus = GPS_FIXED;
+              }
+            }
+          } else {
+            if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
+              long updateTime = currentNmeaStatus.getTimestamp(); 
+              mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+            }
+          } 
         } else if (command.equals("GPVTG")){
           parseVTG();
-        } else if (command.equals("GPRMC")){
-          // gps only fix
-          Log.d(LOG_TAG, "RMC nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
-          parseRMC();
-        } else if (command.equals("GNRMC")){
-          // multi-gnss or glonass/qzss fix
-          parseRMC();
+        } else if (command.equals("GPRMC") || command.equals("GNRMC")){
+          if (parseRMC()) {
+            if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
+              long updateTime = currentNmeaStatus.getTimestamp(); 
+              mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+              firstFixTimestamp = updateTime;
+              if (!gpsFixNotified){
+                currentGpsStatus = GPS_FIXED;
+              }
+            }
+            Location fix = gnssStatus.getFixLocation();
+            if (testFix(fix)){
+              mockProvider.notifyFix(fix);
+              gpsFixNotified = true;
+            }
+          } else {
+            if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
+              long updateTime = currentNmeaStatus.getTimestamp(); 
+              mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+            }
+          }
         } else if (command.equals("GPGSA")){
           // GPS active satellites
           parseGSA();
@@ -274,7 +294,10 @@ public class NmeaParser {
 		}
 	}
 
-	private void parseGGA(){
+  /*
+   * @return true if fixed.
+   */
+	private boolean parseGGA(){ 
     /* $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
       
       Where:
@@ -337,69 +360,41 @@ public class NmeaParser {
     //
     // Update GNSS object status
     if (quality != null && !quality.equals("") && !quality.equals("0") ){
-      if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-        long updateTime = parseNmeaTime(time);
-        fixTime = null;
-        hasGGA = false;
-        hasRMC = false;
-        fix = null;
-        mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-        firstFixTimestamp = updateTime;
-        if (!gpsFixNotified) {
-          currentGpsStatus = GPS_FIXED;
-        }
-      }
-      if (! time.equals(fixTime)){
-        fix = new Location(LocationManager.GPS_PROVIDER);
-        fixTime = time;
-        fixTimestamp = parseNmeaTime(time);
-        fix.setTime(fixTimestamp);
-      }
-      fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+      long timestamp = parseNmeaTime(time);
+      currentNmeaStatus.recvGGA(true, timestamp);
+      gnssStatus.setFixTimestamp(timestamp);
       gnssStatus.setQuality(parseNmeaInt(quality));
       if (lat != null && !lat.equals("")){
         gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
-        fix.setLatitude(parseNmeaLatitude(lat,latDir));
       }
       if (lon != null && !lon.equals("")){
         gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
-        fix.setLongitude(parseNmeaLongitude(lon,lonDir));
       }
       if (hdop != null && !hdop.equals("")){
         gnssStatus.setHDOP(parseNmeaFloat(hdop));
-        fix.setAccuracy(parseNmeaFloat(hdop)*precision);
       }
       if (alt != null && !alt.equals("")){
         gnssStatus.setAltitude(parseNmeaAlt(alt, altUnit));
-        fix.setAltitude(parseNmeaAlt(alt, altUnit));
       }
       if (nbSat != null && !nbSat.equals("")){
-        Bundle extras = new Bundle();
-        extras.putInt("satellites", parseNmeaInt(nbSat));
         gnssStatus.setNbSat(parseNmeaInt(nbSat));
-        fix.setExtras(extras);
       }
       if (geoAlt != null & !geoAlt.equals("")){
         gnssStatus.setHeight(parseNmeaFloat(geoAlt));
       }
-      hasGGA = true;
-      mockProvider.notifyFix(fix);
-      fix = null;
+      return true;
     } else if(quality.equals("0")){
-      if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-        fixTime = null;
-        hasGGA = false;
-        hasRMC = false;
-        fix = null;
-        long updateTime = parseNmeaTime(time);
-        mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
-      }
+      return false;
     } else {
       Log.e(LOG_TAG, "Unknown status of GGA quality");
+      return false;
     }
 	}
 
-	private void parseRMC(){
+  /*
+   * @return boolean: true when fixed
+   */
+	private boolean parseRMC(){
     /* $GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A
 
        Where:
@@ -439,60 +434,28 @@ public class NmeaParser {
     // for NMEA 0183 version 3.00 active the Mode indicator field is added
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
     gnssStatus.setMode(status);
+    long timestamp = parseNmeaTime(time);
     if (status != null && !status.equals("") && status.equals("A") ){
-      if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-        long updateTime = parseNmeaTime(time);
-        fixTime = null;
-        hasGGA = false;
-        hasRMC = false;
-        fix = null;
-        mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-        firstFixTimestamp = updateTime;
-        if (!gpsFixNotified){
-          currentGpsStatus = GPS_FIXED;
-        }
-      }
-      if (! time.equals(fixTime)){
-        fix = new Location(LocationManager.GPS_PROVIDER);
-        fixTime = time;
-        fixTimestamp = parseNmeaTime(time);
-        fix.setTime(fixTimestamp);
-        gnssStatus.setFixTimestamp(fixTimestamp);
-      } 
-      fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+      gnssStatus.setFixTimestamp(timestamp);
+      currentNmeaStatus.recvRMC(true, timestamp);
       if (lat != null && !lat.equals("")){
         gnssStatus.setLatitude(parseNmeaLatitude(lat,latDir));
-        fix.setLatitude(parseNmeaLatitude(lat,latDir));
       }
       if (lon != null && !lon.equals("")){
         gnssStatus.setLongitude(parseNmeaLongitude(lon,lonDir));
-        fix.setLongitude(parseNmeaLongitude(lon,lonDir));
       }
     if (speed != null && !speed.equals("")){
         gnssStatus.setSpeed(parseNmeaSpeed(speed, "N"));
-        fix.setSpeed(parseNmeaSpeed(speed, "N"));
       }
       if (bearing != null && !bearing.equals("")){
         gnssStatus.setAngle(parseNmeaFloat(bearing));
-        fix.setBearing(parseNmeaFloat(bearing));
       }
-      hasRMC = true;
-      if (! hasGGA) {
-        if (testFix(fix)){
-          mockProvider.notifyFix(fix);
-          fix = null;
-        }
-      }
+      return true;
     } else if(status.equals("V")){
-      if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-        long updateTime = parseNmeaTime(time);
-        fixTime = null;
-        hasGGA = false;
-        hasRMC = false;
-        fix = null;
-        mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
-      }
+      currentNmeaStatus.recvRMC(false, timestamp);
+      return false;
     }
+    return false;
 	}
 
 	private void parseGSA(){
@@ -601,6 +564,7 @@ public class NmeaParser {
       currentGpsStatus = GPS_NOTIFY;
       gnssStatus.clearSatellitesList(activeSatellites);
     }
+    currentNmeaStatus.recvGSV();
   }
 
 	private void parseVTG(){
@@ -615,23 +579,24 @@ public class NmeaParser {
               *48          Checksum
      */
     // Track angle in degrees True
-    String bearing = splitter.next();
+    //String bearing = splitter.next();
     // T
-    splitter.next();
+    //splitter.next();
     // Magnetic track made good
-    String magn = splitter.next();
+    //String magn = splitter.next();
     // M
-    splitter.next();
+    //splitter.next();
     // Speed over the ground in knots		 
-    String speedKnots = splitter.next();
+    //String speedKnots = splitter.next();
     // N
-    splitter.next();
-    // Speed over the ground in Kilometers per hour		 
-    String speedKm = splitter.next();
+    //splitter.next();
+    // Speed over the ground in Kilometers per hour
+    //String speedKm = splitter.next();
     // K
-    splitter.next();
+    //splitter.next();
     // for NMEA 0183 version 3.00 active the Mode indicator field is added
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
+    currentNmeaStatus.recvVTG();
 	}
 
   private void parseGLL(){
@@ -645,19 +610,30 @@ public class NmeaParser {
 			                     *iD          checksum data
 	  */
     // latitude ddmm.M
-    String lat = splitter.next();
+    //String lat = splitter.next();
+    splitter.next();
+    
     // direction (N/S)
-    String latDir = splitter.next();
+    //String latDir = splitter.next();
+    splitter.next();
+
     // longitude dddmm.M
-    String lon = splitter.next();
+    //String lon = splitter.next();
+    splitter.next();
+
     // direction (E/W)
-    String lonDir = splitter.next();
+    //String lonDir = splitter.next();
+    splitter.next();
+
     // UTC time of fix HHmmss.S
     String time = splitter.next();
+
     // fix status (A/V)
-    String status = splitter.next();
+    //String status = splitter.next();
+
     // for NMEA 0183 version 3.00 active the Mode indicator field is 
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=
+    currentNmeaStatus.recvGLL(parseNmeaTime(time));
   }
 
   private boolean testFix(Location fix){

@@ -25,7 +25,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-public class gnssStatus {
+import android.os.Bundle;
+import android.os.SystemClock;
+import android.location.Location;
+import android.location.LocationManager;
+
+public class GnssStatus {
 
 	private long fixTimestamp;
   private long startTimestamp;
@@ -33,6 +38,7 @@ public class gnssStatus {
   private float PDOP;
   private float HDOP;
   private float VDOP;
+  private float precision;
   private double latitude;
   private double longitude;
   private double altitude;
@@ -140,6 +146,7 @@ public class gnssStatus {
     clearSatellitesList();
     startTimestamp = 0;
 	  fixTimestamp = 0;
+    precision = 10f;
     PDOP = 0f;
     HDOP = 0f;
     VDOP = 0f;
@@ -155,6 +162,23 @@ public class gnssStatus {
     fixMode = 0;
     quality = 0;
     mode = "N";
+  }
+
+  /*
+   * @return Location fix
+   */
+  public Location getFixLocation(){
+    Location fix = new Location(LocationManager.GPS_PROVIDER);
+    fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+    fix.setLatitude(this.latitude);
+    fix.setLongitude(this.longitude);
+    fix.setAccuracy(this.HDOP*this.precision);
+    fix.setAltitude(this.altitude);
+    Bundle extras = new Bundle();
+    extras.putInt("satellites", this.nbsat);
+    fix.setExtras(extras);
+
+    return fix;
   }
   // accessors
   // 
@@ -176,7 +200,13 @@ public class gnssStatus {
   }
   public void setAltitude(double alt){ this.altitude = alt;
   }
-  // DOP
+  // DOP/precision
+  public float getPrecision(){
+    return this.precision;
+  }
+  public void setPrecision(float p){
+    this.precision = p;
+  }
   public double getPDOP(){
     return this.PDOP;
   }
