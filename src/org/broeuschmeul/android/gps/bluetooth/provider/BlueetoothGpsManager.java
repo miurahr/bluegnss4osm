@@ -228,7 +228,6 @@ public class BlueetoothGpsManager {
 	private List<NmeaListener> nmeaListeners = Collections.synchronizedList(new LinkedList<NmeaListener>()); 
 	private List<Listener> gpsStatusListeners = Collections.synchronizedList(new LinkedList<Listener>());
 	private BluetoothGpsMockProvider mockProvider;
-	private SharedPreferences sharedPreferences;
 	private ConnectedGps connectedGps;
 	private int disableReason = 0;
 	private Notification connectionProblemNotification;
@@ -250,8 +249,7 @@ public class BlueetoothGpsManager {
 		this.maxConnectionRetries = maxRetries;
 		this.nbRetriesRemaining = 1+maxRetries;
 		this.appContext = callingService.getApplicationContext();
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(callingService);
-		notificationManager = (NotificationManager)callingService.getSystemService(Context.NOTIFICATION_SERVICE);
+		this.notificationManager = (NotificationManager)callingService.getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		connectionProblemNotification = new Notification();
 		connectionProblemNotification.icon = R.drawable.ic_stat_notify;
