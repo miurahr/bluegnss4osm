@@ -97,7 +97,7 @@ public class NmeaParser {
 			nmeaSentence = m.group(1);
 			String sentence = m.group(2);
 			String checkSum = m.group(3);
-			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",parserUtil.computeChecksum(sentence)));
+			Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+sentence+" cheksum: "+checkSum +" control: "+String.format("%02X",computeChecksum(sentence)));
 			splitter = new TextUtils.SimpleStringSplitter(',');
 			splitter.setString(sentence);
 			String command = splitter.next();
@@ -534,6 +534,14 @@ public class NmeaParser {
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=
     currentNmeaStatus.recvGLL(parserUtil.parseNmeaTime(time));
   }
+
+	public byte computeChecksum(String s){
+		byte checksum = 0;
+		for (char c : s.toCharArray()){
+			checksum ^= (byte)c;
+		}
+		return checksum;
+	}
 
   private boolean testFix(Location fix){
     return (fix.hasAccuracy() && fix.hasAltitude() && fix.hasBearing() && fix.hasSpeed());

@@ -98,13 +98,6 @@ public class NmeaParserUtil {
 		}
 		return timestamp;
 	}
-	public byte computeChecksum(String s){
-		byte checksum = 0;
-		for (char c : s.toCharArray()){
-			checksum ^= (byte)c;			
-		}
-		return checksum;
-	}
 
   public Double parseNmeaAlt(String s, String u){
     if (s != null && u != null && !s.equals("") && !u.equals("")){
