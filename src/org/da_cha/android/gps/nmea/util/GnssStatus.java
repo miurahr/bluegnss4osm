@@ -43,7 +43,7 @@ public class GnssStatus {
   private double longitude;
   private double altitude;
   private double height;
-  private double speed;
+  private float speed;
   private float angle;
   private int nbsat;
   private int numSatellites;
@@ -154,7 +154,7 @@ public class GnssStatus {
     longitude = 0d;
     altitude  = 0d;
     height    = 0d;
-    speed     = 0d;
+    speed     = 0f;
     angle     = 0f;
     nbsat = 0;
     numSatellites = 0;
@@ -235,10 +235,10 @@ public class GnssStatus {
   public void setHeight(double height){
     this.height = height;
   }
-  public double getSpeed(){
+  public float getSpeed(){
     return this.speed;
   }
-  public void setSpeed(double speed){
+  public void setSpeed(float speed){
     this.speed = speed;
   }
   public double getBearing(){
