@@ -496,9 +496,9 @@ public class NmeaParser {
         }
       }
       if (multi_seq){
-        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_APPEND);
+        gnssStatus.setTrackedSatellites(prnList, GnssStatus.SAT_LIST_APPEND);
       } else {
-        gnssStatus.setTrackedSatellites(prnList, gnssStatus.SAT_LIST_OVERRIDE);
+        gnssStatus.setTrackedSatellites(prnList, GnssStatus.SAT_LIST_OVERRIDE);
       }
       // Position dilution of precision (float)
       String pdop = splitter.next();
