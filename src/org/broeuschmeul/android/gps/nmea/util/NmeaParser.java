@@ -120,6 +120,7 @@ public class NmeaParser {
           } 
         } else if (command.equals("GPVTG")){
           parseVTG();
+          currentGpsStatus = GPS_NOTIFY;
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
           if (parseRMC()) {
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
@@ -456,7 +457,6 @@ public class NmeaParser {
       }
     }
     if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
-      currentGpsStatus = GPS_NOTIFY;
       gnssStatus.clearSatellitesList(activeSatellites);
     }
     currentNmeaStatus.recvGSV();

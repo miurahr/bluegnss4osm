@@ -173,6 +173,7 @@ public class GnssStatus {
     fix.setLatitude(this.latitude);
     fix.setLongitude(this.longitude);
     fix.setAccuracy(this.HDOP*this.precision);
+    fix.setTime(this.fixTimestamp);
     fix.setAltitude(this.altitude);
     Bundle extras = new Bundle();
     extras.putInt("satellites", this.nbsat);
