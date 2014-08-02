@@ -66,12 +66,12 @@ public class GnssStatus {
   // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
   private String mode;
 
-  private HashMap<Integer, gnssSatellite> gnssSatellitesList = new HashMap<Integer, gnssSatellite>();
+  private HashMap<Integer, GnssSatellite> gnssSatellitesList = new HashMap<Integer, GnssSatellite>();
   private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
   // satallite list
   // accessor
-  public void addSatellite(gnssSatellite sat){
+  public void addSatellite(GnssSatellite sat){
     gnssSatellitesList.put(sat.getRpn(), sat);
   }
   // clear list at all
@@ -90,10 +90,10 @@ public class GnssStatus {
     }
   }
   // clear sat data, return cleared satellite
-  public gnssSatellite removeSatellite(int rpn){
+  public GnssSatellite removeSatellite(int rpn){
     return gnssSatellitesList.remove(rpn);
   }
-  public gnssSatellite getSatellite(int rpn){
+  public GnssSatellite getSatellite(int rpn){
     return gnssSatellitesList.get(rpn);
   }
 

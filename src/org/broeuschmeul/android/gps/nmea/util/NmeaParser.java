@@ -445,7 +445,7 @@ public class NmeaParser {
         String elevation = splitter.next();
         String azimuth = splitter.next();
         String snr = splitter.next();
-        gnssSatellite sat = new gnssSatellite(Integer.parseInt(prn));
+        GnssSatellite sat = new GnssSatellite(Integer.parseInt(prn));
         sat.setStatus(parserUtil.parseNmeaFloat(elevation),
                       parserUtil.parseNmeaFloat(azimuth),
                       parserUtil.parseNmeaFloat(snr));
