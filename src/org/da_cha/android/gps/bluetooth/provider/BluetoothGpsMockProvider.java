@@ -19,7 +19,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.broeuschmeul.android.gps.bluetooth.provider;
+package org.da_cha.android.gps.bluetooth.provider;
 
 
 import android.app.Service;

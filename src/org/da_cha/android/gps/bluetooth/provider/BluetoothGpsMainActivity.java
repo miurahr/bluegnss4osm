@@ -18,10 +18,12 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.broeuschmeul.android.gps.bluetooth.provider;
+package org.da_cha.android.gps.bluetooth.provider;
 
 import java.util.Iterator;
 import java.text.DecimalFormat;
+
+import org.broeuschmeul.android.gps.bluetooth.provider.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,17 +42,13 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.format.Time;
 import android.text.method.LinkMovementMethod;
-
 import android.widget.TextView;
 import android.widget.Button;
-
 import android.view.View;
 import android.view.View.OnClickListener;
-
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-
 import android.util.Log;
 
 /**
