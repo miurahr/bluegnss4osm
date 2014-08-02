@@ -132,11 +132,11 @@ public class NmeaParser {
               }
             }
             Location fix = gnssStatus.getFixLocation();
-            if (testFix(fix)){
+            if (fix.hasAccuracy() && fix.hasAltitude()) {
               mockProvider.notifyFix(fix);
               gpsFixNotified = true;
             } else {
-              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix is broken");
+              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
             }
           } else {
             if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
@@ -345,7 +345,7 @@ public class NmeaParser {
         gnssStatus.setSpeed(parserUtil.parseNmeaSpeed(speed, "N"));
       }
       if (bearing != null && !bearing.equals("")){
-        gnssStatus.setAngle(parserUtil.parseNmeaFloat(bearing));
+        gnssStatus.setBearing(parserUtil.parseNmeaFloat(bearing));
       }
       return true;
     } else if(status.equals("V")){
@@ -543,7 +543,4 @@ public class NmeaParser {
 		return checksum;
 	}
 
-  private boolean testFix(Location fix){
-    return (fix.hasAccuracy() && fix.hasAltitude() && fix.hasBearing() && fix.hasSpeed());
-  }
 }

@@ -178,6 +178,8 @@ public class GnssStatus {
     Bundle extras = new Bundle();
     extras.putInt("satellites", this.nbsat);
     fix.setExtras(extras);
+    fix.setBearing(angle);
+    fix.setSpeed(speed);
 
     return fix;
   }
@@ -239,10 +241,10 @@ public class GnssStatus {
   public void setSpeed(double speed){
     this.speed = speed;
   }
-  public double getAngle(){
+  public double getBearing(){
     return this.angle;
   }
-  public void setAngle(float angle){
+  public void setBearing(float angle){
     this.angle = angle;
   }
   public int getQuality(){
