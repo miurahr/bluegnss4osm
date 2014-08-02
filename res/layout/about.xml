@@ -46,7 +46,6 @@
 				android:text="@string/versionName"
 			/>
 		</LinearLayout>
-<!-- 		
 		<TextView
 			style="@style/about_text"
 			android:text="@string/about_copyright_1"
@@ -55,7 +54,6 @@
 			style="@style/about_text"
 			android:text="@string/about_copyright_2"
 		/>
--->
 		<TextView
 			style="@style/about_text"
 			android:text="@string/about_app_desc"
