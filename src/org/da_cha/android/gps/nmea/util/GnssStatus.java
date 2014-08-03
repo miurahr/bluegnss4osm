@@ -21,9 +21,8 @@ package org.da_cha.android.gps.nmea.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Arrays;
+import java.util.Map.Entry;
 import java.util.Iterator;
-import java.util.ListIterator;
 
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -47,7 +46,6 @@ public class GnssStatus {
   private float angle;
   private int nbsat;
   private int numSatellites;
-  private boolean active;
   /* 1: nofix, 2: 2D fix, 3: 3D fix */
   private int fixMode; 
   /* 
@@ -66,6 +64,12 @@ public class GnssStatus {
   // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
   private String mode;
 
+
+  /*
+   * GnssSatellite list in view
+   * satellites PRN list in fix
+   *
+   */
   private HashMap<Integer, GnssSatellite> gnssSatellitesList = new HashMap<Integer, GnssSatellite>();
   private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
@@ -89,6 +93,7 @@ public class GnssStatus {
       }
     }
   }
+
   // clear sat data, return cleared satellite
   public GnssSatellite removeSatellite(int rpn){
     return gnssSatellitesList.remove(rpn);
@@ -97,13 +102,20 @@ public class GnssStatus {
     return gnssSatellitesList.get(rpn);
   }
 
+  public Iterator<Entry<Integer, GnssSatellite>> getSatellitesIter(){
+    return gnssSatellitesList.entrySet().iterator();
+  }
+  /*
+   * tracked satellites PRN list
+   *
+   */
   public static final int SAT_LIST_OVERRIDE = 1;
   public static final int SAT_LIST_APPEND = 2;
 
-  public void setTrackedSatellites(ArrayList<Integer> rpnList, int mode){
-    if (mode == SAT_LIST_OVERRIDE){
+  public void setTrackedSatellites(ArrayList<Integer> rpnList, int satmode){
+    if (satmode == SAT_LIST_OVERRIDE){
       satellitesPrnListInFix = new ArrayList<Integer>(rpnList);
-    } else if (mode == SAT_LIST_APPEND){
+    } else if (satmode == SAT_LIST_APPEND){
       for (Integer rpn : rpnList){
         satellitesPrnListInFix.add(rpn);
       }
@@ -115,7 +127,14 @@ public class GnssStatus {
   public void setTrackedSatellites(ArrayList<Integer> rpnList){
     setTrackedSatellites(rpnList, SAT_LIST_OVERRIDE);
   }
-  // timestamps
+
+
+  /*
+   * handler of time stamps
+   *
+   *
+   *
+   */
   public void clearTTFF(){
     this.firstFixTimestamp=0;
   }
@@ -140,6 +159,9 @@ public class GnssStatus {
   public void setStartTimestamp(long timestamp){
     this.startTimestamp = timestamp;
   }
+
+
+
   // clear all
   public void clear(){
     clearTTFF();
@@ -158,7 +180,6 @@ public class GnssStatus {
     angle     = 0f;
     nbsat = 0;
     numSatellites = 0;
-    active = false;
     fixMode = 0;
     quality = 0;
     mode = "N";
@@ -183,6 +204,7 @@ public class GnssStatus {
 
     return fix;
   }
+
   // accessors
   // 
   // Lat/Lon/Alt
@@ -270,6 +292,12 @@ public class GnssStatus {
   }
   public void setNumSatellites(int num){
     this.numSatellites = num;
+  }
+  public int getFixMode(){
+    return this.fixMode;
+  }
+  public void setFixMode(int mode){
+    this.fixMode = mode;
   }
 
 }

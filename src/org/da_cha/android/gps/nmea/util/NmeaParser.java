@@ -22,6 +22,8 @@
 package org.da_cha.android.gps.nmea.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -190,6 +192,10 @@ public class NmeaParser {
 		}
 		return 0;
 	}
+
+  public Iterator<Entry<Integer, GnssSatellite>> getSatellitesIter(){
+    return gnssStatus.getSatellitesIter();
+  }
 
   /*
    * @return true if fixed.
