@@ -135,6 +135,7 @@ public class BluetoothGnssManager {
             s = reader.readLine();
             //Log.v(LOG_TAG, "data: "+System.currentTimeMillis()+" "+s);
             notifyNmeaSentence(s+"\r\n");
+            notifyGpsStatus();
             ready = true;
             lastRead = SystemClock.uptimeMillis();
           } else {
@@ -560,15 +561,12 @@ public class BluetoothGnssManager {
     if (enabled){
       //    Log.v(LOG_TAG, "parsing and notifying NMEA sentence: "+nmeaSentence);
       String sentence = null;
-      int gpsStatus = 0;
       try {
         sentence = parser.parseNmeaSentence(nmeaSentence);
-        gpsStatus = parser.getGpsStatusChange();
       } catch (SecurityException e){
             Log.e(LOG_TAG, "error while parsing NMEA sentence: "+nmeaSentence, e);
         // a priori Mock Location is disabled
         sentence = null;
-        gpsStatus = 0;
         disable(R.string.msg_mock_location_disabled);
       }
       final String recognizedSentence = sentence;
@@ -586,15 +584,20 @@ public class BluetoothGnssManager {
           }
         }
       }
-      final int recognizedGpsStatus = gpsStatus;
-      if (recognizedGpsStatus != 0){
-        Log.v(LOG_TAG, "notified GpsStatus: "+recognizedGpsStatus);
+    }
+  }
+
+  private void notifyGpsStatus(){
+    if (enabled){
+      final int gpsStatus = parser.getGpsStatusChange();
+      if (gpsStatus != 0){
+        Log.v(LOG_TAG, "notified GpsStatus: "+gpsStatus);
         synchronized(gpsStatusListeners) {
           for(final Listener listener : gpsStatusListeners){
             notificationPool.execute(new Runnable(){
               @Override
               public void run() {
-                listener.onGpsStatusChanged(recognizedGpsStatus);
+                listener.onGpsStatusChanged(gpsStatus);
               }
             });
           }
