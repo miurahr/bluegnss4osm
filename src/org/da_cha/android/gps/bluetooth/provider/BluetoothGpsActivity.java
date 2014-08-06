@@ -25,17 +25,19 @@ import java.util.Set;
 
 import org.da_cha.android.gps.bluetooth.provider.R;
 
-import android.app.AlertDialog;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.Build;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.method.LinkMovementMethod;
@@ -63,20 +65,44 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.pref);      
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPref.registerOnSharedPreferenceChangeListener(this);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Preference pref = findPreference(BluetoothGpsProviderService.PREF_ABOUT);
-        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {		
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				BluetoothGpsActivity.this.displayAboutDialog();
-				return true;
-			}
-		});
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+          onCreatePreferenceActivity();
+        } else {
+          onCreatePreferenceFragment();
+        }
    }
 
+   @SuppressWarnings("deprecation")
+   private void onCreatePreferenceActivity() {
+     addPreferencesFromResource(R.xml.pref);
+   }
+
+   @SuppressWarnings("deprecation")
+   private Preference findPreferenceActivity(String key) {
+     return findPreference(key);
+   }
+
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+   private void onCreatePreferenceFragment() {
+     getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new BluetoothGpsPreferenceFragment())
+                .commit();
+   }
+
+   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+   public static class BluetoothGpsPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(final Bundle savedInstanceState)
+        {
+          super.onCreate(savedInstanceState);
+          addPreferencesFromResource(R.xml.pref);
+        }
+   }
+ 
     /* (non-Javadoc)
 	 * @see android.app.Activity#onResume()
 	 */
@@ -89,7 +115,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 	private void updateDevicePreferenceSummary(){
         // update bluetooth device summary
 		String deviceName = "";
-        ListPreference prefDevices = (ListPreference)findPreference(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
+        ListPreference prefDevices = (ListPreference)findPreferenceActivity(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
         String deviceAddress = sharedPref.getString(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE, null);
         if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
         	deviceName = bluetoothAdapter.getRemoteDevice(deviceAddress).getName();
@@ -101,7 +127,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
         // update bluetooth device summary
 		updateDevicePreferenceSummary();
 		// update bluetooth device list
-        ListPreference prefDevices = (ListPreference)findPreference(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
+        ListPreference prefDevices = (ListPreference)findPreferenceActivity(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
         Set<BluetoothDevice> pairedDevices = new HashSet<BluetoothDevice>();
         if (bluetoothAdapter != null){
         	pairedDevices = bluetoothAdapter.getBondedDevices();  
@@ -119,7 +145,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
         }
         prefDevices.setEntryValues(entryValues);
         prefDevices.setEntries(entries);
-        Preference pref = (Preference)findPreference(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
+        Preference pref = (Preference)findPreferenceActivity(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
         String maxConnRetries = sharedPref.getString(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
         pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));
         this.onContentChanged();
@@ -131,25 +157,6 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 	}
 	
-	private void displayAboutDialog(){
-        View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
-        // we need this to enable html links
-        TextView textView = (TextView) messageView.findViewById(R.id.about_license);
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
-        // When linking text, force to always use default color. This works
-        // around a pressed color state bug.
-        int defaultColor = textView.getTextColors().getDefaultColor();
-        textView.setTextColor(defaultColor);
-        textView = (TextView) messageView.findViewById(R.id.about_sources);
-        textView.setTextColor(defaultColor);
-       
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.about_title);
-		builder.setIcon(R.drawable.gplv3_icon);
-        builder.setView(messageView);
-		builder.show();
-	}
-
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		// TODO Auto-generated method stub
@@ -176,7 +183,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 		this.updateDevicePreferenceList();
 	}	
 	private void enableSirfFeature(String key){
-		CheckBoxPreference pref = (CheckBoxPreference)(findPreference(key));
+		CheckBoxPreference pref = (CheckBoxPreference)(findPreferenceActivity(key));
 		if (pref.isChecked() != sharedPref.getBoolean(key, false)){
 			pref.setChecked(sharedPref.getBoolean(key, false));
 		} else {
