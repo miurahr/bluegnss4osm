@@ -51,7 +51,6 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.util.Config;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -120,20 +119,25 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
-		PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
-		wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
+    createNewWakeLock();
 	}
 
+  @SuppressWarnings("deprecation")
+  private void createNewWakeLock(){
+		PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
+    // SCREEN_DIM_WAKE_LOCK is deprecated but no better way to specify from service.
+		wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
+  }
+
+	/* (non-Javadoc)
+	 * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
+	 */
 	@Override
-	public void onStart(Intent intent, int startId) {
-//		super.onStart(intent, startId);
+	public int onStartCommand(Intent intent, int flags, int startId) {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor edit = sharedPreferences.edit();
 		String deviceAddress = sharedPreferences.getString(PREF_BLUETOOTH_DEVICE, null);
 		int maxConRetries = Integer.parseInt(sharedPreferences.getString(PREF_CONNECTION_RETRIES, this.getString(R.string.defaultConnectionRetries)));
-		if (Config.LOGD){
-			Log.d(LOG_TAG, "prefs device addr: "+deviceAddress);
-		}
+		Log.d(LOG_TAG, "prefs device addr: "+deviceAddress);
 		if (ACTION_START_GPS_PROVIDER.equals(intent.getAction())){
 			if (gpsManager == null){
 				if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
@@ -156,10 +160,16 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 						wl.acquire();
 						boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
 						gpsMockProvider.enableMockLocationProvider(force);
-						Notification notification = new Notification(R.drawable.ic_stat_notify, this.getString(R.string.foreground_gps_provider_started_notification),  System.currentTimeMillis());
 						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
 						PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-						notification.setLatestEventInfo(getApplicationContext(), this.getString(R.string.foreground_service_started_notification_title), this.getString(R.string.foreground_gps_provider_started_notification), myPendingIntent);
+						Context appContext = getApplicationContext();
+						Notification notification = new Notification.Builder(appContext)
+                            .setSmallIcon(R.drawable.ic_stat_notify)
+                            .setContentText(this.getString(R.string.foreground_gps_provider_started_notification))
+                            .setWhen(System.currentTimeMillis())
+                            .setContentTitle(this.getString(R.string.foreground_service_started_notification_title))
+                            .setContentIntent(myPendingIntent)
+                            .build();
 						startForeground(R.string.foreground_gps_provider_started_notification, notification);
 						if (sharedPreferences.getBoolean(PREF_SIRF_GPS, false)){
 							enableSirfConfig(sharedPreferences);
@@ -208,6 +218,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 				enableSirfConfig(extras);
 			}
 		}
+		return Service.START_STICKY;
 	}
 
 	private void enableSirfConfig(Bundle extras){
@@ -395,15 +406,6 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
-	 */
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		onStart(intent, startId);
-		return Service.START_NOT_STICKY;
-	}
-
 	@Override
 	public void onDestroy() {
 		BluetoothGnssManager manager = gpsManager;
@@ -422,7 +424,6 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 		}
 		endTrack();
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor edit = sharedPreferences.edit();
     isRunning = false;
 		super.onDestroy();
 	}
@@ -473,9 +474,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		if (Config.LOGD){
-			Log.d(LOG_TAG, "trying access IBinder");
-		}				
+	  Log.d(LOG_TAG, "trying access IBinder");
 		return null;
 	}
     class IncomingHandler extends Handler {
