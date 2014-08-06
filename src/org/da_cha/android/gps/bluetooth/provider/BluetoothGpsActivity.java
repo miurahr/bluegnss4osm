@@ -26,8 +26,6 @@ import java.util.Set;
 import org.da_cha.android.gps.bluetooth.provider.R;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -42,7 +40,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
@@ -74,14 +71,6 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
           onCreatePreferenceActivity();
-          Preference pref = findPreferenceActivity(BluetoothGpsProviderService.PREF_ABOUT);
-          pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {		
-			      @Override
-			      public boolean onPreferenceClick(Preference preference) {
-				      BluetoothGpsActivity.this.displayAboutDialog();
-				      return true;
-			      }
-          });;
         } else {
           onCreatePreferenceFragment();
         }
@@ -111,19 +100,8 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
         {
           super.onCreate(savedInstanceState);
           addPreferencesFromResource(R.xml.pref);
-          findPreference(BluetoothGpsProviderService.PREF_ABOUT)
-             .setOnPreferenceClickListener(BluetoothGpsActivity.createClickAboutListener(getActivity()));
         }
    }
-   public static OnPreferenceClickListener createClickAboutListener(final Activity activity){
-     return new  Preference.OnPreferenceClickListener() {		
-			      @Override
-			      public boolean onPreferenceClick(Preference preference) {
-				      BluetoothGpsActivity.displayAboutDialog();
-				      return true;
-			      }
-          };
-  }
  
     /* (non-Javadoc)
 	 * @see android.app.Activity#onResume()
@@ -179,25 +157,6 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 	}
 	
-	private void displayAboutDialog(){
-        View messageView = getLayoutInflater().inflate(R.layout.about, null, false);
-        // we need this to enable html links
-        TextView textView = (TextView) messageView.findViewById(R.id.about_license);
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
-        // When linking text, force to always use default color. This works
-        // around a pressed color state bug.
-        int defaultColor = textView.getTextColors().getDefaultColor();
-        textView.setTextColor(defaultColor);
-        textView = (TextView) messageView.findViewById(R.id.about_sources);
-        textView.setTextColor(defaultColor);
-       
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.about_title);
-		builder.setIcon(R.drawable.gplv3_icon);
-        builder.setView(messageView);
-		builder.show();
-	}
-
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		// TODO Auto-generated method stub
