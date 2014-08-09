@@ -35,6 +35,8 @@ import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
 
 import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
+import org.da_cha.android.gps.nmea.util.GnssSatellite;
+import org.da_cha.android.gps.nmea.util.GnssStatus;
 
 /**
  * This class is used to parse NMEA sentences an generate the Android Locations when there is a new GPS FIX.

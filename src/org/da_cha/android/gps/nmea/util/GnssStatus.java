@@ -29,6 +29,8 @@ import android.os.SystemClock;
 import android.location.Location;
 import android.location.LocationManager;
 
+import org.da_cha.android.gps.nmea.util.GnssSatellite;
+
 public class GnssStatus {
 
 	private long fixTimestamp;
