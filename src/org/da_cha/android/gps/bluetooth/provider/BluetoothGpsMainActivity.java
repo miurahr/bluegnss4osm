@@ -281,7 +281,7 @@ public class BluetoothGpsMainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
         case R.id.menu_pref:
-            startActivity(new Intent(this, BluetoothGpsActivity.class));
+            startActivity(new Intent(this, BlueGnssPrefActivity.class));
             return true;
         case R.id.menu_about:
             displayAboutDialog();

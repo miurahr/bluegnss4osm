@@ -1,4 +1,5 @@
 /*
+ * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
@@ -51,7 +52,7 @@ import android.widget.TextView;
  * @author Herbert von Broeuschmeul
  *
  */
-public class BluetoothGpsActivity extends PreferenceActivity implements OnPreferenceChangeListener, OnSharedPreferenceChangeListener {
+public class BlueGnssPrefActivity extends PreferenceActivity implements OnPreferenceChangeListener, OnSharedPreferenceChangeListener {
 
 	/**
 	 * Tag used for log messages
@@ -189,7 +190,7 @@ public class BluetoothGpsActivity extends PreferenceActivity implements OnPrefer
 		} else {
 			Intent configIntent = new Intent(BluetoothGpsProviderService.ACTION_CONFIGURE_SIRF_GPS);
 			configIntent.putExtra(key, pref.isChecked());
-			configIntent.setClass(BluetoothGpsActivity.this, BluetoothGpsProviderService.class);
+			configIntent.setClass(BlueGnssPrefActivity.this, BluetoothGpsProviderService.class);
 			startService(configIntent);
 		}
 	}

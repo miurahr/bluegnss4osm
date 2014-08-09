@@ -43,7 +43,7 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
-    <activity android:name="org.da_cha.android.gps.bluetooth.provider.BluetoothGpsActivity"
+    <activity android:name="org.da_cha.android.gps.bluetooth.provider.BlueGnssPrefActivity"
               android:label="@string/app_name" >
     </activity>
     <service android:name="org.da_cha.android.gps.bluetooth.provider.BluetoothGpsProviderService" android:enabled="true" android:exported="true" >

@@ -160,7 +160,7 @@ public class BluetoothGpsProviderService extends Service implements NmeaListener
 						wl.acquire();
 						boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
 						gpsMockProvider.enableMockLocationProvider(force);
-						Intent myIntent = new Intent(this, BluetoothGpsActivity.class);
+						Intent myIntent = new Intent(this, BlueGnssPrefActivity.class);
 						PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 						Context appContext = getApplicationContext();
 						Notification notification = new Notification.Builder(appContext)
