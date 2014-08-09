@@ -38,7 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.da_cha.android.gps.bluetooth.provider.R;
-import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
+import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
 import org.da_cha.android.gps.sirf.util.SirfUtils;
 
@@ -226,7 +226,7 @@ public class BluetoothGnssManager {
   private ScheduledExecutorService connectionAndReadingPool;
   private List<NmeaListener> nmeaListeners = Collections.synchronizedList(new LinkedList<NmeaListener>()); 
   private List<Listener> gpsStatusListeners = Collections.synchronizedList(new LinkedList<Listener>());
-  private BluetoothGpsMockProvider mockProvider;
+  private MockLocationProvider mockProvider;
   private ConnectedGps connectedGps;
   private int disableReason = 0;
   private Notification connectionProblemNotification;
@@ -255,7 +255,7 @@ public class BluetoothGnssManager {
     disableReason = reasonId;
   }
   
-  public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
+  public void setGpsMockProvider(MockLocationProvider mockProvider){
     this.mockProvider = mockProvider;
   }
   public void setNMEAParser(NmeaParser nmeaParser){

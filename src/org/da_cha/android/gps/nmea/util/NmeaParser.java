@@ -34,7 +34,7 @@ import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
 
-import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
+import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
 
 /**
  * This class is used to parse NMEA sentences an generate the Android Locations when there is a new GPS FIX.
@@ -59,7 +59,7 @@ public class NmeaParser {
 	private int currentGpsStatus = GPS_NONE;
   private boolean gpsFixNotified = false;
 
-	private BluetoothGpsMockProvider mockProvider;
+	private MockLocationProvider mockProvider;
 
 	private GnssStatus gnssStatus;
   private NmeaParserUtil parserUtil;
@@ -78,7 +78,7 @@ public class NmeaParser {
     this.parserUtil = new NmeaParserUtil();
 	}
 
-	public void setGpsMockProvider(BluetoothGpsMockProvider mockProvider){
+	public void setGpsMockProvider(MockLocationProvider mockProvider){
 		this.mockProvider = mockProvider;
 	}
 

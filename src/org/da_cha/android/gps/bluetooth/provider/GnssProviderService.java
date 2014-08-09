@@ -58,7 +58,7 @@ import org.da_cha.android.gps.bluetooth.provider.R;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
 import org.da_cha.android.gps.bluetooth.provider.BlueGnssMainActivity;
 import org.da_cha.android.gps.bluetooth.provider.BluetoothGnssManager;
-import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
+import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
 
 /**
  * A Service used to replace Android internal GPS with a bluetooth GPS and/or write GPS NMEA data in a File.
@@ -106,7 +106,7 @@ public class GnssProviderService extends Service implements NmeaListener {
 	public static final String PREF_SIRF_ENABLE_STATIC_NAVIGATION = "enableStaticNavigation";
 
 	private BluetoothGnssManager gpsManager = null;
-	private BluetoothGpsMockProvider gpsMockProvider = null;
+	private MockLocationProvider gpsMockProvider = null;
 	private PrintWriter writer;
 	private File trackFile;
 	private boolean preludeWritten = false;
@@ -148,7 +148,7 @@ public class GnssProviderService extends Service implements NmeaListener {
 				 * Instanciate btgps manager, mock provider and nmea parser
 				 */
 					gpsManager = new BluetoothGnssManager(this, deviceAddress, maxConRetries);
-					gpsMockProvider = new BluetoothGpsMockProvider(this);
+					gpsMockProvider = new MockLocationProvider(this);
 					nmeaParser = new NmeaParser(10f);
 					// register
 					gpsManager.setGpsMockProvider(gpsMockProvider);
