@@ -57,7 +57,7 @@ import android.util.Log;
  * @author Hiroshi Miura
  *
  */
-public class BluetoothGpsMainActivity extends Activity {
+public class BlueGnssMainActivity extends Activity {
 
     private final static String LOG_TAG = "BlueGPS";
 
@@ -197,7 +197,7 @@ public class BluetoothGpsMainActivity extends Activity {
         doUnbindService();
         // stop service
         Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
-        i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+        i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
         startService(i);
         // button -> "Start"
         Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
@@ -210,7 +210,7 @@ public class BluetoothGpsMainActivity extends Activity {
     private void startProviderService() {
         // start service
         Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
-        i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+        i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
         startService(i);
         // wait 1000ms.
         try{
@@ -248,7 +248,7 @@ public class BluetoothGpsMainActivity extends Activity {
         public void onClick(View v) {
             if (logging_state) {
                 Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_TRACK_RECORDING);
-                i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+                i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: stop service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
@@ -256,7 +256,7 @@ public class BluetoothGpsMainActivity extends Activity {
                 logging_state = false;
             } else {
                 Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_TRACK_RECORDING);
-                i.setClass(BluetoothGpsMainActivity.this, BluetoothGpsProviderService.class);
+                i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: start service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
