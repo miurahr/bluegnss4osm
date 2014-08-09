@@ -73,10 +73,10 @@ public class BlueGnssMainActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-            case BluetoothGpsProviderService.MSG_UPDATED:
+            case GnssProviderService.MSG_UPDATED:
                 //loc = (String) msg.obj;
                 break;
-            case BluetoothGpsProviderService.MSG_DISCONNECTED:
+            case GnssProviderService.MSG_DISCONNECTED:
                 stopProviderService();
                 break;
             default:
@@ -137,19 +137,19 @@ public class BlueGnssMainActivity extends Activity {
      * Service communications
      */
     private void CheckIfServiceIsRunning() {
-        if (BluetoothGpsProviderService.isRunning()) {
+        if (GnssProviderService.isRunning()) {
             doBindService();
         }
     }
     private void doBindService() {
-        bindService(new Intent(this, BluetoothGpsProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
     private void doUnbindService() {
         if (mIsBound) {
             if (mService != null) {
                 try {
-                    Message msg = Message.obtain(null, BluetoothGpsProviderService.MSG_UNREGISTER_CLIENT);
+                    Message msg = Message.obtain(null, GnssProviderService.MSG_UNREGISTER_CLIENT);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                 } catch (RemoteException e) {
@@ -177,7 +177,7 @@ public class BlueGnssMainActivity extends Activity {
 
     private void setBluetoothDeviceName() {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        String deviceAddress = sharedPref.getString(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE, null);
+        String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
         TextView txtDeviceName = (TextView)findViewById(R.id.main_bluetooth_device_name);
         if (bluetoothAdapter != null) {
             if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
@@ -186,7 +186,7 @@ public class BlueGnssMainActivity extends Activity {
         }
     }
     private boolean checkBluetoothDevice() {
-        String deviceAddress = sharedPref.getString(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE, null);
+        String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
         return (deviceAddress == null)?false:true;
     }
 
@@ -196,8 +196,8 @@ public class BlueGnssMainActivity extends Activity {
     private void stopProviderService() {
         doUnbindService();
         // stop service
-        Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
-        i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
+        Intent i = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
+        i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
         startService(i);
         // button -> "Start"
         Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
@@ -209,8 +209,8 @@ public class BlueGnssMainActivity extends Activity {
     }
     private void startProviderService() {
         // start service
-        Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
-        i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
+        Intent i = new Intent(GnssProviderService.ACTION_START_GPS_PROVIDER);
+        i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
         startService(i);
         // wait 1000ms.
         try{
@@ -225,7 +225,7 @@ public class BlueGnssMainActivity extends Activity {
         // Logging button enabled
         Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
         btnStartLogging.setEnabled(true);
-        if (BluetoothGpsProviderService.isRunning()) {
+        if (GnssProviderService.isRunning()) {
             Log.d(LOG_TAG, "Cannot detect Service running");
         }
     }
@@ -247,16 +247,16 @@ public class BlueGnssMainActivity extends Activity {
     private OnClickListener mStartLogging = new OnClickListener() {
         public void onClick(View v) {
             if (logging_state) {
-                Intent i = new Intent(BluetoothGpsProviderService.ACTION_STOP_TRACK_RECORDING);
-                i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
+                Intent i = new Intent(GnssProviderService.ACTION_STOP_TRACK_RECORDING);
+                i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: stop service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
                 btnStartLogging.setText(R.string.main_logging_start);
                 logging_state = false;
             } else {
-                Intent i = new Intent(BluetoothGpsProviderService.ACTION_START_TRACK_RECORDING);
-                i.setClass(BlueGnssMainActivity.this, BluetoothGpsProviderService.class);
+                Intent i = new Intent(GnssProviderService.ACTION_START_TRACK_RECORDING);
+                i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: start service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
@@ -315,7 +315,7 @@ public class BlueGnssMainActivity extends Activity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
             try {
-                Message msg = Message.obtain(null, BluetoothGpsProviderService.MSG_REGISTER_CLIENT);
+                Message msg = Message.obtain(null, GnssProviderService.MSG_REGISTER_CLIENT);
                 msg.replyTo = mMessenger;
                 mService.send(msg);
             } catch (RemoteException e) {

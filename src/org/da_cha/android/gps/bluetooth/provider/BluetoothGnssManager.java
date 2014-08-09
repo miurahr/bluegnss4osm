@@ -401,7 +401,7 @@ public class BluetoothGnssManager {
       if (nbRetriesRemaining > 0){
         // Unable to connect
         Log.e(LOG_TAG, "Unable to establish connection");
-        Intent stopIntent = new Intent(BluetoothGpsProviderService.ACTION_STOP_GPS_PROVIDER);
+        Intent stopIntent = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
         PendingIntent stopPendingIntent = PendingIntent.getService(appContext, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         String pbMessage = appContext.getResources().getQuantityString(R.plurals.connection_problem_notification, nbRetriesRemaining, nbRetriesRemaining);
         connectionProblemNotification = new Notification.Builder(appContext)
@@ -455,7 +455,7 @@ public class BluetoothGnssManager {
   public synchronized void disable() {
     notificationManager.cancel(R.string.connection_problem_notification_title);
     if (getDisableReason() != 0){
-      Intent restartIntent = new Intent(BluetoothGpsProviderService.ACTION_START_GPS_PROVIDER);
+      Intent restartIntent = new Intent(GnssProviderService.ACTION_START_GPS_PROVIDER);
       PendingIntent restartPendingIntent = PendingIntent.getService(appContext, 0, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
       serviceStoppedNotification = new Notification.Builder(appContext)
                     .setSmallIcon(R.drawable.ic_stat_notify)

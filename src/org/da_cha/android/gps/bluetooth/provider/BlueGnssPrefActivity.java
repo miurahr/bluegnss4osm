@@ -116,8 +116,8 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
 	private void updateDevicePreferenceSummary(){
         // update bluetooth device summary
 		String deviceName = "";
-        ListPreference prefDevices = (ListPreference)findPreferenceActivity(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
-        String deviceAddress = sharedPref.getString(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE, null);
+        ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
+        String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
         if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
         	deviceName = bluetoothAdapter.getRemoteDevice(deviceAddress).getName();
         }
@@ -128,7 +128,7 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
         // update bluetooth device summary
 		updateDevicePreferenceSummary();
 		// update bluetooth device list
-        ListPreference prefDevices = (ListPreference)findPreferenceActivity(BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE);
+        ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
         Set<BluetoothDevice> pairedDevices = new HashSet<BluetoothDevice>();
         if (bluetoothAdapter != null){
         	pairedDevices = bluetoothAdapter.getBondedDevices();  
@@ -146,8 +146,8 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
         }
         prefDevices.setEntryValues(entryValues);
         prefDevices.setEntries(entries);
-        Preference pref = (Preference)findPreferenceActivity(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES);
-        String maxConnRetries = sharedPref.getString(BluetoothGpsProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
+        Preference pref = (Preference)findPreferenceActivity(GnssProviderService.PREF_CONNECTION_RETRIES);
+        String maxConnRetries = sharedPref.getString(GnssProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
         pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));
         this.onContentChanged();
     }
@@ -166,18 +166,18 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (BluetoothGpsProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
+		if (GnssProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
 			updateDevicePreferenceSummary();
-		} else if (BluetoothGpsProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_GGA.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_RMC.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_VTG.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_GSA.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_GSV.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_ZDA.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_SBAS.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_NMEA.equals(key)
-				|| BluetoothGpsProviderService.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
+		} else if (GnssProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_GGA.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_RMC.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_VTG.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_GSA.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_GSV.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_ZDA.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_SBAS.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_NMEA.equals(key)
+				|| GnssProviderService.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
 		){
 			enableSirfFeature(key);
 		}
@@ -188,9 +188,9 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
 		if (pref.isChecked() != sharedPref.getBoolean(key, false)){
 			pref.setChecked(sharedPref.getBoolean(key, false));
 		} else {
-			Intent configIntent = new Intent(BluetoothGpsProviderService.ACTION_CONFIGURE_SIRF_GPS);
+			Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
 			configIntent.putExtra(key, pref.isChecked());
-			configIntent.setClass(BlueGnssPrefActivity.this, BluetoothGpsProviderService.class);
+			configIntent.setClass(BlueGnssPrefActivity.this, GnssProviderService.class);
 			startService(configIntent);
 		}
 	}

@@ -56,6 +56,9 @@ import android.widget.Toast;
 
 import org.da_cha.android.gps.bluetooth.provider.R;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
+import org.da_cha.android.gps.bluetooth.provider.BlueGnssMainActivity;
+import org.da_cha.android.gps.bluetooth.provider.BluetoothGnssManager;
+import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsMockProvider;
 
 /**
  * A Service used to replace Android internal GPS with a bluetooth GPS and/or write GPS NMEA data in a File.
@@ -63,7 +66,7 @@ import org.da_cha.android.gps.nmea.util.NmeaParser;
  * @author Herbert von Broeuschmeul
  *
  */
-public class BluetoothGpsProviderService extends Service implements NmeaListener {
+public class GnssProviderService extends Service implements NmeaListener {
 
 	public static final String ACTION_START_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.START_TRACK_RECORDING";
 	public static final String ACTION_STOP_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.STOP_TRACK_RECORDING";
