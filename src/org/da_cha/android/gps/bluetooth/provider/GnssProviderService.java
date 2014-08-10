@@ -121,16 +121,12 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 
 	private static PowerManager.WakeLock wl;
 
-	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
-    private Messenger mServiceMessenger;
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
         createNewWakeLock();
-        mServiceMessenger = new Messenger(new IncomingHandler());
 	}
 
     @SuppressWarnings("deprecation")
@@ -483,62 +479,35 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
         return isRunning;
     }
 
+    public class GnssProviderServiceBinder extends Binder {
+            GnssProviderService getService() {
+                return GnssProviderService.this;
+            }
+    }
+      private final IBinder mBinder = new GnssProviderServiceBinder();
+
     /* (non-Javadoc)
      * @see android.app.Service#onBind(android.content.Intent)
      */
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(LOG_TAG, "trying access IBinder");
-        return mServiceMessenger.getBinder();
-    }
-
-  /* XXX
-   * keep for note
-  private final IBinder mBinder = new LocalBinder();
-  public class LocalBinder extends Binder {
-        GnssProviderService getService() {
-            // Return this instance of LocalService so clients can call public methods
-            return GnssProviderService.this;
-        }
-  }
-  */
-
-    class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case MSG_REGISTER_CLIENT:
-                mClients.add(msg.replyTo);
-                break;
-            case MSG_UNREGISTER_CLIENT:
-                mClients.remove(msg.replyTo);
-                break;
-            default:
-                super.handleMessage(msg);
-            }
-        }
+        return mBinder;
     }
 
     private void sendGpsDisconnected() {
-        for (int i=mClients.size()-1; i>=0; i--) {
-            try {
-                mClients.get(i).send(Message.obtain(null, MSG_DISCONNECTED, 0, 0));
-            } catch (RemoteException e) {
-                // The client is dead.
-                mClients.remove(i);
-            }
-        }
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.putExtra(
+            "message", "BYE, GNSS!");
+        broadcastIntent.setAction(NOTIFY_UPDATE);
+        getBaseContext().sendBroadcast(broadcastIntent);
     }
     private void sendGpsUpdate(String data) {
-        for (int i=mClients.size()-1; i>=0; i--) {
-            try {
-                Message msg = Message.obtain(null, MSG_UPDATED, data);
-                mClients.get(i).send(msg);
-            } catch (RemoteException e) {
-                // The client is dead.
-                mClients.remove(i);
-            }
-        }
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.putExtra(
+            "message", "Hello, GNSS!");
+        broadcastIntent.setAction(NOTIFY_UPDATE);
+        getBaseContext().sendBroadcast(broadcastIntent);
     }
 
     @Override
