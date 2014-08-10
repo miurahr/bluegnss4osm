@@ -70,11 +70,12 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
         sharedPref.registerOnSharedPreferenceChangeListener(this);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+        //FIXME: use deprecated functions still now.
+        //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
           onCreatePreferenceActivity();
-        } else {
-          onCreatePreferenceFragment();
-        }
+        //} else {
+        //  onCreatePreferenceFragment();
+        //}
    }
 
    @SuppressWarnings("deprecation")
