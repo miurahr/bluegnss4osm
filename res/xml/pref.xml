@@ -142,9 +142,4 @@
 			android:defaultValue="@string/defaultTrackFilePrefix"
 			android:summary="@string/pref_trackfile_prefix_summary" />
 	</PreferenceScreen>
-	<Preference
-		android:key="@string/pref_about_key"
-		android:persistent="false"
-		android:title="@string/pref_about_title"
-		android:summary="@string/pref_about_summary" />	
 </PreferenceScreen>
