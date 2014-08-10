@@ -431,6 +431,11 @@ public class NmeaParser {
             46           SNR - higher is better
                          for up to 4 satellites per sentence
             *75          the checksum data, always begins with *
+
+
+        Sometimes got $GPGSV,1,1,00*75 when just started
+        or inside building.
+
      */
     String totalGsvSentence = splitter.next();
     String currentGsvSentence = splitter.next();
@@ -445,33 +450,35 @@ public class NmeaParser {
     }
     gnssStatus.setNumSatellites(numSatellitesInView);
 
-    int numRecord = 4;
-    if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
-      numRecord = numSatellitesInView % 4;
-      if (numRecord == 0){
-        numRecord = 4;
+    if (numSatellitesInView != 0) {
+      int numRecord = 4;
+      if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
+        numRecord = numSatellitesInView % 4;
+        if (numRecord == 0){
+          numRecord = 4;
+        }
       }
-    }
-    for (int i =0; i < numRecord; i++){
-      String prn = splitter.next();
-      if (prn != null && !prn.equals("")){
-        String elevation = splitter.next();
-        String azimuth = splitter.next();
-        String snr = splitter.next();
-        GnssSatellite sat = new GnssSatellite(Integer.parseInt(prn));
-        sat.setStatus(parserUtil.parseNmeaFloat(elevation),
-                      parserUtil.parseNmeaFloat(azimuth),
-                      parserUtil.parseNmeaFloat(snr));
-        gnssStatus.addSatellite(sat);
-        activeSatellites.add(Integer.parseInt(prn));
-        } else {
-        break;
+      for (int i =0; i < numRecord; i++){
+        String prn = splitter.next();
+        if (prn != null && !prn.equals("")){
+          String elevation = splitter.next();
+          String azimuth = splitter.next();
+          String snr = splitter.next();
+          GnssSatellite sat = new GnssSatellite(Integer.parseInt(prn));
+          sat.setStatus(parserUtil.parseNmeaFloat(elevation),
+                        parserUtil.parseNmeaFloat(azimuth),
+                        parserUtil.parseNmeaFloat(snr));
+          gnssStatus.addSatellite(sat);
+          activeSatellites.add(Integer.parseInt(prn));
+          } else {
+          break;
+        }
       }
+      if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
+        gnssStatus.clearSatellitesList(activeSatellites);
+      }
+      currentNmeaStatus.recvGSV();
     }
-    if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
-      gnssStatus.clearSatellitesList(activeSatellites);
-    }
-    currentNmeaStatus.recvGSV();
   }
 
 	private void parseVTG(){
