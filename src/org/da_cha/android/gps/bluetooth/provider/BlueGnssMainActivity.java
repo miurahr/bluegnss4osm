@@ -22,6 +22,7 @@ package org.da_cha.android.gps.bluetooth.provider;
 
 import java.util.Iterator;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import org.da_cha.android.gps.bluetooth.provider.R;
 
@@ -53,6 +54,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.util.Log;
 
+import org.da_cha.android.gps.bluetooth.provider.GnssProviderService;
+import org.da_cha.android.gps.nmea.util.GnssStatus;
+
 /**
  * An Activity Class used to start and stop connecting BT GPS/GNSS dongle.
  *
@@ -67,27 +71,9 @@ public class BlueGnssMainActivity extends Activity {
     private boolean conn_state = false;
     private boolean logging_state = false;
 
-    private Messenger mService = null;
+    private GnssProviderService mService = null;
     boolean mIsBound;
-    final Messenger mMessenger = new Messenger(new IncomingHandler());
-    private final GnssLocationReceiver mGnssLocationReceiver = new GnssLocationReceiver();
-
-    class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case GnssProviderService.MSG_UPDATED:
-                String loc = (String) msg.obj;
-                Log.i(LOG_TAG, "handleMessage: get message "+loc);
-                break;
-            case GnssProviderService.MSG_DISCONNECTED:
-                stopProviderService();
-                break;
-            default:
-                super.handleMessage(msg);
-            }
-        }
-    }
+    private final GnssUpdateReceiver mGnssUpdateReceiver = new GnssUpdateReceiver();
 
     /** Called when the activity is first created. */
     @Override
@@ -144,7 +130,7 @@ public class BlueGnssMainActivity extends Activity {
         if (GnssProviderService.isRunning()) {
             doBindService();
             IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-            registerReceiver(mGnssLocationReceiver, filter);
+            registerReceiver(mGnssUpdateReceiver, filter);
         }
     }
     private void doBindService() {
@@ -153,15 +139,6 @@ public class BlueGnssMainActivity extends Activity {
     }
     private void doUnbindService() {
         if (mIsBound) {
-            if (mService != null) {
-                try {
-                    Message msg = Message.obtain(null, GnssProviderService.MSG_UNREGISTER_CLIENT);
-                    msg.replyTo = mMessenger;
-                    mService.send(msg);
-                } catch (RemoteException e) {
-                    // There is nothing special we need to do if the service has crashed.
-                }
-            }
             unbindService(mConnection);
             mIsBound = false;
         }
@@ -180,7 +157,7 @@ public class BlueGnssMainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         doUnbindService();
-        unregisterReceiver(mGnssLocationReceiver);
+        unregisterReceiver(mGnssUpdateReceiver);
     }
 
     private void setBluetoothDeviceName() {
@@ -203,7 +180,7 @@ public class BlueGnssMainActivity extends Activity {
      */
     private void stopProviderService() {
         doUnbindService();
-        unregisterReceiver(mGnssLocationReceiver);
+        unregisterReceiver(mGnssUpdateReceiver);
         // stop service
         Intent i = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
         i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
@@ -229,7 +206,7 @@ public class BlueGnssMainActivity extends Activity {
         doBindService();
         // register Receiver
         IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-        registerReceiver(mGnssLocationReceiver, filter);
+        registerReceiver(mGnssUpdateReceiver, filter);
         conn_state = true;
         // button -> "Stop"
         Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
@@ -325,14 +302,7 @@ public class BlueGnssMainActivity extends Activity {
      */
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            try {
-                Message msg = Message.obtain(null, GnssProviderService.MSG_REGISTER_CLIENT);
-                msg.replyTo = mMessenger;
-                mService.send(msg);
-            } catch (RemoteException e) {
-                // In this case the service has crashed before we could even do anything with it
-            }
+            mService = (GnssProviderService)((GnssProviderService.GnssProviderServiceBinder)service).getService();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -342,17 +312,78 @@ public class BlueGnssMainActivity extends Activity {
     /*
      * for reciever
      */
-    private class GnssLocationReceiver extends BroadcastReceiver {
-      @Override
-      public void onReceive(Context context, Intent intent) {
-       Log.i(LOG_TAG, "onReceive");
-  
-       Bundle bundle = intent.getExtras();
-       String message = bundle.getString("message");
-       Log.i(LOG_TAG, message);
-     }
-   }
+     private class GnssUpdateReceiver extends BroadcastReceiver {
+        private GnssStatus status;
+        @Override
+        public void onReceive(Context context, Intent intent) {
+      
+            Bundle bundle = intent.getExtras();
+            String message = bundle.getString("notification");
+            if (GnssProviderService.NOTIFY_UPDATE_GPS_STATUS.equals(message)){
+               status = mService.getGnssStatus();
+               long fix = status.getFixTimestamp();
+               if (fix != 0) {
+                   update_view(bundle);
+               } else {
+                   update_time(bundle);
+               }
+            } else if (GnssProviderService.NOTIFY_DISCONNECT.equals(message)){
+               stopProviderService();
+            } else {
+               Log.e(LOG_TAG, "Unknown message: "+message);
+            }
+        }
+        private void update_time(Bundle bundle){
+            // Update date/time on View
+            long timestamp = bundle.getLong("timestamp");
+            Time sat_time = new Time();
+            sat_time.set(timestamp);
+            TextView tv = (TextView) findViewById(R.id.main_date_time);
+            tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
+        } 
+        private void update_view(Bundle bundle){
+            // Update all information on main screen
+            // date/time
+            long timestamp = status.getTimestamp();
+            Time sat_time = new Time();
+            sat_time.set(timestamp);
+            TextView tv = (TextView) findViewById(R.id.main_date_time);
+            tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
+            double latitude = status.getLatitude();
+            tv = (TextView) findViewById(R.id.main_lat);
+            tv.setText(lonlat_format(latitude));
+            double longitude = status.getLongitude();
+            tv = (TextView) findViewById(R.id.main_lon);
+            tv.setText(lonlat_format(longitude));
+            float speed = status.getSpeed();
+            tv = (TextView) findViewById(R.id.main_speed);
+            tv.setText(len_format(speed));
+            double hdop = status.getHDOP();
+            tv = (TextView) findViewById(R.id.main_hdop);
+            tv.setText(len_format(hdop));
+            int numNbSat = status.getNbSat();
+            int numSat = status.getNumSatellites();
+            tv = (TextView) findViewById(R.id.main_num_satellites);
+            tv.setText(Integer.toString(numNbSat)+"/"+Integer.toString(numSat));
+        }
+        private String lonlat_format(Double lonlat){
+            NumberFormat format = NumberFormat.getInstance();
+            format.setMaximumFractionDigits(6);
+            return format.format(lonlat);
+        }
+        private String len_format(Double len){
+            NumberFormat format = NumberFormat.getInstance();
+            format.setMaximumFractionDigits(2);
+            return format.format(len);
+        }
+        private String len_format(Float len){
+            NumberFormat format = NumberFormat.getInstance();
+            format.setMaximumFractionDigits(2);
+            return format.format(len);
+        }
 
+
+    }
 }
 
-// vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
+// vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

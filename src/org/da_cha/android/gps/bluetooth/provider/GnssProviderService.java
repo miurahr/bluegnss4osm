@@ -43,6 +43,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.GpsStatus;
 import android.location.GpsStatus.NmeaListener;
 import android.location.GpsStatus.Listener;
 import android.os.Bundle;
@@ -85,6 +86,9 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
 	public static final String PREF_ABOUT = "about";
 	public static final String NOTIFY_UPDATE = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE";
+	public static final String NOTIFY_UPDATE_GPS_STATUS = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_STATUS";
+	public static final String NOTIFY_UPDATE_GPS_FIX = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_FIX";
+	public static final String NOTIFY_DISCONNECT = "org.da_cha.android.gps.bluetooth.provider.intent.notify.DISCONNECT";
 
 	public static final int MSG_REGISTER_CLIENT   = 1;
 	public static final int MSG_UNREGISTER_CLIENT = 2;
@@ -121,16 +125,12 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 
 	private static PowerManager.WakeLock wl;
 
-	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
-    private Messenger mServiceMessenger;
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
         createNewWakeLock();
-        mServiceMessenger = new Messenger(new IncomingHandler());
 	}
 
     @SuppressWarnings("deprecation")
@@ -483,71 +483,53 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
         return isRunning;
     }
 
+
+    public GnssStatus getGnssStatus(){
+        if (nmeaParser == null){
+            return null;
+        }
+        return nmeaParser.getGnssStatus();
+    }
+
+    public class GnssProviderServiceBinder extends Binder {
+            GnssProviderService getService() {
+                return GnssProviderService.this;
+            }
+    }
+
+      private final IBinder mBinder = new GnssProviderServiceBinder();
+
     /* (non-Javadoc)
      * @see android.app.Service#onBind(android.content.Intent)
      */
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(LOG_TAG, "trying access IBinder");
-        return mServiceMessenger.getBinder();
-    }
-
-  /* XXX
-   * keep for note
-  private final IBinder mBinder = new LocalBinder();
-  public class LocalBinder extends Binder {
-        GnssProviderService getService() {
-            // Return this instance of LocalService so clients can call public methods
-            return GnssProviderService.this;
-        }
-  }
-  */
-
-    class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case MSG_REGISTER_CLIENT:
-                mClients.add(msg.replyTo);
-                break;
-            case MSG_UNREGISTER_CLIENT:
-                mClients.remove(msg.replyTo);
-                break;
-            default:
-                super.handleMessage(msg);
-            }
-        }
+        return mBinder;
     }
 
     private void sendGpsDisconnected() {
-        for (int i=mClients.size()-1; i>=0; i--) {
-            try {
-                mClients.get(i).send(Message.obtain(null, MSG_DISCONNECTED, 0, 0));
-            } catch (RemoteException e) {
-                // The client is dead.
-                mClients.remove(i);
-            }
-        }
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.putExtra(
+            "notification", NOTIFY_DISCONNECT);
+        broadcastIntent.setAction(NOTIFY_UPDATE);
+        getBaseContext().sendBroadcast(broadcastIntent);
     }
-    private void sendGpsUpdate(String data) {
-        for (int i=mClients.size()-1; i>=0; i--) {
-            try {
-                Message msg = Message.obtain(null, MSG_UPDATED, data);
-                mClients.get(i).send(msg);
-            } catch (RemoteException e) {
-                // The client is dead.
-                mClients.remove(i);
-            }
+    private void sendGpsUpdate() {
+        if (nmeaParser != null){
+            GnssStatus gnssStatus = nmeaParser.getGnssStatus();
+            long timestamp = gnssStatus.getTimestamp();
+            Intent broadcastIntent = new Intent();
+            broadcastIntent.putExtra("notification", NOTIFY_UPDATE_GPS_STATUS);
+            broadcastIntent.putExtra("timestamp", timestamp);
+            broadcastIntent.setAction(NOTIFY_UPDATE);
+            getBaseContext().sendBroadcast(broadcastIntent);
         }
     }
 
     @Override
     public void onGpsStatusChanged(int event){
-        if (nmeaParser != null){
-            GnssStatus gnssStatus = nmeaParser.getGnssStatus();
-            long timestamp = gnssStatus.getFixTimestamp();
-            sendGpsUpdate(Long.toString(timestamp));
-        }
+        sendGpsUpdate();
     }
 
 	@Override

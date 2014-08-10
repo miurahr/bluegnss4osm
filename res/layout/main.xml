@@ -177,16 +177,37 @@
         android:textSize="20sp"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
-        android:text="@string/main_dcop_title" />
+        android:text="@string/main_hdop_title" />
       <TextView
-        android:id="@+id/main_dcop"
+        android:id="@+id/main_hdop"
         android:layout_width="wrap_content"
         android:layout_height="50sp"
         android:textSize="20sp"
         android:layout_gravity="center"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
-        android:text="@string/main_dcop" />
+        android:text="@string/main_hdop" />
+    </TableRow>
+    <TableRow
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="5dip" >
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="50sp"
+        android:textSize="20sp"
+        android:layout_marginLeft="1dip"
+        android:layout_marginRight="1dip"
+        android:text="@string/main_num_satellites_title" />
+      <TextView
+        android:id="@+id/main_num_satellites"
+        android:layout_width="wrap_content"
+        android:layout_height="50sp"
+        android:textSize="20sp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="1dip"
+        android:layout_marginRight="1dip"
+        android:text="@string/main_num_satellites" />
     </TableRow>
   </TableLayout>
 </LinearLayout>

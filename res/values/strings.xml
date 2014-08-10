@@ -39,14 +39,16 @@
     <string name="main_lon_title">Longitude</string>
     <string name="main_lat_title">Latitude</string>
     <string name="main_speed_title">Speed</string>
-    <string name="main_dcop_title">DCOP</string>
+    <string name="main_hdop_title">HDOP</string>
+    <string name="main_num_satellites_title">Sat Tracked/in View</string>
 
     <string name="main_bluetooth_device_name">N.A.</string>
     <string name="main_date_time">N.A.</string>
     <string name="main_lon">N.A.</string>
     <string name="main_lat">N.A.</string>
     <string name="main_speed">N.A.</string>
-    <string name="main_dcop">N.A.</string>
+    <string name="main_hdop">N.A.</string>
+    <string name="main_num_satellites">N.A.</string>
 
     <string name="pref_start_gps_title">Start/Stop GPS/GNSS</string>
     <string name="pref_start_gps_summary_off">Bluetooth GPS/GNSS is off</string>

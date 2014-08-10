@@ -33,6 +33,7 @@ import org.da_cha.android.gps.nmea.util.GnssSatellite;
 
 public class GnssStatus {
 
+  private long timestamp;
 	private long fixTimestamp;
   private long startTimestamp;
   private long firstFixTimestamp=0;
@@ -153,21 +154,27 @@ public class GnssStatus {
     return this.fixTimestamp;
   }
   public void setFixTimestamp(long timestamp){
+    this.timestamp = timestamp;
     this.fixTimestamp = timestamp;
     if (this.firstFixTimestamp == 0){
       this.firstFixTimestamp = timestamp;
     }
   }
-  public void setStartTimestamp(long timestamp){
-    this.startTimestamp = timestamp;
+  public void setTimestamp(long timestamp){
+    if (this.startTimestamp ==0 ){
+      this.startTimestamp = timestamp;
+    }
+    this.timestamp = timestamp;
   }
-
-
+  public long getTimestamp(){
+    return this.timestamp;
+  }
 
   // clear all
   public void clear(){
     clearTTFF();
     clearSatellitesList();
+    timestamp = 0;
     startTimestamp = 0;
 	  fixTimestamp = 0;
     precision = 10f;

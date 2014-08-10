@@ -107,9 +107,9 @@ public class NmeaParser {
 			String command = splitter.next();
       try {
         if (command.equals("GPGGA")){
+          long updateTime = currentNmeaStatus.getTimestamp(); 
           if (parseGGA()){ // when fixed
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-              long updateTime = currentNmeaStatus.getTimestamp(); 
               firstFixTimestamp = updateTime;
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
               if (!gpsFixNotified) {
@@ -118,7 +118,6 @@ public class NmeaParser {
             }
           } else {
             if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-              long updateTime = currentNmeaStatus.getTimestamp(); 
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
           } 
@@ -126,9 +125,9 @@ public class NmeaParser {
           parseVTG();
           currentGpsStatus = GPS_NOTIFY;
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
+          long updateTime = currentNmeaStatus.getTimestamp(); 
           if (parseRMC()) {
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-              long updateTime = currentNmeaStatus.getTimestamp(); 
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
               firstFixTimestamp = updateTime;
               if (!gpsFixNotified){
@@ -144,7 +143,6 @@ public class NmeaParser {
             }
           } else {
             if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-              long updateTime = currentNmeaStatus.getTimestamp(); 
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
           }
@@ -289,6 +287,8 @@ public class NmeaParser {
       }
       return true;
     } else if(quality.equals("0")){
+      long timestamp = parserUtil.parseNmeaTime(time);
+      gnssStatus.setTimestamp(timestamp);
       return false;
     } else {
       Log.e(LOG_TAG, "Unknown status of GGA quality");
