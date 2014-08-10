@@ -77,7 +77,8 @@ public class BlueGnssMainActivity extends Activity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
             case GnssProviderService.MSG_UPDATED:
-                //loc = (String) msg.obj;
+                String loc = (String) msg.obj;
+                Log.i(LOG_TAG, "handleMessage: get message "+loc);
                 break;
             case GnssProviderService.MSG_DISCONNECTED:
                 stopProviderService();

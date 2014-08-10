@@ -1,4 +1,5 @@
 /*
+ * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
@@ -43,9 +44,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.GpsStatus.NmeaListener;
+import android.location.GpsStatus.Listener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Binder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.PowerManager;
@@ -67,7 +70,7 @@ import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
  * @author Herbert von Broeuschmeul
  *
  */
-public class GnssProviderService extends Service implements NmeaListener {
+public class GnssProviderService extends Service implements NmeaListener, Listener {
 
 	public static final String ACTION_START_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.START_TRACK_RECORDING";
 	public static final String ACTION_STOP_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.STOP_TRACK_RECORDING";
@@ -114,25 +117,28 @@ public class GnssProviderService extends Service implements NmeaListener {
 	private boolean preludeWritten = false;
 	private Toast toast;
 	private static boolean isRunning = false;
-	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
-	private static Location currentLocation;
 	private NmeaParser nmeaParser;
+
 	private static PowerManager.WakeLock wl;
+
+	private ArrayList<Messenger> mClients = new ArrayList<Messenger>();
+    private Messenger mServiceMessenger;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
 		isRunning = true;
-    createNewWakeLock();
+        createNewWakeLock();
+        mServiceMessenger = new Messenger(new IncomingHandler());
 	}
 
-  @SuppressWarnings("deprecation")
-  private void createNewWakeLock(){
+    @SuppressWarnings("deprecation")
+    private void createNewWakeLock(){
 		PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
-    // SCREEN_DIM_WAKE_LOCK is deprecated but no better way to specify from service.
+        // SCREEN_DIM_WAKE_LOCK is deprecated but no better way to specify from service.
 		wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
-  }
+    }
 
 	/* (non-Javadoc)
 	 * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
@@ -474,14 +480,27 @@ public class GnssProviderService extends Service implements NmeaListener {
     {
         return isRunning;
     }
-	/* (non-Javadoc)
-	 * @see android.app.Service#onBind(android.content.Intent)
-	 */
-	@Override
-	public IBinder onBind(Intent intent) {
-	  Log.d(LOG_TAG, "trying access IBinder");
-		return null;
-	}
+
+    /* (non-Javadoc)
+     * @see android.app.Service#onBind(android.content.Intent)
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d(LOG_TAG, "trying access IBinder");
+        return mServiceMessenger.getBinder();
+    }
+
+  /* XXX
+   * keep for note
+  private final IBinder mBinder = new LocalBinder();
+  public class LocalBinder extends Binder {
+        GnssProviderService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return GnssProviderService.this;
+        }
+  }
+  */
+
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -497,6 +516,7 @@ public class GnssProviderService extends Service implements NmeaListener {
             }
         }
     }
+
     private void sendGpsDisconnected() {
         for (int i=mClients.size()-1; i>=0; i--) {
             try {
@@ -515,8 +535,16 @@ public class GnssProviderService extends Service implements NmeaListener {
             } catch (RemoteException e) {
                 // The client is dead.
                 mClients.remove(i);
-
             }
+        }
+    }
+
+    @Override
+    public void onGpsStatusChanged(int event){
+        if (nmeaParser != null){
+            GnssStatus gnssStatus = nmeaParser.getGnssStatus();
+            long timestamp = gnssStatus.getFixTimestamp();
+            sendGpsUpdate(Long.toString(timestamp));
         }
     }
 
@@ -525,3 +553,5 @@ public class GnssProviderService extends Service implements NmeaListener {
 		addNMEAString(data);
 	}
 }
+
+// vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
