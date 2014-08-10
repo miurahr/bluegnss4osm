@@ -171,6 +171,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 						wl.acquire();
 						boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
 						gpsMockProvider.enableMockLocationProvider(force);
+					    gpsManager.addGpsStatusListener(this);
 						Intent myIntent = new Intent(this, BlueGnssMainActivity.class);
 						PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 						Context appContext = getApplicationContext();
@@ -222,6 +223,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 			}
 		} else if (ACTION_STOP_GPS_PROVIDER.equals(intent.getAction())){
 			wl.release();
+            gpsManager.removeGpsStatusListener(this);
 			stopSelf();
 		} else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
 			if (gpsManager != null){
