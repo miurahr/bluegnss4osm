@@ -43,6 +43,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.GpsStatus;
 import android.location.GpsStatus.NmeaListener;
 import android.location.GpsStatus.Listener;
 import android.os.Bundle;
@@ -85,6 +86,8 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
 	public static final String PREF_ABOUT = "about";
 	public static final String NOTIFY_UPDATE = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE";
+	public static final String NOTIFY_UPDATE_GPS_STATUS = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_STATUS";
+	public static final String NOTIFY_UPDATE_GPS_FIX = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_FIX";
 	public static final String NOTIFY_DISCONNECT = "org.da_cha.android.gps.bluetooth.provider.intent.notify.DISCONNECT";
 
 	public static final int MSG_REGISTER_CLIENT   = 1;
@@ -480,11 +483,20 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
         return isRunning;
     }
 
+
+    public GnssStatus getGnssStatus(){
+        if (nmeaParser == null){
+            return null;
+        }
+        return nmeaParser.getGnssStatus();
+    }
+
     public class GnssProviderServiceBinder extends Binder {
             GnssProviderService getService() {
                 return GnssProviderService.this;
             }
     }
+
       private final IBinder mBinder = new GnssProviderServiceBinder();
 
     /* (non-Javadoc)
@@ -499,25 +511,25 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     private void sendGpsDisconnected() {
         Intent broadcastIntent = new Intent();
         broadcastIntent.putExtra(
-            "message", NOTIFY_DISCONNECT);
+            "notification", NOTIFY_DISCONNECT);
         broadcastIntent.setAction(NOTIFY_UPDATE);
         getBaseContext().sendBroadcast(broadcastIntent);
     }
-    private void sendGpsUpdate(String data) {
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.putExtra(
-            "message", NOTIFY_UPDATE);
-        broadcastIntent.setAction(NOTIFY_UPDATE);
-        getBaseContext().sendBroadcast(broadcastIntent);
+    private void sendGpsUpdate() {
+        if (nmeaParser != null){
+            GnssStatus gnssStatus = nmeaParser.getGnssStatus();
+            long timestamp = gnssStatus.getTimestamp();
+            Intent broadcastIntent = new Intent();
+            broadcastIntent.putExtra("notification", NOTIFY_UPDATE_GPS_STATUS);
+            broadcastIntent.putExtra("timestamp", timestamp);
+            broadcastIntent.setAction(NOTIFY_UPDATE);
+            getBaseContext().sendBroadcast(broadcastIntent);
+        }
     }
 
     @Override
     public void onGpsStatusChanged(int event){
-        if (nmeaParser != null){
-            GnssStatus gnssStatus = nmeaParser.getGnssStatus();
-            long timestamp = gnssStatus.getFixTimestamp();
-            sendGpsUpdate(Long.toString(timestamp));
-        }
+        sendGpsUpdate();
     }
 
 	@Override
