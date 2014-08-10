@@ -28,9 +28,11 @@ import org.da_cha.android.gps.bluetooth.provider.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -68,6 +70,7 @@ public class BlueGnssMainActivity extends Activity {
     private Messenger mService = null;
     boolean mIsBound;
     final Messenger mMessenger = new Messenger(new IncomingHandler());
+    private final GnssLocationReceiver mGnssLocationReceiver = new GnssLocationReceiver();
 
     class IncomingHandler extends Handler {
         @Override
@@ -139,6 +142,8 @@ public class BlueGnssMainActivity extends Activity {
     private void CheckIfServiceIsRunning() {
         if (GnssProviderService.isRunning()) {
             doBindService();
+            IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
+            registerReceiver(mGnssLocationReceiver, filter);
         }
     }
     private void doBindService() {
@@ -173,6 +178,8 @@ public class BlueGnssMainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        doUnbindService();
+        unregisterReceiver(mGnssLocationReceiver);
     }
 
     private void setBluetoothDeviceName() {
@@ -195,6 +202,7 @@ public class BlueGnssMainActivity extends Activity {
      */
     private void stopProviderService() {
         doUnbindService();
+        unregisterReceiver(mGnssLocationReceiver);
         // stop service
         Intent i = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
         i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
@@ -218,6 +226,9 @@ public class BlueGnssMainActivity extends Activity {
         }catch(InterruptedException e){}
         // Bound service.
         doBindService();
+        // register Receiver
+        IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
+        registerReceiver(mGnssLocationReceiver, filter);
         conn_state = true;
         // button -> "Stop"
         Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
@@ -327,6 +338,19 @@ public class BlueGnssMainActivity extends Activity {
             mService = null;
         }
     };
+    /*
+     * for reciever
+     */
+    private class GnssLocationReceiver extends BroadcastReceiver {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+       Log.i(LOG_TAG, "onReceive");
+  
+       Bundle bundle = intent.getExtras();
+       String message = bundle.getString("message");
+       Log.i(LOG_TAG, message);
+     }
+   }
 
 }
 

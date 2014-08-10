@@ -56,6 +56,7 @@ import android.widget.Toast;
 
 import org.da_cha.android.gps.bluetooth.provider.R;
 import org.da_cha.android.gps.nmea.util.NmeaParser;
+import org.da_cha.android.gps.nmea.util.GnssStatus;
 import org.da_cha.android.gps.bluetooth.provider.BlueGnssMainActivity;
 import org.da_cha.android.gps.bluetooth.provider.BluetoothGnssManager;
 import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
@@ -68,11 +69,11 @@ import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
  */
 public class GnssProviderService extends Service implements NmeaListener {
 
-	public static final String ACTION_START_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.START_TRACK_RECORDING";
-	public static final String ACTION_STOP_TRACK_RECORDING = "org.broeuschmeul.android.gps.bluetooth.tracker.nmea.intent.action.STOP_TRACK_RECORDING";
-	public static final String ACTION_START_GPS_PROVIDER = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.START_GPS_PROVIDER";
-	public static final String ACTION_STOP_GPS_PROVIDER = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.STOP_GPS_PROVIDER";
-	public static final String ACTION_CONFIGURE_SIRF_GPS = "org.broeuschmeul.android.gps.bluetooth.provider.nmea.intent.action.CONFIGURE_SIRF_GPS";
+	public static final String ACTION_START_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.START_TRACK_RECORDING";
+	public static final String ACTION_STOP_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.STOP_TRACK_RECORDING";
+	public static final String ACTION_START_GPS_PROVIDER = "org.da_cha.android.gps.bluetooth.provider.intent.action.START_GPS_PROVIDER";
+	public static final String ACTION_STOP_GPS_PROVIDER = "org.da_cha.android.gps.bluetooth.provider.intent.action.STOP_GPS_PROVIDER";
+	public static final String ACTION_CONFIGURE_SIRF_GPS = "org.da-cha.android.gps.bluetooth.provider.intent.action.CONFIGURE_SIRF_GPS";
 	public static final String PREF_GPS_LOCATION_PROVIDER = "gpsLocationProviderKey";
 	public static final String PREF_FORCE_ENABLE_PROVIDER = "forceEnableProvider";
 	public static final String PREF_CONNECTION_RETRIES = "connectionRetries";
@@ -80,6 +81,7 @@ public class GnssProviderService extends Service implements NmeaListener {
 	public static final String PREF_TRACK_FILE_PREFIX = "trackFilePrefix";
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
 	public static final String PREF_ABOUT = "about";
+	public static final String NOTIFY_UPDATE = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE";
 
 	public static final int MSG_REGISTER_CLIENT   = 1;
 	public static final int MSG_UNREGISTER_CLIENT = 2;
