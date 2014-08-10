@@ -157,7 +157,36 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 				 */
 					gpsManager = new BluetoothGnssManager(this, deviceAddress, maxConRetries);
 					gpsMockProvider = new MockLocationProvider(this);
-					nmeaParser = new NmeaParser(10f);
+                    /*
+                     * Use the result of
+                     * 
+                     * http://edu-observatory.org/gps/gps_accuracy.html
+                     *
+                     *  Table 2   Standard error model - L1 C/A (no SA)
+                     *
+                     *                                 One-sigma error, m
+                     *
+                     *  Error source      		Bias 	Random 	Total   DGPS
+                     *  ------------------------------------------------------------
+                     *  Ephemeris data 			2.1 	0.0 	2.1	0.0
+                     *  Satellite clock 		2.0 	0.7 	2.1     0.0
+                     *  Ionosphere 			4.0 	0.5 	4.0     0.4
+                     *  Troposphere 			0.5 	0.5 	0.7     0.2
+                     *  Multipath 			1.0 	1.0 	1.4     1.4
+                     *  Receiver measurement 		0.5 	0.2  	0.5     0.5
+                     *  ------------------------------------------------------------
+                     *  User equivalent range 
+                     *    error (UERE), rms* 	 	5.1 	1.4 	5.3     1.6
+                     *  Filtered UERE, rms 		5.1 	0.4  	5.1     1.5
+                     *  ------------------------------------------------------------
+                     *
+                     *  Vertical one-sigma errors--VDOP= 2.5           12.8     3.9
+                     *  Horizontal one-sigma errors--HDOP= 2.0         10.2     3.1
+                     *
+                     * -----------------------------------------------------------------
+                     *  I adopt 5.1
+                     */
+					nmeaParser = new NmeaParser(5.1f);
 					// register
 					gpsManager.setGpsMockProvider(gpsMockProvider);
 					gpsManager.setNMEAParser(nmeaParser);
