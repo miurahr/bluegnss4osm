@@ -85,6 +85,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 	public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
 	public static final String PREF_ABOUT = "about";
 	public static final String NOTIFY_UPDATE = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE";
+	public static final String NOTIFY_DISCONNECT = "org.da_cha.android.gps.bluetooth.provider.intent.notify.DISCONNECT";
 
 	public static final int MSG_REGISTER_CLIENT   = 1;
 	public static final int MSG_UNREGISTER_CLIENT = 2;
@@ -498,14 +499,14 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     private void sendGpsDisconnected() {
         Intent broadcastIntent = new Intent();
         broadcastIntent.putExtra(
-            "message", "BYE, GNSS!");
+            "message", NOTIFY_DISCONNECT);
         broadcastIntent.setAction(NOTIFY_UPDATE);
         getBaseContext().sendBroadcast(broadcastIntent);
     }
     private void sendGpsUpdate(String data) {
         Intent broadcastIntent = new Intent();
         broadcastIntent.putExtra(
-            "message", "Hello, GNSS!");
+            "message", NOTIFY_UPDATE);
         broadcastIntent.setAction(NOTIFY_UPDATE);
         getBaseContext().sendBroadcast(broadcastIntent);
     }

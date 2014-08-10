@@ -313,11 +313,17 @@ public class BlueGnssMainActivity extends Activity {
     private class GnssUpdateReceiver extends BroadcastReceiver {
       @Override
       public void onReceive(Context context, Intent intent) {
-       Log.i(LOG_TAG, "onReceive");
+       Log.d(LOG_TAG, "onReceive");
   
        Bundle bundle = intent.getExtras();
        String message = bundle.getString("message");
-       Log.i(LOG_TAG, message);
+       if (GnssProviderService.NOTIFY_UPDATE.equals(message)){
+           Log.d(LOG_TAG, "update");
+       } else if (GnssProviderService.NOTIFY_DISCONNECT.equals(message)){
+           stopProviderService();
+       } else {
+           Log.e(LOG_TAG, "Unknown message: "+message);
+       }
      }
    }
 
