@@ -148,26 +148,56 @@ public class NmeaParser {
           }
         } else if (command.equals("GPGSA")){
           // GPS active satellites
-          parseGSA();
+          parseGSA("GP");
         } else if (command.equals("GNGSA")){
           // gps/glonass active satellites
           // two GNGSA will be generated.
-          parseGSA();
+          parseGSA("GN");
         } else if (command.equals("QZGSA")){
           // QZSS active satellites
-          parseGSA();
+          parseGSA("QZ");
         } else if (command.equals("GPGSV")){
           // GPS satellites in View
-          parseGSV();
+          parseGSV("GP");
         } else if (command.equals("GLGSV")){
           // Glonass satellites in View
-          parseGSV();
+          parseGSV("GL");
+        } else if (command.equals("QZGSV")){
+          // QZSS satellites in View
+          parseGSV("QZ");
         } else if (command.equals("GPGLL")){
           // GPS fix
           parseGLL();
         } else if (command.equals("GNGLL")){
           // multi-GNSS fix or glonass/qzss fix
           parseGLL();
+        } else if (command.equals("GNGNS")){
+          parseGNS();
+        } else if (command.equals("GPGRS")){
+          /* range residuals
+           * 1 	UTC of GGA position fix
+           * 2 	Residuals
+           *    0: used to calculate position in GGA line
+           *    1: recomputed after GGA was computed
+           * 3–14 	Range residuals in the solution, in meters
+           */
+          Log.i(LOG_TAG, "Range residuals message: "+System.currentTimeMillis()+" "+gpsSentence);
+        } else if (command.equals("GPLLQ")){
+          /* Leica local position and quality
+           *
+           * 1 	hhmmss.ss - UTC time of position
+           * 2 	ddmmyy - UTC date
+           * 3 	xxx.xxx - Grid easting (meters)
+           * 4 	M - Meter, fixed text
+           * 5 	xxxx.xxxx - Grid northing (meters)
+           * 6 	M - Meter, fixed text
+           * 7 	x - GPS quality. 0 = not valid. 1 = GPS Nav Fix. 2 = DGPS Fix. 3 = RTK Fix.
+           * 8 	x - Number of satellites used in computation
+           * 9 	xx.xx - Position quality (meters)
+           * 10 	xxxx.xxxx - Height (meters)
+           * 11 	M - Meter, fixed text
+           */
+          Log.i(LOG_TAG, "Leica local position and quality message: "+System.currentTimeMillis()+" "+gpsSentence);
         } else {
           Log.d(LOG_TAG, "Unkown nmea data: "+System.currentTimeMillis()+" "+gpsSentence);
         }
@@ -363,7 +393,8 @@ public class NmeaParser {
     return false;
 	}
 
-	private void parseGSA(){
+	private void parseGSA(String system){
+    // system can be GP GN GL QZ 
     /*  $GPGSA,A,3,04,05,,09,12,,,24,,,,,2.5,1.3,2.1*39
 
       Where:
@@ -386,16 +417,19 @@ public class NmeaParser {
     if (! "1".equals(fixType)) {
       prnList.clear();
       String prn;
-      boolean multi_seq = false;
+
+      // Other than GP should be added to GP data.
+      boolean multi_seq = true;
+      if ("GP".equals(system)){
+        multi_seq = false; 
+      }
+
       for (int i=0 ; i<12  ; i++){
         prn = splitter.next();
         if (prn != null && !prn.equals("")){
           if (i == 0){
             Integer numPrn = Integer.parseInt(prn);
             prnList.add(numPrn);
-            if (numPrn > 32){ // GPS RPN should be 01-32
-              multi_seq = true;
-            }
           } else {
             prnList.add(Integer.parseInt(prn));
           }
@@ -416,9 +450,10 @@ public class NmeaParser {
       gnssStatus.setHDOP(Float.parseFloat(hdop));
       gnssStatus.setVDOP(Float.parseFloat(vdop));
     }
+    currentNmeaStatus.recvGSA();
 	}
 
-	private void parseGSV(){
+	private void parseGSV(String system){
     /*   $GPGSV,2,1,08,01,40,083,46,02,17,308,41,12,07,344,39,14,22,228,45*75
         Where:
             GSV          Satellites in view
@@ -445,10 +480,11 @@ public class NmeaParser {
     Integer numTotalGsvSentence   = Integer.parseInt(totalGsvSentence);
     Integer numSatellitesInView   = Integer.parseInt(satellitesInView);
 
-    if (numCurrentGsvSentence.equals("1")){ // first sentence
+    if (numCurrentGsvSentence.equals("1")&&
+        "GP".equals(system)){ // first sentence and GP
       activeSatellites.clear();
     }
-    gnssStatus.setNumSatellites(numSatellitesInView);
+    gnssStatus.addNumSatellites(numSatellitesInView);
 
     if (numSatellitesInView != 0) {
       int numRecord = 4;
@@ -464,12 +500,23 @@ public class NmeaParser {
           String elevation = splitter.next();
           String azimuth = splitter.next();
           String snr = splitter.next();
-          GnssSatellite sat = new GnssSatellite(Integer.parseInt(prn));
+          int nprn = Integer.parseInt(prn);
+          if (system.equals("QZ") && nprn < 32){
+            // some GNSS report QZ*** and PRN=1 for QZSS.
+            // other report  GP*** and RPN=193.
+            nprn = nprn + 192; // renumber: QZSS  193..195
+          } else if (system.equals("GL") && nprn < 64) {
+            nprn = nprn + 64; // renumber: GLONASS  65..99
+          } else if (system.equals("GA") && nprn < 37) {
+            // Galileo has Satellite ID 1..36
+            nprn = nprn + 160; // renumber: Galileo 160..195
+          }
+          GnssSatellite sat = new GnssSatellite(system, Integer.parseInt(prn));
           sat.setStatus(parserUtil.parseNmeaFloat(elevation),
                         parserUtil.parseNmeaFloat(azimuth),
                         parserUtil.parseNmeaFloat(snr));
           gnssStatus.addSatellite(sat);
-          activeSatellites.add(Integer.parseInt(prn));
+          activeSatellites.add(nprn);
           } else {
           break;
         }
@@ -477,8 +524,8 @@ public class NmeaParser {
       if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
         gnssStatus.clearSatellitesList(activeSatellites);
       }
-      currentNmeaStatus.recvGSV();
     }
+    currentNmeaStatus.recvGSV();
   }
 
 	private void parseVTG(){
@@ -510,6 +557,8 @@ public class NmeaParser {
     //splitter.next();
     // for NMEA 0183 version 3.00 active the Mode indicator field is added
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=not valid, S=Simulator )
+ 
+    // notify VTG received
     currentNmeaStatus.recvVTG();
 	}
 
@@ -548,6 +597,71 @@ public class NmeaParser {
     // for NMEA 0183 version 3.00 active the Mode indicator field is 
     // Mode indicator, (A=autonomous, D=differential, E=Estimated, N=
     currentNmeaStatus.recvGLL(parserUtil.parseNmeaTime(time));
+  }
+
+  public void parseGNS(){
+    /*
+     * GNS: GNSS fix data
+     *
+     * GNSS capable receivers may output this message with the GN talker ID
+     * GNSS capable receivers also output this message with the GP and/or GL talker ID
+     * when using more than one constellation for the position fix
+     * An example of the GNS message output from a GNSS capable receiver is:
+     * $GNGNS,014035.00,4332.69262,S,17235.48549,E,RR,13,0.9,25.63,11.24,,*70<CR><LF>
+     * $GPGNS,014035.00,,,,,,8,,,,1.0,23*76<CR><LF>
+     * $GLGNS,014035.00,,,,,,5,,,,1.0,23*67<CR><LF>
+     *
+     * Field 	Meaning
+     * 1 	UTC of position fix
+     * 2 	Latitude
+     * 3 	Direction of latitude:
+     *                N: North
+     *                S: South
+     * 4 	Longitude
+     * 5 	Direction of longitude:
+     *                E: East
+     *                W: West
+     * 6 	Mode indicator:
+     *  Variable character field with one character for each supported constellation.
+     *  First character is for GPS
+     *  Second character is for GLONASS
+     *  Subsequent characters will be added for new constellation
+     *  
+     *     N = No fix. not used in position fix, or fix not valid
+     *     A = Autonomous
+     *     D = Differential
+     *     P = Precise(no SA, P code)
+     *     R = RTK
+     *     F = Float RTK
+     *     E = Estimated
+     *     M = Manual Input Mode
+     *     S = Simulator Mode
+     * 7 	Number of SVs in use, range 00–99
+     * 8 	HDOP calculated using all the satellites (GPS, GLONASS, etc)
+     * 9 	Orthometric height in meters
+     * 10	Geoidal separation in meters
+     *    “-” = mean-sea-level surface below ellipsoid.
+     * 11 	Age of differential data
+     *      - Null if talker ID is GN, 
+     *        additional GNS messages follow with GP 
+     *        and/or GL Age of differential data
+     * 12 	Reference station ID1, range 0000-4095
+     *      - Null if talker ID is GN,
+     *        additional GNS messages follow with GP
+     *        and/or GL Reference station ID
+     * 13 	The checksum data, always begins with *
+     */
+    String time = splitter.next();
+    //String latitude = splitter.next();
+    //String latDir = splitter.next();
+    //String longitude = splitter.next();
+    //String lonDir = splitter.next();
+    //String mode   = splitter.next();
+    //String numNbSat = splitter.next();
+    //String hdop   = splitter.next();
+    //String height = splitter.next();
+    //String geoid  = splitter.next();
+    currentNmeaStatus.recvGNS(parserUtil.parseNmeaTime(time));
   }
 
 	public byte computeChecksum(String s){

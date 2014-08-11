@@ -71,6 +71,9 @@ public class NmeaState {
   public boolean recvGLL(long time){
     return (this.timestamp == time && this.currentStatus == nmeastate.RECEIVE);
   }
+  public boolean recvGNS(long time){
+    return (this.timestamp == time && this.currentStatus == nmeastate.RECEIVE);
+  }
   public boolean recvGSA(){
     return (this.currentStatus == nmeastate.RECEIVE);
   }
