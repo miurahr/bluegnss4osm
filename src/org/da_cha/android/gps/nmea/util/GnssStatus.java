@@ -164,6 +164,10 @@ public class GnssStatus {
     if (this.startTimestamp ==0 ){
       this.startTimestamp = timestamp;
     }
+    if (this.timestamp != timestamp){
+      // new result will be notified.
+      this.numSatellites = 0;
+    }
     this.timestamp = timestamp;
   }
   public long getTimestamp(){
@@ -301,6 +305,9 @@ public class GnssStatus {
   }
   public void setNumSatellites(int num){
     this.numSatellites = num;
+  }
+  public void addNumSatellites(int num){
+    this.numSatellites = this.numSatellites + num;
   }
   public int getFixMode(){
     return this.fixMode;

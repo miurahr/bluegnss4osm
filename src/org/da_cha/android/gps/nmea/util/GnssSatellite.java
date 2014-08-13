@@ -28,7 +28,7 @@ public class GnssSatellite {
   // cannot change rpn
   private int rpn;
 
-  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS}
+  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU}
   private SatelliteSystem system;
 
   /*
@@ -68,8 +68,23 @@ public class GnssSatellite {
    *
    */
 
-  public GnssSatellite(int rpn){
+  public GnssSatellite(String systemid, int rpn){
     this.rpn = rpn;
+    setSystem(systemid);
+  }
+
+  private void setSystem(String systemid){
+    if (systemid.equals("GP")){
+      this.system = SatelliteSystem.GPS;
+    } else if (systemid.equals("GL")){
+      this.system = SatelliteSystem.GLONASS;
+    } else if (systemid.equals("QZ")){
+      this.system = SatelliteSystem.QZSS;
+    } else if (systemid.equals("GA")){
+      this.system = SatelliteSystem.GALILEO;
+    } else {
+      // unknown satellite
+    }
   }
 
   public int getRpn(){
@@ -82,7 +97,7 @@ public class GnssSatellite {
   // object that has same RPN are equals for satellite.
   @Override
   public int hashCode(){
-    return this.rpn;
+    return this.rpn + this.system.ordinal() * 100;
   }
 
   @Override
@@ -93,27 +108,14 @@ public class GnssSatellite {
     if (! (o instanceof GnssSatellite)) {
       return false;
     }
-    return (((GnssSatellite)o).getRpn() == this.rpn);
+    GnssSatellite sat = (GnssSatellite)o;
+    return ((sat.getRpn() == this.rpn) && sat.getSystemPrefix().equals(this.getSystemPrefix()));
   }
 
   public void setStatus(float azimuth, float elevation, float snr){
     this.azimuth = azimuth;
     this.elevation = elevation;
     this.snr = snr;
-  }
-
-  public void setSystem(String systemid){
-    if (systemid.equals("GP")){
-      this.system = SatelliteSystem.GPS;
-    } else if (systemid.equals("GL")){
-      this.system = SatelliteSystem.GLONASS;
-    } else if (systemid.equals("QZ")){
-      this.system = SatelliteSystem.QZSS;
-    } else if (systemid.equals("GA")){
-      this.system = SatelliteSystem.GALILEO;
-    } else {
-      // unknown satellite
-    }
   }
 
   public String getSystemPrefix(){
