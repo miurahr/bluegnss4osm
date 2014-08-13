@@ -97,7 +97,7 @@ public class GnssSatellite {
   // object that has same RPN are equals for satellite.
   @Override
   public int hashCode(){
-    return this.rpn;
+    return this.rpn + this.system.ordinal() * 100;
   }
 
   @Override
@@ -108,7 +108,8 @@ public class GnssSatellite {
     if (! (o instanceof GnssSatellite)) {
       return false;
     }
-    return (((GnssSatellite)o).getRpn() == this.rpn);
+    GnssSatellite sat = (GnssSatellite)o;
+    return ((sat.getRpn() == this.rpn) && sat.getSystemPrefix().equals(this.getSystemPrefix()));
   }
 
   public void setStatus(float azimuth, float elevation, float snr){
