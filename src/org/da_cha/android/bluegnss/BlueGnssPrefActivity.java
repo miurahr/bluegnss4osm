@@ -3,28 +3,29 @@
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
- * This file is part of BluetoothGPS4Droid.
+ * This file is part of BlueGnss4OSM.
  *
- * BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+ * This is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * BluetoothGPS4Droid is distributed in the hope that it will be useful,
+ * This is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  *  You should have received a copy of the GNU General Public License
- *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
+ *  along with it. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.bluetooth.provider;
+package org.da_cha.android.bluegnss;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.da_cha.android.gps.bluetooth.provider.R;
+import org.da_cha.android.bluegnss.GnssProviderService;
+import org.da_cha.android.gps.R;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -54,14 +55,14 @@ import android.widget.TextView;
  */
 public class BlueGnssPrefActivity extends PreferenceActivity implements OnPreferenceChangeListener, OnSharedPreferenceChangeListener {
 
-	/**
-	 * Tag used for log messages
-	 */
-	private static final String LOG_TAG = "BlueGPS";
-	
-	private SharedPreferences sharedPref ;
-	private BluetoothAdapter bluetoothAdapter = null;
-	
+  /**
+   * Tag used for log messages
+   */
+  private static final String LOG_TAG = "BlueGPS";
+  
+  private SharedPreferences sharedPref ;
+  private BluetoothAdapter bluetoothAdapter = null;
+  
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,42 +107,42 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
    }
  
     /* (non-Javadoc)
-	 * @see android.app.Activity#onResume()
-	 */
-	@Override
-	protected void onResume() {
-		this.updateDevicePreferenceList();
-		super.onResume();
-	}
+   * @see android.app.Activity#onResume()
+   */
+  @Override
+  protected void onResume() {
+    this.updateDevicePreferenceList();
+    super.onResume();
+  }
 
-	private void updateDevicePreferenceSummary(){
+  private void updateDevicePreferenceSummary(){
         // update bluetooth device summary
-		String deviceName = "";
+    String deviceName = "";
         ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
         String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
         if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
-        	deviceName = bluetoothAdapter.getRemoteDevice(deviceAddress).getName();
+          deviceName = bluetoothAdapter.getRemoteDevice(deviceAddress).getName();
         }
         prefDevices.setSummary(getString(R.string.pref_bluetooth_device_summary, deviceName));
     }   
 
-	private void updateDevicePreferenceList(){
+  private void updateDevicePreferenceList(){
         // update bluetooth device summary
-		updateDevicePreferenceSummary();
-		// update bluetooth device list
+    updateDevicePreferenceSummary();
+    // update bluetooth device list
         ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
         Set<BluetoothDevice> pairedDevices = new HashSet<BluetoothDevice>();
         if (bluetoothAdapter != null){
-        	pairedDevices = bluetoothAdapter.getBondedDevices();  
+          pairedDevices = bluetoothAdapter.getBondedDevices();  
         }
         String[] entryValues = new String[pairedDevices.size()];
         String[] entries = new String[pairedDevices.size()];
         int i = 0;
-    	    // Loop through paired devices
+          // Loop through paired devices
         for (BluetoothDevice device : pairedDevices) {
-        	// Add the name and address to the ListPreference enties and entyValues
-        	Log.v(LOG_TAG, "device: "+device.getName() + " -- " + device.getAddress());
-        	entryValues[i] = device.getAddress();
+          // Add the name and address to the ListPreference enties and entyValues
+          Log.v(LOG_TAG, "device: "+device.getName() + " -- " + device.getAddress());
+          entryValues[i] = device.getAddress();
             entries[i] = device.getName();
             i++;
         }
@@ -153,46 +154,47 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
         this.onContentChanged();
     }
     
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
-	}
-	
-	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    sharedPref.unregisterOnSharedPreferenceChangeListener(this);
+  }
+  
+  @Override
+  public boolean onPreferenceChange(Preference preference, Object newValue) {
+    // TODO Auto-generated method stub
+    return false;
+  }
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (GnssProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
-			updateDevicePreferenceSummary();
-		} else if (GnssProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_GGA.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_RMC.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_VTG.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_GSA.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_GSV.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_ZDA.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_SBAS.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_NMEA.equals(key)
-				|| GnssProviderService.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
-		){
-			enableSirfFeature(key);
-		}
-		this.updateDevicePreferenceList();
-	}	
-	private void enableSirfFeature(String key){
-		CheckBoxPreference pref = (CheckBoxPreference)(findPreferenceActivity(key));
-		if (pref.isChecked() != sharedPref.getBoolean(key, false)){
-			pref.setChecked(sharedPref.getBoolean(key, false));
-		} else {
-			Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
-			configIntent.putExtra(key, pref.isChecked());
-			configIntent.setClass(BlueGnssPrefActivity.this, GnssProviderService.class);
-			startService(configIntent);
-		}
-	}
+  @Override
+  public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    if (GnssProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
+      updateDevicePreferenceSummary();
+    } else if (GnssProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_GGA.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_RMC.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_VTG.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_GSA.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_GSV.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_ZDA.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_SBAS.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_NMEA.equals(key)
+        || GnssProviderService.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
+    ){
+      enableSirfFeature(key);
+    }
+    this.updateDevicePreferenceList();
+  } 
+  private void enableSirfFeature(String key){
+    CheckBoxPreference pref = (CheckBoxPreference)(findPreferenceActivity(key));
+    if (pref.isChecked() != sharedPref.getBoolean(key, false)){
+      pref.setChecked(sharedPref.getBoolean(key, false));
+    } else {
+      Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
+      configIntent.putExtra(key, pref.isChecked());
+      configIntent.setClass(BlueGnssPrefActivity.this, GnssProviderService.class);
+      startService(configIntent);
+    }
+  }
 }
+// vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

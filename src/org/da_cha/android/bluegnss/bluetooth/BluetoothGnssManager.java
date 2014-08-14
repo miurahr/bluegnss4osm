@@ -19,7 +19,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.bluetooth.provider;
+package org.da_cha.android.bluegnss.bluetooth;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,10 +37,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.da_cha.android.gps.bluetooth.provider.R;
-import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
-import org.da_cha.android.gps.nmea.util.NmeaParser;
-import org.da_cha.android.gps.sirf.util.SirfUtils;
+import org.da_cha.android.bluegnss.GnssProviderService;
+import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
+import org.da_cha.android.bluegnss.provider.MockLocationProvider;
+import org.da_cha.android.bluegnss.sirf.util.SirfUtils;
+import org.da_cha.android.gps.R;
 
 import android.app.Notification;
 import android.app.NotificationManager;

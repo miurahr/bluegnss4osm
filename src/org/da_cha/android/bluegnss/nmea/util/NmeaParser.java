@@ -19,7 +19,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.nmea.util;
+package org.da_cha.android.bluegnss.nmea.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,9 +34,9 @@ import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
 
-import org.da_cha.android.gps.bluetooth.provider.MockLocationProvider;
-import org.da_cha.android.gps.nmea.util.GnssSatellite;
-import org.da_cha.android.gps.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.nmea.util.GnssSatellite;
+import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.provider.MockLocationProvider;
 
 /**
  * This class is used to parse NMEA sentences an generate the Android Locations when there is a new GPS FIX.

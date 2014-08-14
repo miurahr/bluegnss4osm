@@ -18,7 +18,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.sirf.util;
+package org.da_cha.android.bluegnss.sirf.util;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;

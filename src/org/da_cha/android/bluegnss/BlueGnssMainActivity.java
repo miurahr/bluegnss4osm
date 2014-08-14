@@ -2,29 +2,31 @@
  * Copyright (C) 2014 Hiroshi Miura
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  *
- * This file is part of BluetoothGPS4Droid.
+ * This file is part of BlueGnss4OSM.
  *
- * BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+ * This is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * BluetoothGPS4Droid is distributed in the hope that it will be useful,
+ * This is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
+ *  along with it. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.bluetooth.provider;
+package org.da_cha.android.bluegnss;
 
 import java.util.Iterator;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import org.da_cha.android.gps.bluetooth.provider.R;
+import org.da_cha.android.bluegnss.GnssProviderService;
+import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.gps.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -53,9 +55,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.util.Log;
-
-import org.da_cha.android.gps.bluetooth.provider.GnssProviderService;
-import org.da_cha.android.gps.nmea.util.GnssStatus;
+import android.support.v4.app.FragmentActivity;
 
 /**
  * An Activity Class used to start and stop connecting BT GPS/GNSS dongle.
@@ -77,10 +77,9 @@ public class BlueGnssMainActivity extends Activity {
 
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
         setContentView(R.layout.main);
 
         this.setBluetoothDeviceName();
@@ -106,8 +105,8 @@ public class BlueGnssMainActivity extends Activity {
             btnStartLogging.setEnabled(false);
             btnStartStop.setText(R.string.main_start);
         }
-
     }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
