@@ -24,7 +24,7 @@
   android:layout_height="fill_parent"
   android:orientation="vertical"
 	android:title="@string/app_name">
-  <org.da_cha.android.gps.view.GnssStatusView
+  <org.da_cha.android.bluegnss.view.GnssStatusView
       android:id="@+id/GnssStatusView"
       android:layout_width="fill_parent"
       android:layout_height="0dp"

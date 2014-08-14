@@ -6,15 +6,15 @@
  *
  */
 
-package org.da_cha.android.gps.view;
+package org.da_cha.android.bluegnss.view;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.da_cha.android.gps.nmea.util.NmeaParser;
-import org.da_cha.android.gps.nmea.util.GnssStatus;
-import org.da_cha.android.gps.nmea.util.GnssSatellite;
-import org.da_cha.android.gps.bluetooth.provider.BluetoothGpsProviderService;
+import org.da_cha.android.bluegnss.GnssProviderService;
+import org.da_cha.android.bluegnss.nmea.util.GnssSatellite;
+import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
 
 import android.content.Context;
 import android.graphics.Bitmap;

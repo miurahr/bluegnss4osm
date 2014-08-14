@@ -17,7 +17,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.gps.nmea.util;
+package org.da_cha.android.bluegnss.nmea.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ import android.os.SystemClock;
 import android.location.Location;
 import android.location.LocationManager;
 
-import org.da_cha.android.gps.nmea.util.GnssSatellite;
+import org.da_cha.android.bluegnss.nmea.util.GnssSatellite;
 
 public class GnssStatus {
 
