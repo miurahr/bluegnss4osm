@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2014 Hiroshi Miura
+ * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
+ * Copyright 2014, BlueGnss4OSM Project
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  *
  * This file is part of BlueGnss4OSM.
@@ -20,8 +21,6 @@
 
 package org.da_cha.android.bluegnss;
 
-import java.util.Iterator;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
@@ -40,11 +39,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.support.v4.app.FragmentActivity;
 import android.text.format.Time;
 import android.text.method.LinkMovementMethod;
