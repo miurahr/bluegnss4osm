@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
-import org.da_cha.android.bluegnss.util.sirf.GnssSirfCommander;
+import org.da_cha.android.bluegnss.util.sirf.SirfCommander;
 import org.da_cha.android.bluegnss.R;
 
 import android.annotation.TargetApi;
@@ -168,16 +168,16 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (GnssProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
       updateDevicePreferenceSummary();
-    } else if (GnssSirfCommander.PREF_SIRF_ENABLE_GLL.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_GGA.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_RMC.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_VTG.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_GSA.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_GSV.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_ZDA.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_SBAS.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_NMEA.equals(key)
-        || GnssSirfCommander.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
+    } else if (SirfCommander.PREF_SIRF_ENABLE_GLL.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_GGA.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_RMC.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_VTG.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_GSA.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_GSV.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_ZDA.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_SBAS.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_NMEA.equals(key)
+        || SirfCommander.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
     ){
       enableSirfFeature(key);
     }

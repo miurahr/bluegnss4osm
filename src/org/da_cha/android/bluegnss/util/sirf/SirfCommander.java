@@ -1,5 +1,6 @@
 /*
  * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
+ * Copyright 2014, BlueGnss4OSM Project
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
@@ -32,7 +33,7 @@ import android.preference.PreferenceManager;
 import org.da_cha.android.bluegnss.bluetooth.BluetoothGnssManager;
 import org.da_cha.android.bluegnss.R;
 
-public class GnssSirfCommander {
+public class SirfCommander {
 
     public static final String PREF_SIRF_ENABLE_GGA = "enableGGA";
     public static final String PREF_SIRF_ENABLE_RMC = "enableRMC";
@@ -48,7 +49,7 @@ public class GnssSirfCommander {
     private BluetoothGnssManager gpsManager = null;
     private Context appContext;
 
-    public GnssSirfCommander(BluetoothGnssManager gpsManager, Context appContext){
+    public SirfCommander(BluetoothGnssManager gpsManager, Context appContext){
         this.gpsManager = gpsManager;
         this.appContext = appContext;
     }

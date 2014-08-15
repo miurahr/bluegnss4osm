@@ -54,7 +54,7 @@ import org.da_cha.android.bluegnss.bluetooth.BluetoothGnssManager;
 import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.provider.MockLocationProvider;
 import org.da_cha.android.bluegnss.util.nmea.NmeaParser;
-import org.da_cha.android.bluegnss.util.sirf.GnssSirfCommander;
+import org.da_cha.android.bluegnss.util.sirf.SirfCommander;
 import org.da_cha.android.bluegnss.R;
 
 /**
@@ -196,7 +196,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                             .build();
                         startForeground(R.string.foreground_gps_provider_started_notification, notification);
                         if (sharedPreferences.getBoolean(PREF_SIRF_GPS, false)){
-                            GnssSirfCommander sirfCommander = new GnssSirfCommander(gpsManager, this);
+                            SirfCommander sirfCommander = new SirfCommander(gpsManager, this);
                             sirfCommander.enableSirfConfig(sharedPreferences);
                         }                   
                         toast.setText(this.getString(R.string.msg_gps_provider_started));
@@ -241,7 +241,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
         } else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
             if (gpsManager != null){
                 Bundle extras = intent.getExtras();
-                GnssSirfCommander sirfCommander = new GnssSirfCommander(gpsManager, this);
+                SirfCommander sirfCommander = new SirfCommander(gpsManager, this);
                 sirfCommander.enableSirfConfig(extras);
             }
         }
