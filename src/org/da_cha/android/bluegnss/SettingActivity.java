@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
+import org.da_cha.android.bluegnss.GnssSirfCommander;
 import org.da_cha.android.bluegnss.R;
 
 import android.annotation.TargetApi;
@@ -42,10 +43,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceChangeListener;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 /**
  * A PreferenceActivity Class used to configure, start and stop the NMEA tracker service.
@@ -170,16 +168,16 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (GnssProviderService.PREF_BLUETOOTH_DEVICE.equals(key)){
       updateDevicePreferenceSummary();
-    } else if (GnssProviderService.PREF_SIRF_ENABLE_GLL.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_GGA.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_RMC.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_VTG.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_GSA.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_GSV.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_ZDA.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_SBAS.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_NMEA.equals(key)
-        || GnssProviderService.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
+    } else if (GnssSirfCommander.PREF_SIRF_ENABLE_GLL.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_GGA.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_RMC.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_VTG.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_GSA.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_GSV.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_ZDA.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_SBAS.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_NMEA.equals(key)
+        || GnssSirfCommander.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
     ){
       enableSirfFeature(key);
     }
