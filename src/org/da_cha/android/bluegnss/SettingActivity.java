@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
-import org.da_cha.android.bluegnss.sirf.util.GnssSirfCommander;
+import org.da_cha.android.bluegnss.util.sirf.GnssSirfCommander;
 import org.da_cha.android.bluegnss.R;
 
 import android.annotation.TargetApi;

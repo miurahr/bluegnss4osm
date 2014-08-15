@@ -17,7 +17,7 @@
  *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.bluegnss.nmea.util;
+package org.da_cha.android.bluegnss.util.nmea;
 
 /**
  * This class is used to keep NMEA sentence status automaton.

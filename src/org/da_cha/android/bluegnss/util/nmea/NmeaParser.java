@@ -20,7 +20,7 @@
  *  along with it. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.da_cha.android.bluegnss.nmea.util;
+package org.da_cha.android.bluegnss.util.nmea;
 
 import java.util.ArrayList;
 import java.util.Iterator;

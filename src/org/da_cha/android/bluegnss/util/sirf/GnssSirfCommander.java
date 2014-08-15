@@ -22,7 +22,7 @@
 /**
  * 
  */
-package org.da_cha.android.bluegnss.sirf.util;
+package org.da_cha.android.bluegnss.util.sirf;
 
 import android.content.Context;
 import android.content.SharedPreferences;

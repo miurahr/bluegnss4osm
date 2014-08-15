@@ -14,7 +14,7 @@ import java.util.List;
 import org.da_cha.android.bluegnss.GnssProviderService;
 import org.da_cha.android.bluegnss.GnssSatellite;
 import org.da_cha.android.bluegnss.GnssStatus;
-import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
+import org.da_cha.android.bluegnss.util.nmea.NmeaParser;
 
 import android.content.Context;
 import android.graphics.Bitmap;
