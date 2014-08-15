@@ -22,7 +22,7 @@
 /**
  * 
  */
-package org.da_cha.android.bluegnss;
+package org.da_cha.android.bluegnss.sirf.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import org.da_cha.android.bluegnss.bluetooth.BluetoothGnssManager;
+import org.da_cha.android.bluegnss.R;
 
 public class GnssSirfCommander {
 
