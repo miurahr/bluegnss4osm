@@ -58,12 +58,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.da_cha.android.bluegnss.BlueGnssMainActivity;
+import org.da_cha.android.bluegnss.MainActivity;
 import org.da_cha.android.bluegnss.bluetooth.BluetoothGnssManager;
 import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
 import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
 import org.da_cha.android.bluegnss.provider.MockLocationProvider;
-import org.da_cha.android.gps.R;
+import org.da_cha.android.bluegnss.R;
 
 /**
  * A Service used to replace Android internal GPS with a bluetooth GPS and/or write GPS NMEA data in a File.
@@ -73,11 +73,11 @@ import org.da_cha.android.gps.R;
  */
 public class GnssProviderService extends Service implements NmeaListener, Listener {
 
-    public static final String ACTION_START_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.START_TRACK_RECORDING";
-    public static final String ACTION_STOP_TRACK_RECORDING = "org.da_cha.android.gps.bluetooth.tracker.intent.action.STOP_TRACK_RECORDING";
-    public static final String ACTION_START_GPS_PROVIDER = "org.da_cha.android.gps.bluetooth.provider.intent.action.START_GPS_PROVIDER";
-    public static final String ACTION_STOP_GPS_PROVIDER = "org.da_cha.android.gps.bluetooth.provider.intent.action.STOP_GPS_PROVIDER";
-    public static final String ACTION_CONFIGURE_SIRF_GPS = "org.da-cha.android.gps.bluetooth.provider.intent.action.CONFIGURE_SIRF_GPS";
+    public static final String ACTION_START_TRACK_RECORDING = "org.da_cha.android.bluegnss.tracker.intent.action.START_TRACK_RECORDING";
+    public static final String ACTION_STOP_TRACK_RECORDING = "org.da_cha.android.bluegnss.tracker.intent.action.STOP_TRACK_RECORDING";
+    public static final String ACTION_START_GPS_PROVIDER = "org.da_cha.android.bluegnss.provider.intent.action.START_GPS_PROVIDER";
+    public static final String ACTION_STOP_GPS_PROVIDER = "org.da_cha.android.bluegnss.provider.intent.action.STOP_GPS_PROVIDER";
+    public static final String ACTION_CONFIGURE_SIRF_GPS = "org.da-cha.android.bluegnss.provider.intent.action.CONFIGURE_SIRF_GPS";
     public static final String PREF_GPS_LOCATION_PROVIDER = "gpsLocationProviderKey";
     public static final String PREF_FORCE_ENABLE_PROVIDER = "forceEnableProvider";
     public static final String PREF_CONNECTION_RETRIES = "connectionRetries";
@@ -85,10 +85,10 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     public static final String PREF_TRACK_FILE_PREFIX = "trackFilePrefix";
     public static final String PREF_BLUETOOTH_DEVICE = "bluetoothDevice";
     public static final String PREF_ABOUT = "about";
-    public static final String NOTIFY_UPDATE = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE";
-    public static final String NOTIFY_UPDATE_GPS_STATUS = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_STATUS";
-    public static final String NOTIFY_UPDATE_GPS_FIX = "org.da_cha.android.gps.bluetooth.provider.intent.notify.UPDATE_GPS_FIX";
-    public static final String NOTIFY_DISCONNECT = "org.da_cha.android.gps.bluetooth.provider.intent.notify.DISCONNECT";
+    public static final String NOTIFY_UPDATE = "org.da_cha.android.bluegnss.provider.intent.notify.UPDATE";
+    public static final String NOTIFY_UPDATE_GPS_STATUS = "org.da_cha.android.bluegnss.provider.intent.notify.UPDATE_GPS_STATUS";
+    public static final String NOTIFY_UPDATE_GPS_FIX = "org.da_cha.android.bluegnss.provider.intent.notify.UPDATE_GPS_FIX";
+    public static final String NOTIFY_DISCONNECT = "org.da_cha.android.bluegnss.provider.intent.notify.DISCONNECT";
 
     public static final int MSG_REGISTER_CLIENT   = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
@@ -201,7 +201,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                         boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
                         gpsMockProvider.enableMockLocationProvider(force);
                         gpsManager.addGpsStatusListener(this);
-                        Intent myIntent = new Intent(this, BlueGnssMainActivity.class);
+                        Intent myIntent = new Intent(this, MainActivity.class);
                         PendingIntent myPendingIntent = PendingIntent.getActivity(this, 0, myIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                         Context appContext = getApplicationContext();
                         Notification notification = new Notification.Builder(appContext)

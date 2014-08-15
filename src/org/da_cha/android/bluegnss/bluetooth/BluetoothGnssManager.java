@@ -41,7 +41,7 @@ import org.da_cha.android.bluegnss.GnssProviderService;
 import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
 import org.da_cha.android.bluegnss.provider.MockLocationProvider;
 import org.da_cha.android.bluegnss.sirf.util.SirfUtils;
-import org.da_cha.android.gps.R;
+import org.da_cha.android.bluegnss.R;
 
 import android.app.Notification;
 import android.app.NotificationManager;

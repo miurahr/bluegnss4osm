@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
-import org.da_cha.android.gps.R;
+import org.da_cha.android.bluegnss.R;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -53,7 +53,7 @@ import android.widget.TextView;
  * @author Herbert von Broeuschmeul
  *
  */
-public class BlueGnssPrefActivity extends PreferenceActivity implements OnPreferenceChangeListener, OnSharedPreferenceChangeListener {
+public class SettingActivity extends PreferenceActivity implements OnPreferenceChangeListener, OnSharedPreferenceChangeListener {
 
   /**
    * Tag used for log messages
@@ -192,7 +192,7 @@ public class BlueGnssPrefActivity extends PreferenceActivity implements OnPrefer
     } else {
       Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
       configIntent.putExtra(key, pref.isChecked());
-      configIntent.setClass(BlueGnssPrefActivity.this, GnssProviderService.class);
+      configIntent.setClass(SettingActivity.this, GnssProviderService.class);
       startService(configIntent);
     }
   }

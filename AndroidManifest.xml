@@ -24,7 +24,7 @@
 	along with BluetoothGPS4Droid. If not, see : http://www.gnu.org/licenses/.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.da_cha.android.gps"
+      package="org.da_cha.android.bluegnss"
       android:versionCode="126"
       android:versionName="@string/versionName">
   <uses-sdk android:targetSdkVersion="19" android:minSdkVersion="5" />
@@ -35,7 +35,7 @@
 	<uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
   <application android:icon="@drawable/ic_launcher_bluegps" android:label="@string/app_name" android:allowClearUserData="true" android:debuggable="true">
-    <activity android:name="org.da_cha.android.bluegnss.BlueGnssMainActivity"
+    <activity android:name="org.da_cha.android.bluegnss.MainActivity"
               android:label="@string/app_name"
               android:launchMode="singleTask" >
         <intent-filter>
@@ -43,24 +43,24 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
-    <activity android:name="org.da_cha.android.bluegnss.BlueGnssPrefActivity"
+    <activity android:name="org.da_cha.android.bluegnss.SettingActivity"
               android:label="@string/app_name" >
     </activity>
     <service android:name="org.da_cha.android.bluegnss.GnssProviderService" android:enabled="true" android:exported="true" >
       <intent-filter>
-        <action android:name="org.da_cha.android.gps.bluetooth.tracker.nmea.intent.action.START_TRACK_RECORDING">
+        <action android:name="org.da_cha.android.bluegnss.tracker.nmea.intent.action.START_TRACK_RECORDING">
           <category android:name="android.intent.category.DEFAULT" />
         </action>
-        <action android:name="org.da_cha.android.gps.bluetooth.tracker.nmea.intent.action.STOP_TRACK_RECORDING">
+        <action android:name="org.da_cha.android.bluegnss.tracker.nmea.intent.action.STOP_TRACK_RECORDING">
           <category android:name="android.intent.category.DEFAULT" />
         </action>
-        <action android:name="org.da_cha.android.gps.bluetooth.provider.nmea.intent.action.START_GPS_PROVIDER">
+        <action android:name="org.da_cha.android.bluegnss.provider.nmea.intent.action.START_GPS_PROVIDER">
           <category android:name="android.intent.category.DEFAULT" />
         </action>
-        <action android:name="org.da_cha.android.gps.bluetooth.provider.nmea.intent.action.STOP_GPS_PROVIDER">
+        <action android:name="org.da_cha.android.bluegnss.provider.nmea.intent.action.STOP_GPS_PROVIDER">
           <category android:name="android.intent.category.DEFAULT" />
         </action>
-        <action android:name="org.da_cha.android.gps.bluetooth.provider.nmea.intent.action.CONFIGURE_SIRF_GPS">
+        <action android:name="org.da_cha.android.bluegnss.provider.nmea.intent.action.CONFIGURE_SIRF_GPS">
           <category android:name="android.intent.category.DEFAULT" />
         </action>
       </intent-filter>

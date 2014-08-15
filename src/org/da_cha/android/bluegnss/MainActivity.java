@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
 import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
-import org.da_cha.android.gps.R;
+import org.da_cha.android.bluegnss.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -45,6 +45,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.FragmentActivity;
 import android.text.format.Time;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
@@ -55,7 +56,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.util.Log;
-import android.support.v4.app.FragmentActivity;
 
 /**
  * An Activity Class used to start and stop connecting BT GPS/GNSS dongle.
@@ -63,7 +63,7 @@ import android.support.v4.app.FragmentActivity;
  * @author Hiroshi Miura
  *
  */
-public class BlueGnssMainActivity extends Activity {
+public class MainActivity extends Activity {
 
     private final static String LOG_TAG = "BlueGPS";
 
@@ -182,7 +182,7 @@ public class BlueGnssMainActivity extends Activity {
         unregisterReceiver(mGnssUpdateReceiver);
         // stop service
         Intent i = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
-        i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
+        i.setClass(MainActivity.this, GnssProviderService.class);
         startService(i);
         // button -> "Start"
         Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
@@ -195,7 +195,7 @@ public class BlueGnssMainActivity extends Activity {
     private void startProviderService() {
         // start service
         Intent i = new Intent(GnssProviderService.ACTION_START_GPS_PROVIDER);
-        i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
+        i.setClass(MainActivity.this, GnssProviderService.class);
         startService(i);
         // wait 1000ms.
         try{
@@ -236,7 +236,7 @@ public class BlueGnssMainActivity extends Activity {
         public void onClick(View v) {
             if (logging_state) {
                 Intent i = new Intent(GnssProviderService.ACTION_STOP_TRACK_RECORDING);
-                i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
+                i.setClass(MainActivity.this, GnssProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: stop service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
@@ -244,7 +244,7 @@ public class BlueGnssMainActivity extends Activity {
                 logging_state = false;
             } else {
                 Intent i = new Intent(GnssProviderService.ACTION_START_TRACK_RECORDING);
-                i.setClass(BlueGnssMainActivity.this, GnssProviderService.class);
+                i.setClass(MainActivity.this, GnssProviderService.class);
                 startService(i);
                 Log.d(LOG_TAG, "mStartLogging: start service");
                 Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
@@ -269,7 +269,7 @@ public class BlueGnssMainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
         case R.id.menu_pref:
-            startActivity(new Intent(this, BlueGnssPrefActivity.class));
+            startActivity(new Intent(this, SettingActivity.class));
             return true;
         case R.id.menu_about:
             displayAboutDialog();
