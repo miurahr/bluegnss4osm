@@ -51,7 +51,7 @@ import android.widget.Toast;
 
 import org.da_cha.android.bluegnss.MainActivity;
 import org.da_cha.android.bluegnss.bluetooth.BluetoothGnssManager;
-import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.nmea.util.NmeaParser;
 import org.da_cha.android.bluegnss.provider.MockLocationProvider;
 import org.da_cha.android.bluegnss.sirf.util.GnssSirfCommander;

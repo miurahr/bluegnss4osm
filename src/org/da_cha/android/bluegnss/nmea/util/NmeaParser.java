@@ -1,22 +1,23 @@
 /*
  * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
+ * Copyright 2014, BlueGnss4OSM Project
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
- * This file is part of BluetoothGPS4Droid.
+ * This file is part of BlueGnss4OSM.
  *
- * BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+ * This is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * BluetoothGPS4Droid is distributed in the hope that it will be useful,
+ * It is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  *  You should have received a copy of the GNU General Public License
- *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
+ *  along with it. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.da_cha.android.bluegnss.nmea.util;
@@ -34,8 +35,8 @@ import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.Log;
 
-import org.da_cha.android.bluegnss.nmea.util.GnssSatellite;
-import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.GnssSatellite;
+import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.provider.MockLocationProvider;
 
 /**

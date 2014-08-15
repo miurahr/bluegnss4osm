@@ -24,7 +24,7 @@ package org.da_cha.android.bluegnss;
 import java.text.NumberFormat;
 
 import org.da_cha.android.bluegnss.GnssProviderService;
-import org.da_cha.android.bluegnss.nmea.util.GnssStatus;
+import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.R;
 
 import android.app.Activity;
