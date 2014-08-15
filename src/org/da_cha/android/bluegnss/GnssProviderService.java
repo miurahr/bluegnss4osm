@@ -95,7 +95,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     /**
      * Tag used for log messages
      */
-    private static final String LOG_TAG = "BlueGPS";
+    private static final String LOG_TAG = "BlueGNSS";
 
     private BluetoothGnssManager gpsManager = null;
     private MockLocationProvider gpsMockProvider = null;

@@ -30,7 +30,7 @@ import android.util.Log;
  * This class is used to parse NMEA sentences.
  */
 public class NmeaParserUtil {
-  private String LOG_TAG = "BlueGPS";
+  private String LOG_TAG = "BlueGNSS";
 
 	public double parseNmeaLatitude(String lat,String orientation){
 		double latitude = 0.0;

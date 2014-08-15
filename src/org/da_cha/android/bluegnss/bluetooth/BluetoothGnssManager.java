@@ -69,7 +69,7 @@ public class BluetoothGnssManager {
   /**
    * Tag used for log messages
    */
-  private static final String LOG_TAG = "BlueGPS";
+  private static final String LOG_TAG = "BlueGNSS";
 
   /**
    * A utility class used to manage the communication with the bluetooth GPS whn the connection has been established.

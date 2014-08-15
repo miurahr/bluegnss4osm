@@ -51,7 +51,7 @@ public class NmeaParser {
 	/**
 	 * Tag used for log messages
 	 */
-	private static final String LOG_TAG = "BlueGPS";
+	private static final String LOG_TAG = "BlueGNSS";
 
 	private long firstFixTimestamp;
   private NmeaState currentNmeaStatus = new NmeaState();

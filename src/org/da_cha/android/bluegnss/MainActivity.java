@@ -60,7 +60,7 @@ import android.util.Log;
  */
 public class MainActivity extends Activity {
 
-    private final static String LOG_TAG = "BlueGPS";
+    private final static String LOG_TAG = "BlueGNSS";
 
     private SharedPreferences sharedPref;
     private boolean conn_state = false;

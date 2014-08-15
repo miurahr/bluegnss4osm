@@ -40,7 +40,7 @@ public class MockLocationProvider {
   /**
    * Tag used for log messages
    */
-  private static final String LOG_TAG = "BlueGPS";
+  private static final String LOG_TAG = "BlueGNSS";
 
   private Service callingService;
   private Context appContext;
