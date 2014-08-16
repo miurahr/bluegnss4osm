@@ -65,7 +65,7 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplication());
         sharedPref.registerOnSharedPreferenceChangeListener(this);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -121,14 +121,22 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
         if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
           deviceName = bluetoothAdapter.getRemoteDevice(deviceAddress).getName();
         }
-        prefDevices.setSummary(getString(R.string.pref_bluetooth_device_summary, deviceName));
+        if (prefDevices != null){
+            deviceName = getString(R.string.pref_bluetooth_device_summary, deviceName);
+            if (deviceName != null && deviceName != ""){
+                prefDevices.setSummary(deviceName);
+            } else {
+                Log.e(LOG_TAG, "deviceName is null or empty");
+            }
+        } else {
+            Log.e(LOG_TAG, "refDevices is null!");
+        }
     }   
 
   private void updateDevicePreferenceList(){
         // update bluetooth device summary
-    updateDevicePreferenceSummary();
-    // update bluetooth device list
-        ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
+        updateDevicePreferenceSummary();
+        // update bluetooth device list
         Set<BluetoothDevice> pairedDevices = new HashSet<BluetoothDevice>();
         if (bluetoothAdapter != null){
           pairedDevices = bluetoothAdapter.getBondedDevices();  
@@ -144,8 +152,14 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
             entries[i] = device.getName();
             i++;
         }
-        prefDevices.setEntryValues(entryValues);
-        prefDevices.setEntries(entries);
+        ListPreference prefDevices = (ListPreference)findPreferenceActivity(GnssProviderService.PREF_BLUETOOTH_DEVICE);
+        if (prefDevices != null){
+            prefDevices.setEntryValues(entryValues);
+            prefDevices.setEntries(entries);
+        } else {
+            Log.e(LOG_TAG, "prefDevice is null!");
+        }
+        // update connection retry number
         Preference pref = (Preference)findPreferenceActivity(GnssProviderService.PREF_CONNECTION_RETRIES);
         String maxConnRetries = sharedPref.getString(GnssProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
         pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));

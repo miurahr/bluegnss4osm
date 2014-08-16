@@ -26,9 +26,8 @@
 <resources>
     <string name="app_name">BlueGnss</string>
 
-    <string name="switch_main">Main</string>
-    <string name="switch_preference">Preference</string>
-    <string name="switch_status">Status</string>
+    <string name="title_main">Main</string>
+    <string name="title_status">Status</string>
 
     <string name="main_bluetooth_device_title">Current device:</string>
     <string name="main_start">Start</string>
