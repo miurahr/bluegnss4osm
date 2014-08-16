@@ -195,22 +195,23 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
         || SirfCommander.PREF_SIRF_ENABLE_ZDA.equals(key)
         || SirfCommander.PREF_SIRF_ENABLE_SBAS.equals(key)
         || SirfCommander.PREF_SIRF_ENABLE_NMEA.equals(key)
-        || SirfCommander.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)
-    ){
-      enableSirfFeature(key);
+        || SirfCommander.PREF_SIRF_ENABLE_STATIC_NAVIGATION.equals(key)){
+        enableSirfFeature(key);
     }
     this.updateDevicePreferenceList();
   } 
   private void enableSirfFeature(String key){
     CheckBoxPreference pref = (CheckBoxPreference)(findPreferenceActivity(key));
-    if (pref.isChecked() != sharedPref.getBoolean(key, false)){
-      pref.setChecked(sharedPref.getBoolean(key, false));
-    } else {
-      Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
-      configIntent.putExtra(key, pref.isChecked());
-      configIntent.setClass(SettingActivity.this, GnssProviderService.class);
-      startService(configIntent);
-    }
+    if (pref != null){
+        if (pref.isChecked() != sharedPref.getBoolean(key, false)){
+          pref.setChecked(sharedPref.getBoolean(key, false));
+        } else {
+          Intent configIntent = new Intent(GnssProviderService.ACTION_CONFIGURE_SIRF_GPS);
+          configIntent.putExtra(key, pref.isChecked());
+          configIntent.setClass(SettingActivity.this, GnssProviderService.class);
+          startService(configIntent);
+        }
+      }
   }
 }
 // vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
