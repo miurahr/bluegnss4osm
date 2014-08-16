@@ -22,6 +22,21 @@
 	along with BluetoothGPS4Droid. If not, see : http://www.gnu.org/licenses/.
 -->
 <resources>
+    <string name="title_main">メイン</string>
+    <string name="title_status">ステータス</string>
+
+    <string name="main_bluetooth_device_title">接続デバイス:</string>
+    <string name="main_start">接続開始</string>
+    <string name="main_stop">接続終了</string>
+    <string name="main_logging_start">ログ開始</string>
+    <string name="main_logging_stop">ログ終了</string>
+    <string name="main_date_time_title">日時</string>
+    <string name="main_lon_title">経度</string>
+    <string name="main_lat_title">緯度</string>
+    <string name="main_speed_title">速度</string>
+    <string name="main_hdop_title">HDOP</string>
+    <string name="main_num_satellites_title">衛星利用数/上空の衛星数</string>
+
   <string name="pref_start_gps_title">GPS/GNSS開始/停止</string>
   <string name="pref_start_gps_summary_off">Bluetooth GPS/GNSSはオフ</string>
   <string name="pref_start_gps_summary_on">Bluetooth GPS/GNSSはオン</string>
