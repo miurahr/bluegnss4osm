@@ -4,9 +4,9 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <!-- Design font size and margins -->
-    <dimen name="main_device_font_size">16dp</dimen>
-    <dimen name="main_nmealog_font_size">12dp</dimen>
-    <dimen name="main_status_font_size">12dp</dimen>
+    <dimen name="main_device_font_size">18dp</dimen>
+    <dimen name="main_nmealog_font_size">14dp</dimen>
+    <dimen name="main_status_font_size">14dp</dimen>
     <dimen name="main_status_height">20dp</dimen>
 
 </resources>

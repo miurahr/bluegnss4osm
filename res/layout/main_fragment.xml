@@ -48,7 +48,7 @@
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:layout_marginLeft="6dp"
-      android:textSize="20sp"
+      android:textSize="@dimen/main_device_font_size"
       android:text="@string/main_bluetooth_device_name" />
     <Button
       android:id="@+id/btn_start_stop"
@@ -65,7 +65,7 @@
     <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:textSize="20sp"
+      android:textSize="@dimen/main_nmealog_font_size"
       android:text="NMEA logging" />
     <TextView
       android:layout_width="wrap_content"
@@ -94,17 +94,17 @@
       android:padding="5dip" >
       <TextView
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:text="@string/main_date_time_title" />
       <TextView
         android:id="@+id/main_date_time"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_gravity="center"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
-        android:textSize="20sp"
         android:text="@string/main_date_time" />
     </TableRow>
     <TableRow
@@ -114,17 +114,17 @@
       <TextView
         android:id="@+id/main_lon_title"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_lon_title" />
       <TextView
         android:id="@+id/main_lon"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
         android:layout_gravity="center"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_lon" />
@@ -136,17 +136,17 @@
       <TextView
         android:id="@+id/main_lat_title"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_lat_title" />
       <TextView
         android:id="@+id/main_lat"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/main_status_height"
         android:layout_gravity="center"
-        android:textSize="20sp"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_lat" />
@@ -157,17 +157,17 @@
       android:padding="5dip" >
       <TextView
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_speed_title" />
       <TextView
         android:id="@+id/main_speed"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_centerInParent="true"
-        android:textSize="20sp"
         android:layout_gravity="center"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
@@ -179,16 +179,16 @@
       android:padding="5dip" >
       <TextView
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_hdop_title" />
       <TextView
         android:id="@+id/main_hdop"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_gravity="center"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
@@ -200,16 +200,16 @@
       android:padding="5dip" >
       <TextView
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
         android:text="@string/main_num_satellites_title" />
       <TextView
         android:id="@+id/main_num_satellites"
         android:layout_width="wrap_content"
-        android:layout_height="50sp"
-        android:textSize="20sp"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
         android:layout_gravity="center"
         android:layout_marginLeft="1dip"
         android:layout_marginRight="1dip"
