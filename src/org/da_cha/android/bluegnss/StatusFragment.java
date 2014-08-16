@@ -20,8 +20,11 @@
 
 package org.da_cha.android.bluegnss;
 
+import java.util.ArrayList;
+
 import org.da_cha.android.bluegnss.GnssProviderService;
 import org.da_cha.android.bluegnss.GnssStatus;
+import org.da_cha.android.bluegnss.view.GnssStatusView;
 import org.da_cha.android.bluegnss.R;
 
 import android.content.BroadcastReceiver;
@@ -48,6 +51,7 @@ public class StatusFragment extends Fragment {
     boolean mIsRegistered;
     private final GnssUpdateReceiver mGnssUpdateReceiver = new GnssUpdateReceiver();
 
+    private GnssStatusView mGnssStatusView;
     private View myView;
 
     @Override
@@ -87,6 +91,11 @@ public class StatusFragment extends Fragment {
         }
     }
     @Override
+    public void onActivityCreated(Bundle bundle){
+        mGnssStatusView = (GnssStatusView) myView.findViewById(R.id.GnssStatusView);
+        super.onActivityCreated(bundle);
+    }
+    @Override
     public void onResume() {
         super.onResume();
         CheckIfServiceIsRunning();
@@ -115,16 +124,10 @@ public class StatusFragment extends Fragment {
         private GnssStatus status;
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            String message = bundle.getString("notification");
-            if (GnssProviderService.NOTIFY_UPDATE_GPS_STATUS.equals(message)){
-               status = mService.getGnssStatus();
-               update_rador_view(bundle);
-            }
-        }
-        private void update_rador_view(Bundle bundle){
-            int numNbSat = status.getNbSat();
-            int numSat = status.getNumSatellites();
+            Log.d(LOG_TAG, "update satellite list");
+            status = mService.getGnssStatus();
+            ArrayList<GnssSatellite> satList = status.getSatellitesList();
+            mGnssStatusView.setSatelliteList(satList);
         }
     }
 }
