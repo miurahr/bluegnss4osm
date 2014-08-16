@@ -47,8 +47,8 @@ public class StatusFragment extends Fragment {
     private final static String LOG_TAG = "BlueGNSS";
 
     private GnssProviderService mService = null;
-    boolean mIsBound;
-    boolean mIsRegistered;
+    private boolean mIsBound = false;
+    private boolean mIsRegistered = false;
     private final GnssUpdateReceiver mGnssUpdateReceiver = new GnssUpdateReceiver();
 
     private GnssStatusView mGnssStatusView;
@@ -56,8 +56,9 @@ public class StatusFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-       myView = inflater.inflate(R.layout.status_fragment, container, false);
-       return myView;
+        myView = inflater.inflate(R.layout.status_fragment, container, false);
+        CheckIfServiceIsRunning();
+        return myView;
     }
 
     /*
@@ -70,9 +71,11 @@ public class StatusFragment extends Fragment {
         }
     }
     private void doRegisterReceiver(){
-        IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-        getActivity().registerReceiver(mGnssUpdateReceiver, filter);
-        mIsRegistered = true;
+        if (!mIsRegistered) {
+            IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
+            getActivity().registerReceiver(mGnssUpdateReceiver, filter);
+            mIsRegistered = true;
+        }
     }
     private void doUnregisterReceiver(){
         if (mIsRegistered) {
@@ -80,9 +83,11 @@ public class StatusFragment extends Fragment {
         }
     }
     private void doBindService() {
-        Context appContext = getActivity().getApplicationContext();
-        getActivity().bindService(new Intent(appContext, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
+        if (!mIsBound){
+            Context appContext = getActivity().getApplicationContext();
+            getActivity().bindService(new Intent(appContext, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
+            mIsBound = true;
+        }
     }
     private void doUnbindService() {
         if (mIsBound) {
