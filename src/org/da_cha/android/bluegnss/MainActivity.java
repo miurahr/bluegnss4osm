@@ -21,32 +21,24 @@
 
 package org.da_cha.android.bluegnss;
 
-import java.text.NumberFormat;
-
-import org.da_cha.android.bluegnss.GnssProviderService;
-import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.R;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.text.format.Time;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
-import android.widget.Button;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,84 +50,59 @@ import android.util.Log;
  * @author Hiroshi Miura
  *
  */
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
 
     private final static String LOG_TAG = "BlueGNSS";
 
-    private SharedPreferences sharedPref;
-    private boolean conn_state = false;
-    private boolean logging_state = false;
-
-    private GnssProviderService mService = null;
-    boolean mIsBound;
-    private final GnssUpdateReceiver mGnssUpdateReceiver = new GnssUpdateReceiver();
+    SectionsPagerAdapter mSectionsPagerAdapter;
+    ViewPager mViewPager;
 
     /** Called when the activity is first created. */
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
         setContentView(R.layout.main);
 
-        this.setBluetoothDeviceName();
+        // Set up the action bar.
+        final ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        restoreMe(savedInstanceState);
-        CheckIfServiceIsRunning();
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
-        btnStartStop.setOnClickListener(mStartStop);
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.main_activity);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-        btnStartLogging.setOnClickListener(mStartLogging);
+        // When swiping between different sections, select the corresponding
+        // tab. We can also use ActionBar.Tab#select() to do this if we have
+        // a reference to the Tab.
+        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                actionBar.setSelectedNavigationItem(position);
+            }
+        });
 
-        if (logging_state) {
-            btnStartLogging.setText(R.string.main_logging_stop);
-        } else {
-            btnStartLogging.setText(R.string.main_logging_start);
+        // For each of the sections in the app, add a tab to the action bar.
+        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+            // Create a tab with text corresponding to the page title defined by
+            // the adapter. Also specify this Activity object, which implements
+            // the TabListener interface, as the callback (listener) for when
+            // this tab is selected.
+            actionBar.addTab(
+                    actionBar.newTab()
+                            .setText(mSectionsPagerAdapter.getPageTitle(i))
+                            .setTabListener(this));
         }
-        if (conn_state) {
-            btnStartLogging.setEnabled(true);
-            btnStartStop.setText(R.string.main_stop);
-        } else {
-            btnStartLogging.setEnabled(false);
-            btnStartStop.setText(R.string.main_start);
-        }
-    }
 
+   }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("connStatus", Boolean.toString(conn_state));
-        outState.putString("loggingStatus", Boolean.toString(logging_state));
-    }
-
-    private void restoreMe(Bundle state) {
-        if (state!=null) {
-            conn_state = Boolean.valueOf(state.getString("connStatus"));
-            logging_state = Boolean.valueOf(state.getString("LoggingStatus"));
-        }
-    }
-
-    /*
-     * Service communications
-     */
-    private void CheckIfServiceIsRunning() {
-        if (GnssProviderService.isRunning()) {
-            doBindService();
-            IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-            registerReceiver(mGnssUpdateReceiver, filter);
-        }
-    }
-    private void doBindService() {
-        bindService(new Intent(this, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
-    }
-    private void doUnbindService() {
-        if (mIsBound) {
-            unbindService(mConnection);
-            mIsBound = false;
-        }
     }
 
     /* (non-Javadoc)
@@ -144,110 +111,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        this.setBluetoothDeviceName();
     }
  
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        doUnbindService();
-        unregisterReceiver(mGnssUpdateReceiver);
     }
-
-    private void setBluetoothDeviceName() {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
-        TextView txtDeviceName = (TextView)findViewById(R.id.main_bluetooth_device_name);
-        if (bluetoothAdapter != null) {
-            if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
-                txtDeviceName.setText(bluetoothAdapter.getRemoteDevice(deviceAddress).getName());
-            }
-        }
-    }
-    private boolean checkBluetoothDevice() {
-        String deviceAddress = sharedPref.getString(GnssProviderService.PREF_BLUETOOTH_DEVICE, null);
-        return (deviceAddress == null)?false:true;
-    }
-
-    /*
-     * Start/Stop service and logging button.
-     */
-    private void stopProviderService() {
-        doUnbindService();
-        unregisterReceiver(mGnssUpdateReceiver);
-        // stop service
-        Intent i = new Intent(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
-        i.setClass(MainActivity.this, GnssProviderService.class);
-        startService(i);
-        // button -> "Start"
-        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
-        btnStartStop.setText(R.string.main_start);
-        // Logging button disabled
-        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-        btnStartLogging.setEnabled(false);
-        conn_state = false;
-    }
-    private void startProviderService() {
-        // start service
-        Intent i = new Intent(GnssProviderService.ACTION_START_GPS_PROVIDER);
-        i.setClass(MainActivity.this, GnssProviderService.class);
-        startService(i);
-        // wait 1000ms.
-        try{
-            Thread.sleep(2000);
-        }catch(InterruptedException e){}
-        // Bound service.
-        doBindService();
-        // register Receiver
-        IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-        registerReceiver(mGnssUpdateReceiver, filter);
-        conn_state = true;
-        // button -> "Stop"
-        Button btnStartStop = (Button)findViewById(R.id.btn_start_stop);
-        btnStartStop.setText(R.string.main_stop);
-        // Logging button enabled
-        Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-        btnStartLogging.setEnabled(true);
-        if (GnssProviderService.isRunning()) {
-            Log.d(LOG_TAG, "Cannot detect Service running");
-        }
-    }
-
-    private OnClickListener mStartStop = new OnClickListener() {
-        public void onClick(View v) {
-            if (conn_state) {
-                Log.d(LOG_TAG, "mStartStop: stop service");
-                stopProviderService();
-            } else if (checkBluetoothDevice()) {
-                Log.d(LOG_TAG, "mStartStop: start service");
-                startProviderService();
-            } else {
-                // do nothing
-            }
-        }
-    };
-
-    private OnClickListener mStartLogging = new OnClickListener() {
-        public void onClick(View v) {
-            if (logging_state) {
-                Intent i = new Intent(GnssProviderService.ACTION_STOP_TRACK_RECORDING);
-                i.setClass(MainActivity.this, GnssProviderService.class);
-                startService(i);
-                Log.d(LOG_TAG, "mStartLogging: stop service");
-                Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-                btnStartLogging.setText(R.string.main_logging_start);
-                logging_state = false;
-            } else {
-                Intent i = new Intent(GnssProviderService.ACTION_START_TRACK_RECORDING);
-                i.setClass(MainActivity.this, GnssProviderService.class);
-                startService(i);
-                Log.d(LOG_TAG, "mStartLogging: start service");
-                Button btnStartLogging = (Button)findViewById(R.id.btn_start_logging);
-                btnStartLogging.setText(R.string.main_logging_stop);
-                logging_state = true;
-            }
-        }
-    };
 
     /*
      * Option Menu preparation
@@ -270,7 +139,22 @@ public class MainActivity extends Activity {
             displayAboutDialog();
             return true;
         }
-        return false;
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+        // When the given tab is selected, switch to the corresponding page in
+        // the ViewPager.
+        mViewPager.setCurrentItem(tab.getPosition());
+    }
+
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
+
+    @Override
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
 
     private void displayAboutDialog(){
@@ -291,93 +175,44 @@ public class MainActivity extends Activity {
         builder.show();
     }
 
-    /*
-     * For bind to ProviderService
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * one of the sections/tabs/pages.
      */
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = (GnssProviderService)((GnssProviderService.GnssProviderServiceBinder)service).getService();
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
         }
 
-        public void onServiceDisconnected(ComponentName className) {
-            mService = null;
-        }
-    };
-    /*
-     * for reciever
-     */
-     private class GnssUpdateReceiver extends BroadcastReceiver {
-        private GnssStatus status;
         @Override
-        public void onReceive(Context context, Intent intent) {
-      
-            Bundle bundle = intent.getExtras();
-            String message = bundle.getString("notification");
-            if (GnssProviderService.NOTIFY_UPDATE_GPS_STATUS.equals(message)){
-               status = mService.getGnssStatus();
-               long fix = status.getFixTimestamp();
-               if (fix != 0) {
-                   update_view(bundle);
-               } else {
-                   update_time(bundle);
-               }
-            } else if (GnssProviderService.NOTIFY_DISCONNECT.equals(message)){
-               stopProviderService();
-            } else {
-               Log.e(LOG_TAG, "Unknown message: "+message);
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return (Fragment) new MainFragment();
+                case 1:
+                    return (Fragment) new StatusFragment();
             }
-        }
-        private void update_time(Bundle bundle){
-            // Update date/time on View
-            long timestamp = bundle.getLong("timestamp");
-            Time sat_time = new Time();
-            sat_time.set(timestamp);
-            TextView tv = (TextView) findViewById(R.id.main_date_time);
-            tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
-        } 
-        private void update_view(Bundle bundle){
-            // Update all information on main screen
-            // date/time
-            long timestamp = status.getTimestamp();
-            Time sat_time = new Time();
-            sat_time.set(timestamp);
-            TextView tv = (TextView) findViewById(R.id.main_date_time);
-            tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
-            double latitude = status.getLatitude();
-            tv = (TextView) findViewById(R.id.main_lat);
-            tv.setText(lonlat_format(latitude));
-            double longitude = status.getLongitude();
-            tv = (TextView) findViewById(R.id.main_lon);
-            tv.setText(lonlat_format(longitude));
-            float speed = status.getSpeed();
-            tv = (TextView) findViewById(R.id.main_speed);
-            tv.setText(len_format(speed));
-            double hdop = status.getHDOP();
-            tv = (TextView) findViewById(R.id.main_hdop);
-            tv.setText(len_format(hdop));
-            int numNbSat = status.getNbSat();
-            int numSat = status.getNumSatellites();
-            tv = (TextView) findViewById(R.id.main_num_satellites);
-            tv.setText(Integer.toString(numNbSat)+"/"+Integer.toString(numSat));
-        }
-        private String lonlat_format(Double lonlat){
-            NumberFormat format = NumberFormat.getInstance();
-            format.setMaximumFractionDigits(6);
-            return format.format(lonlat);
-        }
-        private String len_format(Double len){
-            NumberFormat format = NumberFormat.getInstance();
-            format.setMaximumFractionDigits(2);
-            return format.format(len);
-        }
-        private String len_format(Float len){
-            NumberFormat format = NumberFormat.getInstance();
-            format.setMaximumFractionDigits(2);
-            return format.format(len);
+            return null;
         }
 
+        @Override
+        public int getCount() {
+            return 2;
+        }
 
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.title_main);
+                case 1:
+                    return getString(R.string.title_status);
+            }
+            return null;
+        }
     }
+
 }
 
 // vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
