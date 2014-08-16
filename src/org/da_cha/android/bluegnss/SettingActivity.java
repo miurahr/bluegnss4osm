@@ -162,7 +162,11 @@ public class SettingActivity extends PreferenceActivity implements OnPreferenceC
         // update connection retry number
         Preference pref = (Preference)findPreferenceActivity(GnssProviderService.PREF_CONNECTION_RETRIES);
         String maxConnRetries = sharedPref.getString(GnssProviderService.PREF_CONNECTION_RETRIES, getString(R.string.defaultConnectionRetries));
-        pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));
+        if (pref != null){
+            pref.setSummary(getString(R.string.pref_connection_retries_summary,maxConnRetries));
+        } else {
+            Log.e(LOG_TAG, "preference state is wrong!");
+        }
         this.onContentChanged();
     }
     

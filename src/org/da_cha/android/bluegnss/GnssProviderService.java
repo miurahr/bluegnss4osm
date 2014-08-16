@@ -106,21 +106,12 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     private static boolean isRunning = false;
     private NmeaParser nmeaParser;
 
-    private static PowerManager.WakeLock wl;
 
     @Override
     public void onCreate() {
         super.onCreate();
         toast = Toast.makeText(getApplicationContext(), "NMEA track recording... on", Toast.LENGTH_SHORT);
         isRunning = true;
-        createNewWakeLock();
-    }
-
-    @SuppressWarnings("deprecation")
-    private void createNewWakeLock(){
-        PowerManager pm = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
-        // SCREEN_DIM_WAKE_LOCK is deprecated but no better way to specify from service.
-        wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, LOG_TAG);
     }
 
     /* (non-Javadoc)
@@ -180,7 +171,6 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 //                  Bundle extras = intent.getExtras();
 
                     if (enabled) {
-                        wl.acquire();
                         boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
                         gpsMockProvider.enableMockLocationProvider(force);
                         gpsManager.addGpsStatusListener(this);
@@ -235,7 +225,6 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                 toast.show();
             }
         } else if (ACTION_STOP_GPS_PROVIDER.equals(intent.getAction())){
-            wl.release();
             gpsManager.removeGpsStatusListener(this);
             stopSelf();
         } else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
