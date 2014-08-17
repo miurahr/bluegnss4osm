@@ -111,10 +111,28 @@ public class GnssSatellite {
     return ((sat.getRpn() == this.rpn) && sat.getSystemPrefix().equals(this.getSystemPrefix()));
   }
 
-  public void setStatus(float azimuth, float elevation, float snr){
-    this.azimuth = azimuth;
-    this.elevation = elevation;
-    this.snr = snr;
+  public void setStatus(float elevation, float azimuth, float snr){
+    if (elevation < 0) {
+      this.elevation = 0;
+    } else if (elevation > 90) {
+      this.elevation = 90;
+    } else {
+      this.elevation = elevation;
+    }
+    if (azimuth < 0) {
+      this.azimuth = 0;
+    } else if (azimuth > 360) { // ignore
+      this.azimuth = 0;
+    } else {
+      this.azimuth = azimuth;
+    }
+    if (snr < 0) {
+      this.snr = 0;
+    } else if (snr > 99){
+      this.snr= 99;
+    } else {
+      this.snr = snr;
+    }
   }
 
   public String getSystemPrefix(){
@@ -127,8 +145,11 @@ public class GnssSatellite {
         return "QZ";
       case GALILEO:
         return "GA";
+      case BEIDOU:
+        return "??";
+      default:
+        return null;
     }
-    return null;
   }
 
   public float getElevation(){

@@ -66,7 +66,6 @@ public class MainFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        Log.d(LOG_TAG, "enter onCreateView()");
         myView = inflater.inflate(R.layout.main_fragment, container, false);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplication());
 
@@ -117,14 +116,12 @@ public class MainFragment extends Fragment {
      */
      @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(LOG_TAG, "enter onSaveInstaceState()");
         super.onSaveInstanceState(outState);
         outState.putString("connStatus", Boolean.toString(conn_state));
         outState.putString("loggingStatus", Boolean.toString(logging_state));
     }
     @Override
     public void onActivityCreated(Bundle outState) {
-        Log.d(LOG_TAG, "entered onActivityCreated");
         Button btnStartStop = (Button)myView.findViewById(R.id.btn_start_stop);
         btnStartStop.setOnClickListener(mStartStop);
 
@@ -147,7 +144,6 @@ public class MainFragment extends Fragment {
     }
     @Override
     public void onViewStateRestored(Bundle savedState){
-        Log.d(LOG_TAG, "enter onViewStateRestored()");
         super.onViewStateRestored(savedState);
         restoreMe(savedState);
         setBluetoothDeviceName(myView);
