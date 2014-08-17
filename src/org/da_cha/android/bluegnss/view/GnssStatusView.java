@@ -60,7 +60,6 @@ public class GnssStatusView extends View {
   private Bitmap mBitmapAxis = null;
   private Paint mPaintName= null;
   private Paint mPaintSat = null;
-  private Paint mPaintQz = null;
     
   private float mDensity = 0;
    
@@ -94,10 +93,6 @@ public class GnssStatusView extends View {
     mPaintSat.setStyle( Paint.Style.STROKE );
     mPaintSat.setColor( COLOR_DARK_GREEN );
     mPaintSat.setStrokeWidth( 2 );	
-    mPaintQz = new Paint();
-    mPaintQz.setStyle( Paint.Style.STROKE );
-    mPaintQz.setColor( COLOR_RED );
-    mPaintQz.setStrokeWidth( 4 );
     mPaintName = new Paint( Paint.ANTI_ALIAS_FLAG );
     mPaintName.setTextSize( SAT_TEXT_SIZE * mDensity );
     FontMetrics metrics = mPaintName.getFontMetrics();
@@ -115,11 +110,32 @@ public class GnssStatusView extends View {
     int width = getWidth();
     int height = getHeight();
     float text_hm = ( AXIS_TEXT_SIZE + AXIS_TEXT_MARGIN ) * mDensity;
-    mCenterX = width / 2;
-    mCenterY = height / 2;
-    float h = ( height - text_hm ) / 2;
-    float r = Math.min( mCenterX, h );
-    mAxisRadius = (float) ( 0.9 * r );
+    //
+    // use maximum 3/2 of height for satellite rador
+    //
+    if (height*2 >= width*3 && height > width) { // portlate and height is 1.5 times larger than width
+      mCenterX = width / 2;
+      mCenterY = width / 2 ;
+      mAxisRadius = (float) ( 0.9 * mCenterX );
+    } else if (height*3 <= width*2 && height < width) { // landscape
+      mCenterX = height / 2;
+      mCenterY = height / 2;
+      float h = ( height - text_hm ) / 2;
+      mAxisRadius = (float) ( 0.9 * h );
+    } else if (height >= width ) { // portlate
+      mCenterX = width / 2;
+      mCenterY = height / 3;
+      float h =  (height*2 - text_hm*3) / 6;
+      float r = Math.min( mCenterX, h );
+      mAxisRadius = (float) ( 0.9 * r );
+    } else { // landscape
+      mCenterX = width / 3;
+      mCenterY = height / 2;
+      float h = ( height - text_hm ) / 2;
+      float r = Math.min( mCenterX, h );
+      mAxisRadius = (float) ( 0.9 * r );
+    }
+
     mSatRadius = SAT_RADIUS * mDensity;
     initAxis( width, height );
     invalidate();
@@ -183,11 +199,7 @@ public class GnssStatusView extends View {
     // satellite
     for ( int i = 0; i < mSatelliteList.size(); i++ ) {
       SatellitePoint p = mSatelliteList.get( i );
-      if ( p.isQz ) {
-        canvas.drawCircle( p.sat_x, p.sat_y, mSatRadius, mPaintQz );
-      } else {
-        canvas.drawCircle( p.sat_x, p.sat_y, mSatRadius, mPaintSat );
-      }
+      canvas.drawCircle( p.sat_x, p.sat_y, mSatRadius, mPaintSat );
       canvas.drawText( p.name, p.name_x, p.name_y, mPaintName );
     }
   }
@@ -223,7 +235,6 @@ public class GnssStatusView extends View {
     public float sat_y = 0;
     public float name_x = 0;
     public float name_y = 0;
-    public boolean isQz = false;
 
     public SatellitePoint( GnssSatellite sat ) {
       float ele = sat.getElevation();
