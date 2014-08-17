@@ -58,6 +58,7 @@ public class StatusFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         myView = inflater.inflate(R.layout.status_fragment, container, false);
         mGnssUpdateReceiver = new GnssUpdateReceiver();
+        doRegisterReceiver();
         CheckIfServiceIsRunning();
         return myView;
     }
@@ -69,9 +70,7 @@ public class StatusFragment extends Fragment {
         Log.d(LOG_TAG, "StatusFragment: called CheckIfServiceIsRunning()");
         if (GnssProviderService.isRunning()) {
             doBindService();
-            doRegisterReceiver();
         } else {
-            mIsRegistered = false;
             mIsBound = false;
         }
     }
@@ -85,6 +84,7 @@ public class StatusFragment extends Fragment {
     private void doUnregisterReceiver(){
         if (mIsRegistered) {
             getActivity().unregisterReceiver(mGnssUpdateReceiver);
+            mIsRegistered = false;
         }
     }
     private void doBindService() {
@@ -112,7 +112,6 @@ public class StatusFragment extends Fragment {
     }
     @Override
     public void onPause() {
-        doUnregisterReceiver();
         doUnbindService();
         super.onPause();
     }
