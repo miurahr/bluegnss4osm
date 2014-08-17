@@ -481,11 +481,14 @@ public class NmeaParser {
     Integer numTotalGsvSentence   = Integer.parseInt(totalGsvSentence);
     Integer numSatellitesInView   = Integer.parseInt(satellitesInView);
 
-    if (numCurrentGsvSentence.equals("1")&&
-        "GP".equals(system)){ // first sentence and GP
-      activeSatellites.clear();
+    if (numCurrentGsvSentence == 1){ // count num of satellites in view
+      if ("GP".equals(system)){ // first sentence and GP
+        activeSatellites.clear();
+        gnssStatus.setNumSatellites(numSatellitesInView);
+      } else {
+        gnssStatus.addNumSatellites(numSatellitesInView);
+      }
     }
-    gnssStatus.addNumSatellites(numSatellitesInView);
 
     if (numSatellitesInView != 0) {
       int numRecord = 4;
