@@ -7,6 +7,25 @@ Connect external Bluetooth Global Navigation Satellite System (GNSS)
 receivers, using the GPS, GLONASS, Galileo, Beidou or QZSS system,
 to your Android device.
 
+h2. Screenshots
+
+Rador Interface: Each satellites have prefix in name; 
+
+- G: GPS
+
+- R: GLONASS
+
+- E: Galileo
+
+- S: SBS(WAAS, MSAS, EGNOS, etc)
+
+- B: Beidou/Compass
+
+- Q: QZSS
+
+!https://dl.dropboxusercontent.com/u/90779460/2014_08_17_15.13.25.png!
+
+
 h2. License
 
 BlueGNSS4OSM is licensed by GPLv3 and later
