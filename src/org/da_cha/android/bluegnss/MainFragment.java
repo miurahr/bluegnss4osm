@@ -153,6 +153,7 @@ public class MainFragment extends Fragment {
         super.onResume();
         CheckIfServiceIsRunning();
         setBluetoothDeviceName(myView);
+        updateButtonLabels();
     }
     @Override
     public void onPause() {
@@ -224,6 +225,27 @@ public class MainFragment extends Fragment {
         i.setClass(appContext, GnssProviderService.class);
         getActivity().startService(i);
     }
+
+    private void updateButtonLabels(){
+        if (conn_state){
+            // button -> "Stop"
+            Button btnStartStop = (Button)myView.findViewById(R.id.btn_start_stop);
+            btnStartStop.setText(R.string.main_stop);
+             // Logging button enabled
+            Button btnStartLogging = (Button)myView.findViewById(R.id.btn_start_logging);
+            btnStartLogging.setEnabled(true);
+            if (logging_state) {
+                btnStartLogging.setText(R.string.main_logging_stop);
+            } else {
+                btnStartLogging.setText(R.string.main_logging_start);
+            }
+        } else {
+             // button -> "Start"
+            Button btnStartStop = (Button)myView.findViewById(R.id.btn_start_stop);
+            btnStartStop.setText(R.string.main_start);
+        }
+    }
+ 
    /*
      * Start/Stop service and logging button.
      */
