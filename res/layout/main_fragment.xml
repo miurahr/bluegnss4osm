@@ -215,5 +215,26 @@
         android:layout_marginRight="1dip"
         android:text="@string/main_num_satellites" />
     </TableRow>
+    <TableRow
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="5dip" >
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
+        android:layout_marginLeft="1dip"
+        android:layout_marginRight="1dip"
+        android:text="@string/main_used_satellites_title" />
+      <TextView
+        android:id="@+id/main_used_satellites"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/main_status_height"
+        android:textSize="@dimen/main_status_font_size"
+        android:layout_gravity="center"
+        android:layout_marginLeft="1dip"
+        android:layout_marginRight="1dip"
+        android:text="@string/main_used_satellites" />
+    </TableRow>
   </TableLayout>
 </LinearLayout>
