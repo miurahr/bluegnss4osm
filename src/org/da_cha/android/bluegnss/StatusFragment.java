@@ -135,9 +135,15 @@ public class StatusFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mService != null){
-                status = mService.getGnssStatus();
-                ArrayList<GnssSatellite> satList = status.getSatellitesList();
-                mGnssStatusView.setSatelliteList(satList);
+                Bundle bundle = intent.getExtras();
+                String message = bundle.getString("notification");
+                if (GnssProviderService.NOTIFY_UPDATE_GPS_STATUS.equals(message)){
+                    status = mService.getGnssStatus();
+                    ArrayList<GnssSatellite> satList = status.getSatellitesList();
+                    mGnssStatusView.setSatelliteList(satList);
+                } else if (GnssProviderService.NOTIFY_DISCONNECT.equals(message)){
+                    doUnbindService();
+                }
             } else {
                 // try to bind
                 doBindService();
