@@ -20,8 +20,11 @@
 
 package org.da_cha.android.bluegnss;
 
+import java.util.ArrayList;
+
 import org.da_cha.android.bluegnss.GnssProviderService;
 import org.da_cha.android.bluegnss.GnssStatus;
+import org.da_cha.android.bluegnss.view.GnssStatusView;
 import org.da_cha.android.bluegnss.R;
 
 import android.content.BroadcastReceiver;
@@ -44,31 +47,37 @@ public class StatusFragment extends Fragment {
     private final static String LOG_TAG = "BlueGNSS";
 
     private GnssProviderService mService = null;
-    boolean mIsBound;
-    boolean mIsRegistered;
-    private final GnssUpdateReceiver mGnssUpdateReceiver = new GnssUpdateReceiver();
+    private boolean mIsBound = false;
+    private boolean mIsRegistered = false;
+    private GnssUpdateReceiver mGnssUpdateReceiver;
 
+    private GnssStatusView mGnssStatusView;
     private View myView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-       myView = inflater.inflate(R.layout.status_fragment, container, false);
-       return myView;
+        myView = inflater.inflate(R.layout.status_fragment, container, false);
+        mGnssUpdateReceiver = new GnssUpdateReceiver();
+        CheckIfServiceIsRunning();
+        return myView;
     }
 
     /*
      * Service communications
      */
     private void CheckIfServiceIsRunning() {
+        Log.d(LOG_TAG, "StatusFragment: called CheckIfServiceIsRunning()");
         if (GnssProviderService.isRunning()) {
             doBindService();
             doRegisterReceiver();
         }
     }
     private void doRegisterReceiver(){
-        IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
-        getActivity().registerReceiver(mGnssUpdateReceiver, filter);
-        mIsRegistered = true;
+        if (!mIsRegistered) {
+            IntentFilter filter = new IntentFilter(GnssProviderService.NOTIFY_UPDATE);
+            getActivity().registerReceiver(mGnssUpdateReceiver, filter);
+            mIsRegistered = true;
+        }
     }
     private void doUnregisterReceiver(){
         if (mIsRegistered) {
@@ -76,15 +85,22 @@ public class StatusFragment extends Fragment {
         }
     }
     private void doBindService() {
-        Context appContext = getActivity().getApplicationContext();
-        getActivity().bindService(new Intent(appContext, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
+        if (!mIsBound){
+            Context appContext = getActivity().getApplicationContext();
+            getActivity().bindService(new Intent(appContext, GnssProviderService.class), mConnection, Context.BIND_AUTO_CREATE);
+            mIsBound = true;
+        }
     }
     private void doUnbindService() {
         if (mIsBound) {
             getActivity().unbindService(mConnection);
             mIsBound = false;
         }
+    }
+    @Override
+    public void onActivityCreated(Bundle bundle){
+        mGnssStatusView = (GnssStatusView) myView.findViewById(R.id.GnssStatusView);
+        super.onActivityCreated(bundle);
     }
     @Override
     public void onResume() {
@@ -115,16 +131,10 @@ public class StatusFragment extends Fragment {
         private GnssStatus status;
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            String message = bundle.getString("notification");
-            if (GnssProviderService.NOTIFY_UPDATE_GPS_STATUS.equals(message)){
-               status = mService.getGnssStatus();
-               update_rador_view(bundle);
-            }
-        }
-        private void update_rador_view(Bundle bundle){
-            int numNbSat = status.getNbSat();
-            int numSat = status.getNumSatellites();
+            Log.d(LOG_TAG, "update satellite list");
+            status = mService.getGnssStatus();
+            ArrayList<GnssSatellite> satList = status.getSatellitesList();
+            mGnssStatusView.setSatelliteList(satList);
         }
     }
 }

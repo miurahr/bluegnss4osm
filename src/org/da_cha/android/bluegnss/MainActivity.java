@@ -22,6 +22,7 @@
 package org.da_cha.android.bluegnss;
 
 import org.da_cha.android.bluegnss.R;
+import org.da_cha.android.bluegnss.view.GnssStatusView;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -38,7 +39,6 @@ import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -56,6 +56,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
+    private GnssStatusView mGnssStatusView;
 
     /** Called when the activity is first created. */
     @Override
@@ -97,7 +98,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
-
+        mGnssStatusView = (GnssStatusView) findViewById(R.id.GnssStatusView);
    }
 
     @Override
@@ -105,9 +106,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         super.onSaveInstanceState(outState);
     }
 
-    /* (non-Javadoc)
-     * @see android.app.Activity#onResume()
-     */
     @Override
     protected void onResume() {
         super.onResume();

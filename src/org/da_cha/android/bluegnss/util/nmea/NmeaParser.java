@@ -481,11 +481,14 @@ public class NmeaParser {
     Integer numTotalGsvSentence   = Integer.parseInt(totalGsvSentence);
     Integer numSatellitesInView   = Integer.parseInt(satellitesInView);
 
-    if (numCurrentGsvSentence.equals("1")&&
-        "GP".equals(system)){ // first sentence and GP
-      activeSatellites.clear();
+    if (numCurrentGsvSentence == 1){ // count num of satellites in view
+      if ("GP".equals(system)){ // first sentence and GP
+        activeSatellites.clear();
+        gnssStatus.setNumSatellites(numSatellitesInView);
+      } else {
+        gnssStatus.addNumSatellites(numSatellitesInView);
+      }
     }
-    gnssStatus.addNumSatellites(numSatellitesInView);
 
     if (numSatellitesInView != 0) {
       int numRecord = 4;
@@ -496,31 +499,96 @@ public class NmeaParser {
         }
       }
       for (int i =0; i < numRecord; i++){
-        String prn = splitter.next();
-        if (prn != null && !prn.equals("")){
-          String elevation = splitter.next();
-          String azimuth = splitter.next();
-          String snr = splitter.next();
-          int nprn = Integer.parseInt(prn);
-          if (system.equals("QZ") && nprn < 32){
+          //
+          // Heulistics for recognize satellite system
+          //
+            // GPGSA sometimes report Galilleo, QZSS, SBS others with 
+            // PRN > 32
+            // known example
+            //
+            //-------------------------------------------------------------------
+            // SBS numbering with GPGSV
+            //
+            //   PRN 122, 134, 135, 138‚ are American WAAS satellites
+            //   PRN 120, 124, 126, 131 are European EGNOS satellites
+            //   PRN 127, 128 are GAGAN satellites
+            //   PRN 129, 137 are Japanese‚ MSAS satellites
+            //   PRN 140, 125, 141 are SDCM satellites
+            //
+            //   NMEA ID 42, 50 for MSAS by JP
+            //
+            //   PRN  -  NMEA ID 
+            //    120 = 33
+            //    121 = 34
+            //    122 = 35
+            //    123 = 36
+            //    135 = 48
+            //    136 = 49
+            //    137 = 50
+            //    138 = 51
+            //    157 = 70
+            //    158 = 71
+            //   NMEA ID is same as PRN -87 for SBS
+            //
+            // -----------------------------------------------------------------
+            //   PRN 193..197 for QZSS ID
+            //   PRN 183 for QZSS L1-SAIF
+            //   PRN 201..210 for BEIDOU
+            //
             // some GNSS report QZ*** and PRN=1 for QZSS.
             // other report  GP*** and RPN=193.
-            nprn = nprn + 192; // renumber: QZSS  193..195
-          } else if (system.equals("GL") && nprn < 64) {
-            nprn = nprn + 64; // renumber: GLONASS  65..99
-          } else if (system.equals("GA") && nprn < 37) {
-            // Galileo has Satellite ID 1..36
-            nprn = nprn + 160; // renumber: Galileo 160..195
-          }
-          GnssSatellite sat = new GnssSatellite(system, Integer.parseInt(prn));
-          sat.setStatus(parserUtil.parseNmeaFloat(elevation),
+            //
+            // Galileo has Satellite ID 1..36 with GA specifier
+            //
+            // SBS numbering with GLGSV
+            //   PRN 33-64 are reserved for SBS
+            //
+            // SBS numbering with GAGSV
+            //   PRN 37-64 are reserved for SBS
+            //
+            //------------------------------------------------------------------
+            // IMES id are 173-182
+         String prn = splitter.next();
+         if (prn != null && !prn.equals("")){
+            String elevation = splitter.next();
+            String azimuth = splitter.next();
+            String snr = splitter.next();
+
+            int nprn = Integer.parseInt(prn);
+            if (system.equals("QZ") && nprn > 192){
+              // QZ and No.1 = 193
+              nprn = nprn - 192;
+            } else if (system.equals("GL") && nprn < 64) {
+              // Maybe GLONASS SBS satellite
+
+            } else if (system.equals("GA") && nprn < 37) {
+              nprn = nprn + 100; // renumber: Galileo 101..136
+
+            } else if (system.equals("GP") && nprn == 193) {
+              // Some receiver report GNSS with GP prefix
+                  system = "QZ";
+                  nprn = nprn - 192;
+
+            } else if (system.equals("GP") && 200 < nprn && nprn < 211) {
+                  system = "BD";
+                  nprn = nprn - 200;
+
+            } else if (system.equals("GP") && 32 < nprn && nprn < 72) {
+                  system = "SB";
+                  nprn = nprn + 87;
+
+            } else if (system.equals("GP") && 119 < nprn && nprn < 139) { // 120..138
+                  system = "SB";
+            }
+            GnssSatellite sat = new GnssSatellite(system, nprn);
+            sat.setStatus(parserUtil.parseNmeaFloat(elevation),
                         parserUtil.parseNmeaFloat(azimuth),
                         parserUtil.parseNmeaFloat(snr));
-          gnssStatus.addSatellite(sat);
-          activeSatellites.add(nprn);
-          } else {
-          break;
-        }
+            gnssStatus.addSatellite(sat);
+            activeSatellites.add(nprn);
+         } else {
+            break;
+         }
       }
       if (numCurrentGsvSentence == numTotalGsvSentence){ // last sentence
         gnssStatus.clearSatellitesList(activeSatellites);

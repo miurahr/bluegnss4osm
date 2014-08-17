@@ -44,7 +44,6 @@ import android.location.GpsStatus.Listener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Binder;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -123,7 +122,16 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
         String deviceAddress = sharedPreferences.getString(PREF_BLUETOOTH_DEVICE, null);
         int maxConRetries = Integer.parseInt(sharedPreferences.getString(PREF_CONNECTION_RETRIES, this.getString(R.string.defaultConnectionRetries)));
         Log.d(LOG_TAG, "prefs device addr: "+deviceAddress);
-        if (ACTION_START_GPS_PROVIDER.equals(intent.getAction())){
+        String action;
+        if (intent != null){
+            action = intent.getAction();
+            if (action == null){
+                return Service.START_STICKY;
+            }
+        } else {
+            return Service.START_STICKY;
+        }
+        if (ACTION_START_GPS_PROVIDER.equals(action)) {
             if (gpsManager == null){
                 if (BluetoothAdapter.checkBluetoothAddress(deviceAddress)){
                 /*
@@ -203,7 +211,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                 toast.setText(this.getString(R.string.msg_gps_provider_already_started));
                 toast.show();
             }
-        } else if (ACTION_START_TRACK_RECORDING.equals(intent.getAction())){
+        } else if (ACTION_START_TRACK_RECORDING.equals(action)){
             if (trackFile == null){
                 if (gpsManager != null){
                     beginTrack();
@@ -217,17 +225,17 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                 toast.setText(this.getString(R.string.msg_nmea_recording_already_started));
                 toast.show();
             }
-        } else if (ACTION_STOP_TRACK_RECORDING.equals(intent.getAction())){
+        } else if (ACTION_STOP_TRACK_RECORDING.equals(action)){
             if (gpsManager != null){
                 gpsManager.removeNmeaListener(this);
                 endTrack();
                 toast.setText(this.getString(R.string.msg_nmea_recording_stopped));
                 toast.show();
             }
-        } else if (ACTION_STOP_GPS_PROVIDER.equals(intent.getAction())){
+        } else if (ACTION_STOP_GPS_PROVIDER.equals(action)){
             gpsManager.removeGpsStatusListener(this);
             stopSelf();
-        } else if (ACTION_CONFIGURE_SIRF_GPS.equals(intent.getAction())){
+        } else if (ACTION_CONFIGURE_SIRF_GPS.equals(action)){
             if (gpsManager != null){
                 Bundle extras = intent.getExtras();
                 SirfCommander sirfCommander = new SirfCommander(gpsManager, this);

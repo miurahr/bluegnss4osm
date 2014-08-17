@@ -22,12 +22,10 @@ package org.da_cha.android.bluegnss;
 public class GnssSatellite {
   public float azimuth;
   public float elevation;
-  public float snr;
-
-  // cannot change rpn
+  public float snr; 
   private int rpn;
 
-  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU}
+  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU, SBS}
   private SatelliteSystem system;
 
   /*
@@ -81,6 +79,8 @@ public class GnssSatellite {
       this.system = SatelliteSystem.QZSS;
     } else if (systemid.equals("GA")){
       this.system = SatelliteSystem.GALILEO;
+    } else if (systemid.equals("SB")){
+      this.system = SatelliteSystem.SBS;
     } else {
       // unknown satellite
     }
@@ -96,7 +96,7 @@ public class GnssSatellite {
   // object that has same RPN are equals for satellite.
   @Override
   public int hashCode(){
-    return this.rpn + this.system.ordinal() * 100;
+    return this.rpn + this.system.ordinal() * 1000;
   }
 
   @Override
@@ -111,34 +111,96 @@ public class GnssSatellite {
     return ((sat.getRpn() == this.rpn) && sat.getSystemPrefix().equals(this.getSystemPrefix()));
   }
 
-  public void setStatus(float azimuth, float elevation, float snr){
-    this.azimuth = azimuth;
-    this.elevation = elevation;
-    this.snr = snr;
+  public void setStatus(float elevation, float azimuth, float snr){
+    if (elevation < 0) {
+      this.elevation = 0;
+    } else if (elevation > 90) {
+      this.elevation = 90;
+    } else {
+      this.elevation = elevation;
+    }
+    if (azimuth < 0) {
+      this.azimuth = 0;
+    } else if (azimuth > 360) { // ignore
+      this.azimuth = 0;
+    } else {
+      this.azimuth = azimuth;
+    }
+    if (snr < 0) {
+      this.snr = 0;
+    } else if (snr > 99){
+      this.snr= 99;
+    } else {
+      this.snr = snr;
+    }
   }
 
   public String getSystemPrefix(){
-    switch(this.system){
-      case GPS:
-        return "GP";
-      case GLONASS:
-        return "GL";
-      case QZSS:
-        return "QZ";
-      case GALILEO:
-        return "GA";
+    return getSystemPrefix(2);
+  }
+  public String getSystemPrefix(int len){
+    if (len == 2){
+        switch(this.system){
+          case GPS:
+            return "GP";
+          case GLONASS:
+            return "GL";
+          case QZSS:
+            return "QZ";
+          case GALILEO:
+            return "GA";
+          case BEIDOU:
+            return "BD";
+          case SBS:
+            return "SB";
+          default:
+            return null;
+        }
+    } else if (len == 1){
+        switch(this.system){
+          case GPS:
+            return "G";
+          case GLONASS:
+            return "R";
+          case QZSS:
+            return "Q";
+          case GALILEO:
+            return "E";
+          case BEIDOU:
+            return "C";
+          case SBS:
+            return "S";
+          default:
+            return null;
+        }
+    } else {
+      return null;
     }
-    return null;
+  }
+
+  public String getName() {
+    return getSystemPrefix(1)+Integer.toString(this.rpn);
   }
 
   public float getElevation(){
     return this.elevation;
   }
+  public void setElevation(float ele){
+    this.elevation = ele;
+  }
+
   public float getAzimuth(){
     return this.azimuth;
   }
+  public void setAzimuth(float azi){
+    this.azimuth = azi;
+  }
+
   public float getSnr(){
     return this.snr;
+  }
+  public void setSnr(float snr){
+    this.snr = snr;
   }
 
   public boolean isQzss(){
@@ -155,5 +217,9 @@ public class GnssSatellite {
 
   public boolean isGps(){
     return (this.system == SatelliteSystem.GPS);
+  }
+
+  public boolean isSBS(){
+    return (this.system == SatelliteSystem.SBS);
   }
 }

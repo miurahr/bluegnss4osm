@@ -41,6 +41,7 @@ public class GnssStatusView extends View {
   private final static int COLOR_MAGENTA = Color.argb( 255, 255, 0, 255 );
   private final static int COLOR_DARK_GREEN = Color.argb( 255, 0, 128, 0 );
   private final static int COLOR_SKY_BLUE = Color.argb( 255, 128, 224, 224 );
+  private final static int COLOR_DARK_GRAY = Color.argb( 255, 32, 32, 32);
 
   private final static String LABEL_NORTH = "N";
   private final static String LABEL_SOUTH = "S";
@@ -232,20 +233,7 @@ public class GnssStatusView extends View {
       if (( ele < 2 )&&( azi < 1 )) return;
       if ( snr < 1 ) return;
       valid = true;
-      //
-      if (sat.isQzss()) {
-        name = "Q"; 
-        isQz = true;
-      } else if (sat.isGlonass()) {
-        name = "R"; //Russia
-      //} else if (is_gls) {
-      //  name = "E"; //EU
-      //} else if (is_bds) {
-      //  name = "B"; //BeiDou
-      } else {
-        name = "";
-      }
-      name += Integer.toString( sat.getRpn() );
+      name = sat.getName();
       float[] xy = getXY( ele, azi );
       // todo
       sat_x = - xy[0] * mAxisRadius + mCenterX;

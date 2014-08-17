@@ -68,13 +68,13 @@ public class GnssStatus {
   private String mode;
 
 
-  /*
+  /******************************************************************************
+   * 
    * GnssSatellite list in view
    * satellites PRN list in fix
    *
    */
   private HashMap<Integer, GnssSatellite> gnssSatellitesList = new HashMap<Integer, GnssSatellite>();
-  private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
   // satallite list
   // accessor
@@ -85,6 +85,7 @@ public class GnssStatus {
   public void clearSatellitesList(){
     gnssSatellitesList.clear();
   }
+  // clear list except for ones in activeList
   public void clearSatellitesList(ArrayList<Integer> activeList){
     ArrayList<Integer> currentRpnList = new ArrayList<Integer>();
     for (Integer rpn: gnssSatellitesList.keySet()){
@@ -97,21 +98,31 @@ public class GnssStatus {
     }
   }
 
-  // clear sat data, return cleared satellite
+  // remove sat data, return cleared satellite
   public GnssSatellite removeSatellite(int rpn){
     return gnssSatellitesList.remove(rpn);
   }
+  // get sat data with index
   public GnssSatellite getSatellite(int rpn){
     return gnssSatellitesList.get(rpn);
   }
-
+  // get iterator
   public Iterator<Entry<Integer, GnssSatellite>> getSatellitesIter(){
     return gnssSatellitesList.entrySet().iterator();
   }
-  /*
+  // get list of satellites
+  public ArrayList<GnssSatellite> getSatellitesList(){
+    return new ArrayList<GnssSatellite>(gnssSatellitesList.values());
+  }
+
+
+  /***************************************************************************
+   *
    * tracked satellites PRN list
    *
    */
+  private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
+
   public static final int SAT_LIST_OVERRIDE = 1;
   public static final int SAT_LIST_APPEND = 2;
 
@@ -132,10 +143,9 @@ public class GnssStatus {
   }
 
 
-  /*
-   * handler of time stamps
+  /*****************************************************************************
    *
-   *
+   * time stamps handler
    *
    */
   public void clearTTFF(){
@@ -174,7 +184,10 @@ public class GnssStatus {
     return this.timestamp;
   }
 
-  // clear all
+  /***************************************************************************
+   *
+   * clear all
+   */
   public void clear(){
     clearTTFF();
     clearSatellitesList();
@@ -198,7 +211,8 @@ public class GnssStatus {
     mode = "N";
   }
 
-  /*
+  /**********************************************************************
+   * 
    * @return Location fix
    */
   public Location getFixLocation(){
@@ -218,8 +232,11 @@ public class GnssStatus {
     return fix;
   }
 
-  // accessors
-  // 
+  /***********************************************************************
+   *
+   * accessors
+   */
+
   // Lat/Lon/Alt
   public double getLatitude(){
     return this.latitude;
@@ -317,3 +334,4 @@ public class GnssStatus {
   }
 
 }
+// vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
