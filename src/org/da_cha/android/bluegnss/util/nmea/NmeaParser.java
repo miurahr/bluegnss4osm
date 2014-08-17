@@ -549,6 +549,7 @@ public class NmeaParser {
             //------------------------------------------------------------------
             // IMES id are 173-182
          String prn = splitter.next();
+         String decidedSystem;
          if (prn != null && !prn.equals("")){
             String elevation = splitter.next();
             String azimuth = splitter.next();
@@ -556,31 +557,29 @@ public class NmeaParser {
 
             int nprn = Integer.parseInt(prn);
             if (system.equals("QZ") && nprn > 192){
-              // QZ and No.1 = 193
-              nprn = nprn - 192;
+                  // QZ and No.1 = 193
+                  nprn = nprn - 192;
+                  decidedSystem = "QZ";
             } else if (system.equals("GL") && nprn < 64) {
-              // Maybe GLONASS SBS satellite
-
-            } else if (system.equals("GA") && nprn < 37) {
-              nprn = nprn + 100; // renumber: Galileo 101..136
-
+                  // Maybe GLONASS SBS satellite
+                  // treat as GLONASS (FIXME)
+                  decidedSystem = "GL";
             } else if (system.equals("GP") && nprn == 193) {
               // Some receiver report GNSS with GP prefix
-                  system = "QZ";
+                  decidedSystem = "QZ";
                   nprn = nprn - 192;
-
             } else if (system.equals("GP") && 200 < nprn && nprn < 211) {
-                  system = "BD";
+                  decidedSystem = "BD"; // maybe beidou/compass
                   nprn = nprn - 200;
-
             } else if (system.equals("GP") && 32 < nprn && nprn < 72) {
-                  system = "SB";
+                  decidedSystem = "SB";
                   nprn = nprn + 87;
-
             } else if (system.equals("GP") && 119 < nprn && nprn < 139) { // 120..138
-                  system = "SB";
+                  decidedSystem = "SB";
+            } else {
+                  decidedSystem = system;
             }
-            GnssSatellite sat = new GnssSatellite(system, nprn);
+            GnssSatellite sat = new GnssSatellite(decidedSystem, nprn);
             sat.setStatus(parserUtil.parseNmeaFloat(elevation),
                         parserUtil.parseNmeaFloat(azimuth),
                         parserUtil.parseNmeaFloat(snr));
