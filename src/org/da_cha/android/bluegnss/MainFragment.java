@@ -79,6 +79,9 @@ public class MainFragment extends Fragment {
         if (GnssProviderService.isRunning()) {
             doBindService();
             doRegisterReceiver();
+        } else {
+            mIsRegistered = false;
+            mIsBound = false;
         }
     }
     private void doRegisterReceiver(){
