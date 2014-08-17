@@ -69,9 +69,7 @@ public class StatusFragment extends Fragment {
         Log.d(LOG_TAG, "StatusFragment: called CheckIfServiceIsRunning()");
         if (GnssProviderService.isRunning()) {
             doBindService();
-            doRegisterReceiver();
         } else {
-            mIsRegistered = false;
             mIsBound = false;
         }
     }
@@ -85,6 +83,7 @@ public class StatusFragment extends Fragment {
     private void doUnregisterReceiver(){
         if (mIsRegistered) {
             getActivity().unregisterReceiver(mGnssUpdateReceiver);
+            mIsRegistered = false;
         }
     }
     private void doBindService() {
@@ -109,11 +108,12 @@ public class StatusFragment extends Fragment {
     public void onResume() {
         super.onResume();
         CheckIfServiceIsRunning();
+        doRegisterReceiver();
     }
     @Override
     public void onPause() {
-        doUnregisterReceiver();
         doUnbindService();
+        doUnregisterReceiver();
         super.onPause();
     }
     /*
@@ -134,10 +134,14 @@ public class StatusFragment extends Fragment {
         private GnssStatus status;
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(LOG_TAG, "update satellite list");
-            status = mService.getGnssStatus();
-            ArrayList<GnssSatellite> satList = status.getSatellitesList();
-            mGnssStatusView.setSatelliteList(satList);
+            if (mService != null){
+                status = mService.getGnssStatus();
+                ArrayList<GnssSatellite> satList = status.getSatellitesList();
+                mGnssStatusView.setSatelliteList(satList);
+            } else {
+                // try to bind
+                doBindService();
+            }
         }
     }
 }
