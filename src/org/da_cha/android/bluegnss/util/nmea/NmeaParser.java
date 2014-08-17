@@ -147,6 +147,7 @@ public class NmeaParser {
             if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
+            currentGpsStatus = GPS_NOTIFY;
           }
         } else if (command.equals("GPGSA")){
           // GPS active satellites

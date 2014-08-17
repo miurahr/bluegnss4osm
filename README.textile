@@ -9,6 +9,22 @@ to your Android device.
 
 h2. Screenshots
 
+
+Main Screen
+
+!https://dl.dropboxusercontent.com/u/90779460/2014_08_18_07.01.35.png!
+
+
+About
+
+!https://dl.dropboxusercontent.com/u/90779460/2014_08_18_06.45.06.png!
+
+
+Settings
+
+!https://dl.dropboxusercontent.com/u/90779460/2014_08_18_06.44.30.png!
+
+
 Rador Interface: Each satellites have prefix in name; 
 
 - G: GPS
