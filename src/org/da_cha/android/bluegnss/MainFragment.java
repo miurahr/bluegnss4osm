@@ -258,6 +258,8 @@ public class MainFragment extends Fragment {
     private void stopProviderService() {
         doUnbindService();
         doUnregisterReceiver();
+        // FIXME: send intent for status fragment to unbind service.
+        //
         // stop service
         commandService(GnssProviderService.ACTION_STOP_GPS_PROVIDER);
         // button -> "Start"

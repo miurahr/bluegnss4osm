@@ -107,6 +107,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
     private NmeaParser nmeaParser;
 
     private static PowerManager.WakeLock wl;
+    private static boolean isWakeLocked=false;
 
     @Override
     public void onCreate() {
@@ -189,7 +190,7 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
 //                  Bundle extras = intent.getExtras();
 
                     if (enabled) {
-                        wl.acquire();
+                        wlacquire();
                         boolean force = sharedPreferences.getBoolean(PREF_FORCE_ENABLE_PROVIDER, false);
                         gpsMockProvider.enableMockLocationProvider(force);
                         gpsManager.addGpsStatusListener(this);
@@ -244,7 +245,8 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
                 toast.show();
             }
         } else if (ACTION_STOP_GPS_PROVIDER.equals(action)){
-            wl.release();
+            wlrelease();
+            sendGpsDisconnected();
             gpsManager.removeGpsStatusListener(this);
             stopSelf();
         } else if (ACTION_CONFIGURE_SIRF_GPS.equals(action)){
@@ -255,6 +257,19 @@ public class GnssProviderService extends Service implements NmeaListener, Listen
             }
         }
         return Service.START_STICKY;
+    }
+
+    private void wlrelease() {
+        if (isWakeLocked){
+            wl.release();
+            isWakeLocked = false;
+        }
+    }
+    private void wlacquire() {
+        if (!isWakeLocked){
+            wl.acquire();
+            isWakeLocked = true;
+        }
     }
 
     @Override
