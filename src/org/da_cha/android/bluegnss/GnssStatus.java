@@ -123,25 +123,24 @@ public class GnssStatus {
    */
   private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
 
-  public static final int SAT_LIST_OVERRIDE = 1;
-  public static final int SAT_LIST_APPEND = 2;
-
-  public void setTrackedSatellites(ArrayList<Integer> rpnList, int satmode){
-    if (satmode == SAT_LIST_OVERRIDE){
-      satellitesPrnListInFix = new ArrayList<Integer>(rpnList);
-    } else if (satmode == SAT_LIST_APPEND){
+  public void setTrackedSatellites(ArrayList<Integer> rpnList){
+      satellitesPrnListInFix.clear();
       for (Integer rpn : rpnList){
         satellitesPrnListInFix.add(rpn);
       }
-    } else {
-      // unexcepted call.
-    }
   }
 
-  public void setTrackedSatellites(ArrayList<Integer> rpnList){
-    setTrackedSatellites(rpnList, SAT_LIST_OVERRIDE);
+  public void addTrackedSatellites(int rpn){
+      satellitesPrnListInFix.add(rpn);
   }
 
+  public ArrayList<Integer> getTrackedSatellites() {
+      return satellitesPrnListInFix;
+  }
+
+  public void clearTrackedSatellites(){
+      this.satellitesPrnListInFix.clear();
+  }
 
   /*****************************************************************************
    *

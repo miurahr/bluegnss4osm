@@ -1,7 +1,6 @@
 /*
  * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
- * Copyright 2014, BlueGnss4OSM Project
- * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
+ * Copyright 2014, BlueGnss4OSM Project * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  *
  * This file is part of BlueGnss4OSM.
  *
@@ -26,6 +25,9 @@ import org.da_cha.android.bluegnss.GnssStatus;
 import org.da_cha.android.bluegnss.R;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -313,7 +315,7 @@ public class MainFragment extends Fragment {
                if (fix != 0) {
                    update_view(bundle);
                } else {
-                   update_time(bundle);
+                   update_view_nonfix(bundle);
                }
             } else if (GnssProviderService.NOTIFY_DISCONNECT.equals(message)){
                stopProviderService();
@@ -321,13 +323,16 @@ public class MainFragment extends Fragment {
                Log.e(LOG_TAG, "Unknown message: "+message);
             }
         }
-        private void update_time(Bundle bundle){
+        private void update_view_nonfix(Bundle bundle){
             // Update date/time on View
             long timestamp = bundle.getLong("timestamp");
             Time sat_time = new Time();
             sat_time.set(timestamp);
             TextView tv = (TextView) myView.findViewById(R.id.main_date_time);
             tv.setText(sat_time.format("%Y-%m-%d %H-%M-%S"));
+            int numSat = status.getNumSatellites();
+            tv = (TextView) myView.findViewById(R.id.main_num_satellites);
+            tv.setText("0/"+Integer.toString(numSat));
         }
         private void update_view(Bundle bundle){
             // Update all information on main screen
@@ -353,7 +358,10 @@ public class MainFragment extends Fragment {
             int numSat = status.getNumSatellites();
             tv = (TextView) myView.findViewById(R.id.main_num_satellites);
             tv.setText(Integer.toString(numNbSat)+"/"+Integer.toString(numSat));
-        }
+            ArrayList<Integer> satList = status.getTrackedSatellites();
+            tv = (TextView) myView.findViewById(R.id.main_used_satellites);
+            tv.setText(getCSV(satList));
+       }
         private String lonlat_format(Double lonlat){
             NumberFormat format = NumberFormat.getInstance();
             format.setMaximumFractionDigits(6);
@@ -370,5 +378,19 @@ public class MainFragment extends Fragment {
             return format.format(len);
         }
     }
-}
+
+    public static String getCSV(ArrayList<Integer> integers){
+        String ret = "";
+        Iterator<Integer> iterator = integers.iterator();
+        for (int i = 0; i < integers.size(); i++)
+        {
+            if (i == 0) {
+                ret = Integer.toString(iterator.next().intValue());
+            } else {
+                ret = ret +","+ Integer.toString(iterator.next().intValue());
+            }
+        }
+        return ret;
+    }
+} 
 // vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

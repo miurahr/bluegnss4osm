@@ -67,7 +67,6 @@ public class NmeaParser {
 	private GnssStatus gnssStatus;
   private NmeaParserUtil parserUtil;
 	private ArrayList<Integer> activeSatellites = new ArrayList<Integer>();
-	private ArrayList<Integer> prnList = new ArrayList<Integer>();
 
 	private	SimpleStringSplitter splitter;
 
@@ -122,6 +121,8 @@ public class NmeaParser {
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
           } 
+          // FIXME: ad-hoc work around..
+          gnssStatus.clearTrackedSatellites();
         } else if (command.equals("GPVTG")){
           parseVTG();
           currentGpsStatus = GPS_NOTIFY;
@@ -415,32 +416,22 @@ public class NmeaParser {
     gnssStatus.setMode(mode);
     // fix type  : 1 - no fix / 2 - 2D / 3 - 3D
     String fixType = splitter.next();
-    if (! "1".equals(fixType)) {
-      prnList.clear();
-      String prn;
 
-      // Other than GP should be added to GP data.
-      boolean multi_seq = true;
-      if ("GP".equals(system)){
-        multi_seq = false; 
-      }
+    if (system.equals("GP")){
+        gnssStatus.clearTrackedSatellites();
+    }
+
+    if (! fixType.equals("1")) {
+      String prn;
 
       for (int i=0 ; i<12  ; i++){
         prn = splitter.next();
         if (prn != null && !prn.equals("")){
-          if (i == 0){
-            Integer numPrn = Integer.parseInt(prn);
-            prnList.add(numPrn);
-          } else {
-            prnList.add(Integer.parseInt(prn));
-          }
+            gnssStatus.addTrackedSatellites(Integer.parseInt(prn));
         }
       }
-      if (multi_seq){
-        gnssStatus.setTrackedSatellites(prnList, GnssStatus.SAT_LIST_APPEND);
-      } else {
-        gnssStatus.setTrackedSatellites(prnList, GnssStatus.SAT_LIST_OVERRIDE);
-      }
+
+
       // Position dilution of precision (float)
       String pdop = splitter.next();
       // Horizontal dilution of precision (float)
