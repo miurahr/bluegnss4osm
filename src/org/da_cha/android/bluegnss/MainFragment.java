@@ -92,6 +92,7 @@ public class MainFragment extends Fragment {
     private void doUnregisterReceiver(){
         if (mIsRegistered) {
             getActivity().unregisterReceiver(mGnssUpdateReceiver);
+            mIsRegistered = false;
         }
     }
     private void doBindService() {

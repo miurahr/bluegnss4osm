@@ -556,9 +556,8 @@ public class NmeaParser {
             String snr = splitter.next();
 
             int nprn = Integer.parseInt(prn);
-            if (system.equals("QZ") && nprn > 192){
-                  // QZ and No.1 = 193
-                  nprn = nprn - 192;
+            if (system.equals("QZ")){
+                  Log.v(LOG_TAG, "qzss found!");
                   decidedSystem = "QZ";
             } else if (system.equals("GL") && nprn < 64) {
                   // Maybe GLONASS SBS satellite
@@ -567,7 +566,8 @@ public class NmeaParser {
             } else if (system.equals("GP") && nprn == 193) {
               // Some receiver report GNSS with GP prefix
                   decidedSystem = "QZ";
-                  nprn = nprn - 192;
+                  //nprn = nprn - 192;
+                  Log.v(LOG_TAG, "qzss found!");
             } else if (system.equals("GP") && 200 < nprn && nprn < 211) {
                   decidedSystem = "BD"; // maybe beidou/compass
                   nprn = nprn - 200;

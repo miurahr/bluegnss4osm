@@ -58,7 +58,6 @@ public class StatusFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         myView = inflater.inflate(R.layout.status_fragment, container, false);
         mGnssUpdateReceiver = new GnssUpdateReceiver();
-        doRegisterReceiver();
         CheckIfServiceIsRunning();
         return myView;
     }
@@ -109,10 +108,12 @@ public class StatusFragment extends Fragment {
     public void onResume() {
         super.onResume();
         CheckIfServiceIsRunning();
+        doRegisterReceiver();
     }
     @Override
     public void onPause() {
         doUnbindService();
+        doUnregisterReceiver();
         super.onPause();
     }
     /*
@@ -133,10 +134,14 @@ public class StatusFragment extends Fragment {
         private GnssStatus status;
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(LOG_TAG, "update satellite list");
-            status = mService.getGnssStatus();
-            ArrayList<GnssSatellite> satList = status.getSatellitesList();
-            mGnssStatusView.setSatelliteList(satList);
+            if (mService != null){
+                status = mService.getGnssStatus();
+                ArrayList<GnssSatellite> satList = status.getSatellitesList();
+                mGnssStatusView.setSatelliteList(satList);
+            } else {
+                // try to bind
+                doBindService();
+            }
         }
     }
 }
