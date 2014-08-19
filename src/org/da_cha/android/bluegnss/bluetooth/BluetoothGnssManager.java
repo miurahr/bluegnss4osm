@@ -1,5 +1,8 @@
 /*
  * Copyright 2014, Hiroshi Miura <miurahr@linux.com>
+ * Copyright 2014, BlueGnss4OSM project
+ *
+ * ----------------original notification---
  * Copyright (C) 2010, 2011, 2012 Herbert von Broeuschmeul
  * Copyright (C) 2010, 2011, 2012 BluetoothGPS4Droid Project
  * 
@@ -511,7 +514,7 @@ public class BluetoothGnssManager {
 
 
   /**
-   * Adds an NMEA listener.
+   * Adds a NMEA listener.
    * In fact, it delegates to the NMEA parser. 
    * 
    * @see NmeaParser#addNmeaListener(NmeaListener)
@@ -526,7 +529,12 @@ public class BluetoothGnssManager {
     return true;
   }
 
-  //GpsStatus.Listener
+  /**
+   * Adds a GpsStatus Listener.
+   *
+   * @param listener a GpsStatus.Listener object to register
+   * @return true if the listener was successfully added
+   */
   public boolean addGpsStatusListener(Listener listener){
     if (!gpsStatusListeners.contains(listener)){
       Log.d(LOG_TAG, "adding new GpsStatus Listener");
@@ -536,7 +544,7 @@ public class BluetoothGnssManager {
   }
 
   /**
-   * Removes an NMEA listener.
+   * Removes a NMEA listener.
    * In fact, it delegates to the NMEA parser. 
    * 
    * @see NmeaParser#removeNmeaListener(NmeaListener)
@@ -547,7 +555,11 @@ public class BluetoothGnssManager {
     nmeaListeners.remove(listener);
   }
 
-  // GpsStatus.Listener
+  /**
+   * Removes a GpsStatus Listener.
+   *
+   * @param listner a GpsStatus.Listener object to remove
+   */
   public void removeGpsStatusListener(Listener listener){
     Log.d(LOG_TAG, "removing GpsStatus Listener");
     gpsStatusListeners.remove(listener);
@@ -588,6 +600,10 @@ public class BluetoothGnssManager {
     }
   }
 
+  /**
+   * Notifies an update of GpsStatus change.
+   *
+   */
   private void notifyGpsStatus(){
     if (enabled){
       final int gpsStatus = parser.getGpsStatusChange();
