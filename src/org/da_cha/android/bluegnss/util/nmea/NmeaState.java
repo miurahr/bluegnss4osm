@@ -25,8 +25,8 @@ package org.da_cha.android.bluegnss.util.nmea;
  */
 public class NmeaState {
 
-	private long timestamp;
-	private boolean fixed = false;
+  private long timestamp;
+  private boolean fixed = false;
   private enum nmeastate {START, RECEIVE, COMPLETE}
   private nmeastate currentStatus = nmeastate.START;
   private boolean notified = false;
@@ -57,19 +57,24 @@ public class NmeaState {
    * GPGGA->GPGLL->GPGSA->GPGSV->GPRMC->GPVTG
    *
    * GPGGA->GNGLL->GNGSA(for GPS)->GNGSA(for others)->GNRMC->GPVTG
+   * GNGGA->GNGLL->GNGSA(for GPS)->GNGSA(for others)->GNRMC->GPVTG
    *
-   * GPGGA->GNGLL->GNGSA->GNGSA->GPGSV->GPGSV->GLGSV->GLGSV
+   * GNGGA->GNGLL->GNGSA->GNGSA->GPGSV->GPGSV(for GPS)->GLGSV->GLGSV(for GLONASS)
    * ->GNRMC->GPVTG
    *
    * GPGSV->GPGGA->GPRMC->GPGSA->GPVTG
    * GPGGA->GPRMC->GPGGA
+   * 
+   * Some (BCM) produces QZGSV
    *
    * Assumes every receiver produce GPRMC/GNRMC and can send fix just after
    * RMC sentence.
    * Assumes just after GGA, starting new sequence of sentences.
    * When accepting VTG, sequence is lasted.
    *
-   * An example GSV->GGA->RMC has a problem  on above asumption.
+   * An input file may have both GGA and GLL and RMC sentences for the exact
+   * same position fix. If we see a single GGA, start ignoring GLL's and RMC's.
+   * GLL's will also be ignored if RMC's are found and GGA's not found.
    *
    */
   public boolean recvGGA(boolean fixed, long time){

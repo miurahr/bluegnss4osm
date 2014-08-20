@@ -85,6 +85,38 @@ public class NmeaParser {
     return this.firstFixTimestamp;
   }
 
+  /*
+   * As same as GpsBabel developer noted as follows, we should treat
+   * every NMEA sentence as optional and pragmatic.
+   * cited from nmea.cc in GpsBabel project.
+   * ---------------------------------------------------------------------------
+   * Zmarties notes:
+   *
+   * In practice, all fields of the NMEA sentences should be treated as optional -
+   * if the data is not available, then the field can be omitted (hence leading
+   * to the output of two consecutive commas).
+   *
+   * An NMEA recording can start anywhere in the stream of data.  It is therefore
+   * necessary to discard sentences until sufficient data has been processed to
+   * have all the necessary data to construct a waypoint.  In practice, this means
+   * discarding data until we have had the first sentence that provides the date.
+   * (We could scan forwards in the stream of data to find the first date, and
+   * then back apply it to all previous sentences, but that is probably more
+   * complexity that is necessary - the lost of one waypoint at the start of the
+   * stream can normally be tolerated.)
+   *
+   * If a sentence is received without a checksum, but previous sentences have
+   * had checksums, it is best to discard that sentence.  In practice, the only
+   * time I have seen this is when the recording stops suddenly, where the last
+   * sentence is truncated - and missing part of the line, including the checksum.
+   *-----------------------------------------------------------------------------
+   *
+   * To determine NMEA sentence status, use currentNmeaStatus object to watch it.
+   * every sentence parser calls NmeaState method to record it.
+   * currentNmeaStatus can say NMEA sentence is begin , complete or invalid.
+   *
+   */
+
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
