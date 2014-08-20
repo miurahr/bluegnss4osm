@@ -55,13 +55,6 @@ public class NmeaParser {
 
 	private long firstFixTimestamp;
   private NmeaState currentNmeaStatus = new NmeaState();
-
-	private final int GPS_NONE      = 0;
-	private final int GPS_FIXED     = 3;
-	private final int GPS_NOTIFY    = 4;
-	private int currentGpsStatus = GPS_NONE;
-  private boolean gpsFixNotified = false;
-
 	private MockLocationProvider mockProvider;
 
 	private GnssStatus gnssStatus;
@@ -112,9 +105,6 @@ public class NmeaParser {
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
               firstFixTimestamp = updateTime;
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-              if (!gpsFixNotified) {
-                currentGpsStatus = GPS_FIXED;
-              }
             }
           } else {
             if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
@@ -125,21 +115,16 @@ public class NmeaParser {
           gnssStatus.clearTrackedSatellites();
         } else if (command.equals("GPVTG")){
           parseVTG();
-          currentGpsStatus = GPS_NOTIFY;
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
           long updateTime = currentNmeaStatus.getTimestamp(); 
           if (parseRMC()) {
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
               firstFixTimestamp = updateTime;
-              if (!gpsFixNotified){
-                currentGpsStatus = GPS_FIXED;
-              }
             }
             Location fix = gnssStatus.getFixLocation();
             if (fix.hasAccuracy() && fix.hasAltitude()) {
               mockProvider.notifyFix(fix);
-              gpsFixNotified = true;
             } else {
               Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
             }
@@ -147,7 +132,6 @@ public class NmeaParser {
             if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
-            currentGpsStatus = GPS_NOTIFY;
           }
         } else if (command.equals("GPGSA")){
           // GPS active satellites
@@ -216,11 +200,10 @@ public class NmeaParser {
 	}
 
 	public int getGpsStatusChange(){
-		if (currentGpsStatus == GPS_NOTIFY){
-			currentGpsStatus = GPS_NONE;
+    currentNmeaStatus.notified();
+		if (currentNmeaStatus.canNotify()){
 			return GpsStatus.GPS_EVENT_SATELLITE_STATUS;
-		} else if (currentGpsStatus == GPS_FIXED && !gpsFixNotified){
-			gpsFixNotified = true;
+		} else if (currentNmeaStatus.canFixNotify()){
 			return GpsStatus.GPS_EVENT_FIRST_FIX;
 		}
 		return 0;

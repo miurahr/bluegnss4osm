@@ -20,7 +20,7 @@
 package org.da_cha.android.bluegnss.util.nmea;
 
 /**
- * This class is used to keep NMEA sentence status automaton.
+ * This class is used to keep NMEA sentence status.
  *
  */
 public class NmeaState {
@@ -29,12 +29,13 @@ public class NmeaState {
 	private boolean fixed = false;
   private enum nmeastate {START, RECEIVE, COMPLETE}
   private nmeastate currentStatus = nmeastate.START;
+  private boolean notified = false;
   
   public long getTimestamp(){
     return this.timestamp;
   }
   public boolean canNotify(){
-    return (this.currentStatus == nmeastate.COMPLETE);
+    return (this.currentStatus == nmeastate.COMPLETE && this.notified == false);
   }
 
   public boolean isFixed(){
@@ -42,14 +43,41 @@ public class NmeaState {
   }
 
   public boolean canFixNotify(){
-    return (this.fixed && this.currentStatus == nmeastate.COMPLETE);
+    return (this.fixed && this.currentStatus == nmeastate.COMPLETE && this.notified == false);
   }
 
+  public void notified(){
+    this.notified = true;
+  }
+
+  /*
+   * NMEA-0183 sequence examples
+   * there are variations how receiver produce sentences.
+   *
+   * GPGGA->GPGLL->GPGSA->GPGSV->GPRMC->GPVTG
+   *
+   * GPGGA->GNGLL->GNGSA(for GPS)->GNGSA(for others)->GNRMC->GPVTG
+   *
+   * GPGGA->GNGLL->GNGSA->GNGSA->GPGSV->GPGSV->GLGSV->GLGSV
+   * ->GNRMC->GPVTG
+   *
+   * GPGSV->GPGGA->GPRMC->GPGSA->GPVTG
+   * GPGGA->GPRMC->GPGGA
+   *
+   * Assumes every receiver produce GPRMC/GNRMC and can send fix just after
+   * RMC sentence.
+   * Assumes just after GGA, starting new sequence of sentences.
+   * When accepting VTG, sequence is lasted.
+   *
+   * An example GSV->GGA->RMC has a problem  on above asumption.
+   *
+   */
   public boolean recvGGA(boolean fixed, long time){
     this.fixed = fixed;
     this.timestamp = time;
     nmeastate previousStatus = currentStatus;
     this.currentStatus = nmeastate.RECEIVE;
+    this.notified = false;
     return (previousStatus == nmeastate.START);
   }
 
@@ -61,13 +89,9 @@ public class NmeaState {
     this.currentStatus = nmeastate.COMPLETE;
     return true;
   }
-
   public void recvVTG(){
     this.currentStatus = nmeastate.START;
-    this.timestamp = 0;
-    this.fixed = false;
   }
-
   public boolean recvGLL(long time){
     return (this.timestamp == time && this.currentStatus == nmeastate.RECEIVE);
   }
