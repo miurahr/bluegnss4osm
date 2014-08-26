@@ -30,6 +30,10 @@ public class NmeaState {
   private enum nmeastate {START, RECEIVE, COMPLETE}
   private nmeastate currentStatus = nmeastate.START;
   private boolean notified = false;
+
+  private boolean hasGGA = false;
+  private boolean hasRMC = false;
+  private boolean hasGLL = false;
   
   public long getTimestamp(){
     return this.timestamp;
@@ -78,6 +82,7 @@ public class NmeaState {
    *
    */
   public boolean recvGGA(boolean fixed, long time){
+    this.hasGGA = true;
     this.fixed = fixed;
     this.timestamp = time;
     nmeastate previousStatus = currentStatus;
@@ -86,7 +91,22 @@ public class NmeaState {
     return (previousStatus == nmeastate.START);
   }
 
+  public boolean shouldUseRMC(){
+    if (hasGGA) {
+      return false;
+    }
+    return true;
+  }
+
+  public boolean shouldUseGLL(){
+    if (hasGGA || hasRMC) {
+      return false;
+    }
+    return true;
+  }
+
   public boolean recvRMC(boolean fixed, long time){
+    this.hasRMC=true;
     if (this.timestamp != time){
       this.currentStatus = nmeastate.START;
       return false; // invalid
@@ -98,6 +118,7 @@ public class NmeaState {
     this.currentStatus = nmeastate.START;
   }
   public boolean recvGLL(long time){
+    this.hasGLL=true;
     return (this.timestamp == time && this.currentStatus == nmeastate.RECEIVE);
   }
   public boolean recvGNS(long time){

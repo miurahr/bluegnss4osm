@@ -138,7 +138,13 @@ public class NmeaParser {
               firstFixTimestamp = updateTime;
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
             }
-          } else {
+            Location fix = gnssStatus.getFixLocation();
+            if (fix.hasAccuracy() && fix.hasAltitude()) {
+              mockProvider.notifyFix(fix);
+            } else {
+              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
+            }
+         } else {
             if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
@@ -148,21 +154,23 @@ public class NmeaParser {
         } else if (command.equals("GPVTG")){
           parseVTG();
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
-          long updateTime = currentNmeaStatus.getTimestamp(); 
-          if (parseRMC()) {
-            if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-              mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-              firstFixTimestamp = updateTime;
-            }
-            Location fix = gnssStatus.getFixLocation();
-            if (fix.hasAccuracy() && fix.hasAltitude()) {
-              mockProvider.notifyFix(fix);
+          if (currentNmeaStatus.shouldUseRMC()) {
+            long updateTime = currentNmeaStatus.getTimestamp();
+            if (parseRMC()) {
+              if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
+                mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+                firstFixTimestamp = updateTime;
+              }
+              Location fix = gnssStatus.getFixLocation();
+              if (fix.hasAccuracy() && fix.hasAltitude()) {
+                mockProvider.notifyFix(fix);
+              } else {
+                Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
+              }
             } else {
-              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
-            }
-          } else {
-            if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-              mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+              if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
+                mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
+              }
             }
           }
         } else if (command.equals("GPGSA")){
@@ -185,11 +193,15 @@ public class NmeaParser {
           // QZSS satellites in View
           parseGSV("QZ");
         } else if (command.equals("GPGLL")){
-          // GPS fix
-          parseGLL();
+          if (currentNmeaStatus.shouldUseGLL()) {
+            // GPS fix
+            parseGLL();
+          }
         } else if (command.equals("GNGLL")){
-          // multi-GNSS fix or glonass/qzss fix
-          parseGLL();
+          if (currentNmeaStatus.shouldUseGLL()) {
+            // multi-GNSS fix or glonass/qzss fix
+            parseGLL();
+          }
         } else if (command.equals("GNGNS")){
           parseGNS();
         } else if (command.equals("GPGRS")){
@@ -227,6 +239,7 @@ public class NmeaParser {
 		} else {
       // no returns the mismatched data.
 			Log.d(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
+      return null;
 		}
 		return nmeaSentence;
 	}
