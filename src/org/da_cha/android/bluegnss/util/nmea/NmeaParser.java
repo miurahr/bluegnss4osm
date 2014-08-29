@@ -55,13 +55,6 @@ public class NmeaParser {
 
 	private long firstFixTimestamp;
   private NmeaState currentNmeaStatus = new NmeaState();
-
-	private final int GPS_NONE      = 0;
-	private final int GPS_FIXED     = 3;
-	private final int GPS_NOTIFY    = 4;
-	private int currentGpsStatus = GPS_NONE;
-  private boolean gpsFixNotified = false;
-
 	private MockLocationProvider mockProvider;
 
 	private GnssStatus gnssStatus;
@@ -92,6 +85,38 @@ public class NmeaParser {
     return this.firstFixTimestamp;
   }
 
+  /*
+   * As same as GpsBabel developer noted as follows, we should treat
+   * every NMEA sentence as optional and pragmatic.
+   * cited from nmea.cc in GpsBabel project.
+   * ---------------------------------------------------------------------------
+   * Zmarties notes:
+   *
+   * In practice, all fields of the NMEA sentences should be treated as optional -
+   * if the data is not available, then the field can be omitted (hence leading
+   * to the output of two consecutive commas).
+   *
+   * An NMEA recording can start anywhere in the stream of data.  It is therefore
+   * necessary to discard sentences until sufficient data has been processed to
+   * have all the necessary data to construct a waypoint.  In practice, this means
+   * discarding data until we have had the first sentence that provides the date.
+   * (We could scan forwards in the stream of data to find the first date, and
+   * then back apply it to all previous sentences, but that is probably more
+   * complexity that is necessary - the lost of one waypoint at the start of the
+   * stream can normally be tolerated.)
+   *
+   * If a sentence is received without a checksum, but previous sentences have
+   * had checksums, it is best to discard that sentence.  In practice, the only
+   * time I have seen this is when the recording stops suddenly, where the last
+   * sentence is truncated - and missing part of the line, including the checksum.
+   *-----------------------------------------------------------------------------
+   *
+   * To determine NMEA sentence status, use currentNmeaStatus object to watch it.
+   * every sentence parser calls NmeaState method to record it.
+   * currentNmeaStatus can say NMEA sentence is begin , complete or invalid.
+   *
+   */
+
 	// parse NMEA Sentence 
 	public String parseNmeaSentence(String gpsSentence) throws SecurityException {
 		String nmeaSentence = null;
@@ -112,11 +137,14 @@ public class NmeaParser {
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
               firstFixTimestamp = updateTime;
               mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-              if (!gpsFixNotified) {
-                currentGpsStatus = GPS_FIXED;
-              }
             }
-          } else {
+            Location fix = gnssStatus.getFixLocation();
+            if (fix.hasAccuracy() && fix.hasAltitude()) {
+              mockProvider.notifyFix(fix);
+            } else {
+              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
+            }
+         } else {
             if (!mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
               mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
             }
@@ -125,29 +153,25 @@ public class NmeaParser {
           gnssStatus.clearTrackedSatellites();
         } else if (command.equals("GPVTG")){
           parseVTG();
-          currentGpsStatus = GPS_NOTIFY;
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
-          long updateTime = currentNmeaStatus.getTimestamp(); 
-          if (parseRMC()) {
-            if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
-              mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
-              firstFixTimestamp = updateTime;
-              if (!gpsFixNotified){
-                currentGpsStatus = GPS_FIXED;
+          if (currentNmeaStatus.shouldUseRMC()) {
+            long updateTime = currentNmeaStatus.getTimestamp();
+            if (parseRMC()) {
+              if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
+                mockProvider.notifyStatusChanged(LocationProvider.AVAILABLE, null, updateTime);
+                firstFixTimestamp = updateTime;
+              }
+              Location fix = gnssStatus.getFixLocation();
+              if (fix.hasAccuracy() && fix.hasAltitude()) {
+                mockProvider.notifyFix(fix);
+              } else {
+                Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
+              }
+            } else {
+              if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
+                mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
               }
             }
-            Location fix = gnssStatus.getFixLocation();
-            if (fix.hasAccuracy() && fix.hasAltitude()) {
-              mockProvider.notifyFix(fix);
-              gpsFixNotified = true;
-            } else {
-              Log.e(LOG_TAG, "Failed to notify Fix becaues the fix does not have accuracy and/or altitude");
-            }
-          } else {
-            if (! mockProvider.isMockStatus(LocationProvider.TEMPORARILY_UNAVAILABLE)){
-              mockProvider.notifyStatusChanged(LocationProvider.TEMPORARILY_UNAVAILABLE, null, updateTime);
-            }
-            currentGpsStatus = GPS_NOTIFY;
           }
         } else if (command.equals("GPGSA")){
           // GPS active satellites
@@ -169,11 +193,15 @@ public class NmeaParser {
           // QZSS satellites in View
           parseGSV("QZ");
         } else if (command.equals("GPGLL")){
-          // GPS fix
-          parseGLL();
+          if (currentNmeaStatus.shouldUseGLL()) {
+            // GPS fix
+            parseGLL();
+          }
         } else if (command.equals("GNGLL")){
-          // multi-GNSS fix or glonass/qzss fix
-          parseGLL();
+          if (currentNmeaStatus.shouldUseGLL()) {
+            // multi-GNSS fix or glonass/qzss fix
+            parseGLL();
+          }
         } else if (command.equals("GNGNS")){
           parseGNS();
         } else if (command.equals("GPGRS")){
@@ -211,16 +239,16 @@ public class NmeaParser {
 		} else {
       // no returns the mismatched data.
 			Log.d(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
+      return null;
 		}
 		return nmeaSentence;
 	}
 
 	public int getGpsStatusChange(){
-		if (currentGpsStatus == GPS_NOTIFY){
-			currentGpsStatus = GPS_NONE;
+    currentNmeaStatus.notified();
+		if (currentNmeaStatus.canNotify()){
 			return GpsStatus.GPS_EVENT_SATELLITE_STATUS;
-		} else if (currentGpsStatus == GPS_FIXED && !gpsFixNotified){
-			gpsFixNotified = true;
+		} else if (currentNmeaStatus.canFixNotify()){
 			return GpsStatus.GPS_EVENT_FIRST_FIX;
 		}
 		return 0;
