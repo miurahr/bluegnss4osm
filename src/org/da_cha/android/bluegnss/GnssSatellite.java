@@ -182,7 +182,22 @@ public class GnssSatellite {
   }
 
   public String getName() {
-    return getSystemPrefix(1)+Integer.toString(this.rpn);
+    int satnum;
+    switch(this.system){
+      case GLONASS:
+        satnum = this.rpn - 64;
+        break;
+      case QZSS:
+        satnum = this.rpn - 192;
+        break;
+      case BEIDOU:
+        satnum = this.rpn - 200;
+        break;
+      default:
+        satnum = this.rpn;
+    }
+
+    return getSystemPrefix(1)+Integer.toString(satnum);
   }
 
   public float getElevation(){
