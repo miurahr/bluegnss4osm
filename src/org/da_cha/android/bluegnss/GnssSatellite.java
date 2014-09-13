@@ -25,7 +25,7 @@ public class GnssSatellite {
   public float snr; 
   private int rpn;
 
-  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU, SBS}
+  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU, SBS, UNKNOWN}
   private SatelliteSystem system;
 
   /*
@@ -59,7 +59,7 @@ public class GnssSatellite {
    *                                             7            L1-BC
    *                                             8-F          Reserved
    *
-   * BEIDOU  unknown
+   * BEIDOU  unknown(BD)
    * 
    * QZSS     ? (QZ)         193                 unknown      unknown
    *
@@ -81,8 +81,11 @@ public class GnssSatellite {
       this.system = SatelliteSystem.GALILEO;
     } else if (systemid.equals("SB")){
       this.system = SatelliteSystem.SBS;
+    } else if (systemid.equals("BD")){
+      this.system = SatelliteSystem.BEIDOU;
     } else {
       // unknown satellite
+      this.system = SatelliteSystem.UNKNOWN;
     }
   }
 
@@ -154,7 +157,7 @@ public class GnssSatellite {
           case SBS:
             return "SB";
           default:
-            return null;
+            return "UN";
         }
     } else if (len == 1){
         switch(this.system){
@@ -171,10 +174,10 @@ public class GnssSatellite {
           case SBS:
             return "S";
           default:
-            return null;
+            return "U";
         }
     } else {
-      return null;
+      return "";
     }
   }
 
@@ -221,5 +224,9 @@ public class GnssSatellite {
 
   public boolean isSBS(){
     return (this.system == SatelliteSystem.SBS);
+  }
+
+  public boolean isBeidou(){
+    return (this.system == SatelliteSystem.BEIDOU);
   }
 }
