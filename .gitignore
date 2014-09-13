@@ -1,5 +1,7 @@
 /bin
 /gen
+build.xml
+local.properties
 #*.dex
 #*.apk
 #resources.ap_
