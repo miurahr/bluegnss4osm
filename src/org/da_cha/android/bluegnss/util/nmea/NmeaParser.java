@@ -241,7 +241,9 @@ public class NmeaParser {
 			Log.d(LOG_TAG, "Mismatched data: "+System.currentTimeMillis()+" "+gpsSentence);
       return null;
 		}
-		return nmeaSentence;
+    // gpsSentence == nmeaSentence+"/r/n"
+    // should return with "/r/n"
+		return gpsSentence;
 	}
 
 	public int getGpsStatusChange(){
