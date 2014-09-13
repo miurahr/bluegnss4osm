@@ -131,7 +131,8 @@ public class NmeaParser {
 			splitter.setString(sentence);
 			String command = splitter.next();
       try {
-        if (command.equals("GPGGA")){
+        if (command.equals("GPGGA") ||
+            command.equals("GNGGA")){
           long updateTime = currentNmeaStatus.getTimestamp(); 
           if (parseGGA()){ // when fixed
             if (! mockProvider.isMockStatus(LocationProvider.AVAILABLE)){
@@ -151,7 +152,8 @@ public class NmeaParser {
           } 
           // FIXME: ad-hoc work around..
           gnssStatus.clearTrackedSatellites();
-        } else if (command.equals("GPVTG")){
+        } else if (command.equals("GPVTG") ||
+                   command.equals("GNVTG")){
           parseVTG();
         } else if (command.equals("GPRMC") || command.equals("GNRMC")){
           if (currentNmeaStatus.shouldUseRMC()) {
@@ -183,6 +185,9 @@ public class NmeaParser {
         } else if (command.equals("QZGSA")){
           // QZSS active satellites
           parseGSA("QZ");
+        } else if (command.equals("BDGSA")){
+          // Beidou satellites
+          parseGSA("BD");
         } else if (command.equals("GPGSV")){
           // GPS satellites in View
           parseGSV("GP");
@@ -192,6 +197,9 @@ public class NmeaParser {
         } else if (command.equals("QZGSV")){
           // QZSS satellites in View
           parseGSV("QZ");
+        } else if (command.equals("BDGSV")){
+          // Beidou satellites in view
+          parseGSV("BD");
         } else if (command.equals("GPGLL")){
           if (currentNmeaStatus.shouldUseGLL()) {
             // GPS fix
