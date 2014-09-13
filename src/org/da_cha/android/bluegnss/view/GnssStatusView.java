@@ -110,32 +110,12 @@ public class GnssStatusView extends View {
     int width = getWidth();
     int height = getHeight();
     float text_hm = ( AXIS_TEXT_SIZE + AXIS_TEXT_MARGIN ) * mDensity;
-    //
-    // use maximum 3/2 of height for satellite rador
-    //
-    if (height*2 >= width*3 && height > width) { // portlate and height is 1.5 times larger than width
-      mCenterX = width / 2;
-      mCenterY = width / 2 ;
-      mAxisRadius = (float) ( 0.9 * mCenterX );
-    } else if (height*3 <= width*2 && height < width) { // landscape
-      mCenterX = height / 2;
-      mCenterY = height / 2;
-      float h = ( height - text_hm ) / 2;
-      mAxisRadius = (float) ( 0.9 * h );
-    } else if (height >= width ) { // portlate
-      mCenterX = width / 2;
-      mCenterY = height / 3;
-      float h =  (height*2 - text_hm*3) / 6;
-      float r = Math.min( mCenterX, h );
-      mAxisRadius = (float) ( 0.9 * r );
-    } else { // landscape
-      mCenterX = width / 3;
-      mCenterY = height / 2;
-      float h = ( height - text_hm ) / 2;
-      float r = Math.min( mCenterX, h );
-      mAxisRadius = (float) ( 0.9 * r );
-    }
 
+    mCenterX = width / 2;
+    mCenterY = height / 2;
+    float h = ( height - text_hm ) / 2;
+    float r = Math.min( mCenterX, h );
+    mAxisRadius = (float) ( 0.9 * r );
     mSatRadius = SAT_RADIUS * mDensity;
     initAxis( width, height );
     invalidate();

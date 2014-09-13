@@ -30,14 +30,9 @@
       android:id="@+id/GnssStatusView"
       android:layout_width="fill_parent"
       android:layout_height="0dp"
-      android:layout_weight="3"/>
-  <View
-      android:layout_width="match_parent"
-      android:layout_height="2dp"
-      android:layout_marginTop="16dp"
-      android:background="#ff808080" />
+      android:layout_weight="6"/>
   <!--
-  <org.da_cha.android.gps.view.GnssSnrView
+  <org.da_cha.android.bluegnss.view.GnssSnrView
       android:id="@+id/GnssSnrView"
       android:layout_width="fill_parent"
       android:layout_height="0dp"
