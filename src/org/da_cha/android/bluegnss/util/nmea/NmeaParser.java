@@ -605,25 +605,24 @@ public class NmeaParser {
 
             int nprn = Integer.parseInt(prn);
             if (system.equals("QZ")){
-                  Log.v(LOG_TAG, "qzss found!");
                   decidedSystem = "QZ";
             } else if (system.equals("GL") && nprn < 64) {
                   // Maybe GLONASS SBS satellite
                   // treat as GLONASS (FIXME)
                   decidedSystem = "GL";
             } else if (system.equals("GP") && nprn == 193) {
-              // Some receiver report GNSS with GP prefix
+                  // Some receiver report QZSS with GP prefix
                   decidedSystem = "QZ";
-                  //nprn = nprn - 192;
-                  Log.v(LOG_TAG, "qzss found!");
             } else if (system.equals("GP") && 200 < nprn && nprn < 211) {
                   decidedSystem = "BD"; // maybe beidou/compass
-                  nprn = nprn - 200;
             } else if (system.equals("GP") && 32 < nprn && nprn < 72) {
                   decidedSystem = "SB";
                   nprn = nprn + 87;
             } else if (system.equals("GP") && 119 < nprn && nprn < 139) { // 120..138
                   decidedSystem = "SB";
+            } else if (system.equals("BD") && nprn < 16 ) {
+                  decidedSystem = "BD";
+                  nprn = nprn + 200;
             } else {
                   decidedSystem = system;
             }

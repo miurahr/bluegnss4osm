@@ -164,13 +164,13 @@ public class GnssSatellite {
           case GPS:
             return "G";
           case GLONASS:
-            return "R";
+            return "L";
           case QZSS:
             return "Q";
           case GALILEO:
             return "E";
           case BEIDOU:
-            return "C";
+            return "B";
           case SBS:
             return "S";
           default:
