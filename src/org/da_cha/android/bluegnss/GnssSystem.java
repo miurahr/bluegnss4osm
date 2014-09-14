@@ -86,5 +86,45 @@ public enum GnssSystem {
     public int satelliteid(int index) {
       return index - offset;
     }
+
+    public String prefix(int len){
+      if (len == 2){
+        switch(this){
+          case GPS:
+            return "GP";
+          case GLONASS:
+            return "GL";
+          case QZSS:
+            return "QZ";
+          case GALILEO:
+            return "GA";
+          case BEIDOU:
+            return "BD";
+          case SBAS:
+            return "SB";
+          default:
+            return "UN";
+        }
+      } else if (len == 1){
+        switch(this){
+          case GPS:
+            return "G";
+          case GLONASS:
+            return "L";
+          case QZSS:
+            return "Q";
+          case GALILEO:
+            return "E";
+          case BEIDOU:
+            return "B";
+          case SBAS:
+            return "S";
+          default:
+            return "U";
+        }
+      } else {
+        return "";
+      }
+    }
 }
 

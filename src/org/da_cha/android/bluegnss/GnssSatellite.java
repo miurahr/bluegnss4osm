@@ -23,13 +23,13 @@ public class GnssSatellite {
   public float azimuth;
   public float elevation;
   public float snr; 
-  private int rpn;
+  private int index;
 
   private GnssSystem system;
 
   public GnssSatellite(String systemid, int rpn){
-    this.rpn = rpn;
     setSystem(systemid);
+    this.index = this.system.index(rpn);
   }
 
   private void setSystem(String systemid){
@@ -52,16 +52,16 @@ public class GnssSatellite {
   }
 
   public int getRpn(){
-    return this.rpn;
+    return this.system.satelliteid(this.index);
   }
   public boolean isRpn(int n){
-    return (n == this.rpn);
+    return (n == this.system.satelliteid(this.index));
   }
 
   // object that has same RPN are equals for satellite.
   @Override
   public int hashCode(){
-    return this.system.index(this.rpn);
+    return this.index;
   }
 
   @Override
@@ -73,7 +73,7 @@ public class GnssSatellite {
       return false;
     }
     GnssSatellite sat = (GnssSatellite)o;
-    return ((sat.getRpn() == this.rpn) && sat.getSystemPrefix().equals(this.getSystemPrefix()));
+    return sat.hashCode() == this.index;
   }
 
   public void setStatus(float elevation, float azimuth, float snr){
@@ -101,65 +101,14 @@ public class GnssSatellite {
   }
 
   public String getSystemPrefix(){
-    return getSystemPrefix(2);
+    return this.system.prefix(2);
   }
   public String getSystemPrefix(int len){
-    if (len == 2){
-        switch(this.system){
-          case GPS:
-            return "GP";
-          case GLONASS:
-            return "GL";
-          case QZSS:
-            return "QZ";
-          case GALILEO:
-            return "GA";
-          case BEIDOU:
-            return "BD";
-          case SBAS:
-            return "SB";
-          default:
-            return "UN";
-        }
-    } else if (len == 1){
-        switch(this.system){
-          case GPS:
-            return "G";
-          case GLONASS:
-            return "L";
-          case QZSS:
-            return "Q";
-          case GALILEO:
-            return "E";
-          case BEIDOU:
-            return "B";
-          case SBAS:
-            return "S";
-          default:
-            return "U";
-        }
-    } else {
-      return "";
-    }
+    return this.system.prefix(len);
   }
 
   public String getName() {
-    int satnum;
-    switch(this.system){
-      case GLONASS:
-        satnum = this.rpn - 64;
-        break;
-      case QZSS:
-        satnum = this.rpn - 192;
-        break;
-      case BEIDOU:
-        satnum = this.rpn - 200;
-        break;
-      default:
-        satnum = this.rpn;
-    }
-
-    return getSystemPrefix(1)+Integer.toString(satnum);
+    return getSystemPrefix(1)+this.system.satelliteid(this.index);
   }
 
   public float getElevation(){
