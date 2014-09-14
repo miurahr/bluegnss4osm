@@ -42,6 +42,7 @@ public class GnssStatusView extends View {
   private final static int COLOR_DARK_GREEN = Color.argb( 255, 0, 128, 0 );
   private final static int COLOR_SKY_BLUE = Color.argb( 255, 128, 224, 224 );
   private final static int COLOR_DARK_GRAY = Color.argb( 255, 32, 32, 32);
+  private final static int COLOR_ORANGE = Color.argb( 255, 255, 131, 0);
 
   private final static String LABEL_NORTH = "N";
   private final static String LABEL_SOUTH = "S";
@@ -60,6 +61,7 @@ public class GnssStatusView extends View {
   private Bitmap mBitmapAxis = null;
   private Paint mPaintName= null;
   private Paint mPaintSat = null;
+  private Paint mPaintSatTracked = null;
     
   private float mDensity = 0;
    
@@ -91,8 +93,12 @@ public class GnssStatusView extends View {
     getScaledDensity();
     mPaintSat = new Paint();
     mPaintSat.setStyle( Paint.Style.STROKE );
-    mPaintSat.setColor( COLOR_DARK_GREEN );
+    mPaintSat.setColor( COLOR_BLUE );
     mPaintSat.setStrokeWidth( 2 );	
+    mPaintSatTracked = new Paint();
+    mPaintSatTracked.setStyle( Paint.Style.FILL_AND_STROKE );
+    mPaintSatTracked.setColor( COLOR_ORANGE );
+    mPaintSatTracked.setStrokeWidth( 4 );
     mPaintName = new Paint( Paint.ANTI_ALIAS_FLAG );
     mPaintName.setTextSize( SAT_TEXT_SIZE * mDensity );
     FontMetrics metrics = mPaintName.getFontMetrics();
@@ -179,6 +185,7 @@ public class GnssStatusView extends View {
     // satellite
     for ( int i = 0; i < mSatelliteList.size(); i++ ) {
       SatellitePoint p = mSatelliteList.get( i );
+
       canvas.drawCircle( p.sat_x, p.sat_y, mSatRadius, mPaintSat );
       canvas.drawText( p.name, p.name_x, p.name_y, mPaintName );
     }
@@ -215,11 +222,14 @@ public class GnssStatusView extends View {
     public float sat_y = 0;
     public float name_x = 0;
     public float name_y = 0;
+    public float snr = 0;
+    public boolean used = false;
 
     public SatellitePoint( GnssSatellite sat ) {
       float ele = sat.getElevation();
       float azi = sat.getAzimuth();
-      float snr = sat.getSnr();
+      snr = sat.getSnr();
+      used = sat.isUsed();
  
       if (( ele < 2 )&&( azi < 1 )) return;
       if ( snr < 1 ) return;
