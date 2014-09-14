@@ -25,45 +25,7 @@ public class GnssSatellite {
   public float snr; 
   private int rpn;
 
-  private enum SatelliteSystem {GPS, GLONASS, GALILEO, QZSS, IRNASS, BEIDOU, SBS, UNKNOWN}
-  private SatelliteSystem system;
-
-  /*
-   * Satellite identification
-   *
-   * System   System ID   Satellite ID        Signal ID      Signal/Channel
-   * GPS       1 (GP)        1-99                0            All Signals
-   *                         1-32 reserve GPS    1            L1 C/A
-   *                         33-64 reserve SBAS  2            L1 P(Y)
-   *                         66-99 undefined     3            L1 M
-   *                                             4            L2 P(Y)
-   *                                             5            L2C-M
-   *                                             6            L5-I
-   *                                             7            L5-Q
-   *                                             9-F          Reserved
-   *
-   * GLONASS  2 (GL)         1-99                0            All Signals
-   *                         1-32 undefined      1            G1 C/A
-   *                         32-64 for SBAS      2            G1 P
-   *                         65-99 for GLONASS   3            G2 C/A
-   *                                             4            GLONASS (M) G2 P
-   *                                             5-F          Reserved
-   *
-   * GALILEO  3 (GA)         1-99                0            All signals
-   *                         1-36 for Galileo    1            E5a
-   *                         37-64 for SBAS      2            E5b
-   *                         65-99 undefined     3            E5 a+b
-   *                                             4            E6-A
-   *                                             5            E6-BC
-   *                                             6            L1-A
-   *                                             7            L1-BC
-   *                                             8-F          Reserved
-   *
-   * BEIDOU  unknown(BD)
-   * 
-   * QZSS     ? (QZ)         193                 unknown      unknown
-   *
-   */
+  private GnssSystem system;
 
   public GnssSatellite(String systemid, int rpn){
     this.rpn = rpn;
@@ -72,20 +34,20 @@ public class GnssSatellite {
 
   private void setSystem(String systemid){
     if (systemid.equals("GP")){
-      this.system = SatelliteSystem.GPS;
+      this.system = GnssSystem.GPS;
     } else if (systemid.equals("GL")){
-      this.system = SatelliteSystem.GLONASS;
+      this.system = GnssSystem.GLONASS;
     } else if (systemid.equals("QZ")){
-      this.system = SatelliteSystem.QZSS;
+      this.system = GnssSystem.QZSS;
     } else if (systemid.equals("GA")){
-      this.system = SatelliteSystem.GALILEO;
+      this.system = GnssSystem.GALILEO;
     } else if (systemid.equals("SB")){
-      this.system = SatelliteSystem.SBS;
+      this.system = GnssSystem.SBAS;
     } else if (systemid.equals("BD")){
-      this.system = SatelliteSystem.BEIDOU;
+      this.system = GnssSystem.BEIDOU;
     } else {
       // unknown satellite
-      this.system = SatelliteSystem.UNKNOWN;
+      this.system = GnssSystem.UNKNOWN;
     }
   }
 
@@ -99,7 +61,7 @@ public class GnssSatellite {
   // object that has same RPN are equals for satellite.
   @Override
   public int hashCode(){
-    return this.rpn + this.system.ordinal() * 1000;
+    return this.system.index(this.rpn);
   }
 
   @Override
@@ -154,7 +116,7 @@ public class GnssSatellite {
             return "GA";
           case BEIDOU:
             return "BD";
-          case SBS:
+          case SBAS:
             return "SB";
           default:
             return "UN";
@@ -171,7 +133,7 @@ public class GnssSatellite {
             return "E";
           case BEIDOU:
             return "B";
-          case SBS:
+          case SBAS:
             return "S";
           default:
             return "U";
@@ -222,26 +184,26 @@ public class GnssSatellite {
   }
 
   public boolean isQzss(){
-    return (this.system == SatelliteSystem.QZSS);
+    return (this.system == GnssSystem.QZSS);
   }
 
   public boolean isGlonass(){
-    return (this.system == SatelliteSystem.GLONASS);
+    return (this.system == GnssSystem.GLONASS);
   }
 
   public boolean isGalileo(){
-    return (this.system == SatelliteSystem.GALILEO);
+    return (this.system == GnssSystem.GALILEO);
   }
 
   public boolean isGps(){
-    return (this.system == SatelliteSystem.GPS);
+    return (this.system == GnssSystem.GPS);
   }
 
   public boolean isSBS(){
-    return (this.system == SatelliteSystem.SBS);
+    return (this.system == GnssSystem.SBAS);
   }
 
   public boolean isBeidou(){
-    return (this.system == SatelliteSystem.BEIDOU);
+    return (this.system == GnssSystem.BEIDOU);
   }
 }
