@@ -1,29 +1,32 @@
 /*
  * Copyright 2014 Hiroshi Miura <miurahr@linux.com>
  * 
- * This file is part of BluetoothGPS4Droid.
+ * This file is part of BluetoothGNSS4OSM.
  *
- * BluetoothGPS4Droid is free software: you can redistribute it and/or modify
+ * BluetoothGNSS4OSM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * BluetoothGPS4Droid is distributed in the hope that it will be useful,
+ * It is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  *  You should have received a copy of the GNU General Public License
- *  along with BluetoothGPS4Droid. If not, see <http://www.gnu.org/licenses/>.
+ *  along with source. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.da_cha.android.bluegnss;
+
+import org.da_cha.android.bluegnss.GnssSystem;
 
 public class GnssSatellite {
   public float azimuth;
   public float elevation;
   public float snr; 
   private int index;
+  private boolean tracked;
 
   private GnssSystem system;
 
@@ -136,6 +139,13 @@ public class GnssSatellite {
   }
   public void setSnr(float snr){
     this.snr = snr;
+  }
+
+  public void setUsed(boolean track){
+    this.tracked = track;
+  }
+  public boolean isUsed(){
+    return this.tracked;
   }
 
   public boolean isQzss(){

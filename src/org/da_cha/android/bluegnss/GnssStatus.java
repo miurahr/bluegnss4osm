@@ -30,6 +30,7 @@ import android.location.Location;
 import android.location.LocationManager;
 
 import org.da_cha.android.bluegnss.GnssSatellite;
+import org.da_cha.android.bluegnss.TrackedRpnList;
 
 public class GnssStatus {
 
@@ -128,28 +129,26 @@ public class GnssStatus {
 
   /***************************************************************************
    *
-   * tracked satellites PRN list
+   * tracked satellites list
    *
    */
-  private ArrayList<Integer> satellitesPrnListInFix = new ArrayList<Integer>();
+  private TrackedRpnList trackedGpsList = new TrackedRpnList(GnssSystem.GPS);
 
-  public void setTrackedSatellites(ArrayList<Integer> rpnList){
-      satellitesPrnListInFix.clear();
-      for (Integer rpn : rpnList){
-        satellitesPrnListInFix.add(rpn);
-      }
+  public void setTrackedSatellites(GnssSystem system, ArrayList<Integer> rpnList){
+      trackedGpsList.set(rpnList);
+      return;
   }
 
   public void addTrackedSatellites(int rpn){
-      satellitesPrnListInFix.add(rpn);
+      trackedGpsList.add(rpn);
   }
 
   public ArrayList<Integer> getTrackedSatellites() {
-      return satellitesPrnListInFix;
+      return trackedGpsList.get();
   }
 
   public void clearTrackedSatellites(){
-      this.satellitesPrnListInFix.clear();
+      trackedGpsList.clear();
   }
 
   /*****************************************************************************
