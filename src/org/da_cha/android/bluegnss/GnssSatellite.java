@@ -50,7 +50,13 @@ public class GnssSatellite {
       this.system = GnssSystem.UNKNOWN;
     }
   }
+  public GnssSystem getSystem(){
+    return this.system;
+  }
 
+  public int getIndex(){
+    return this.index;
+  }
   public int getRpn(){
     return this.system.satelliteid(this.index);
   }
@@ -58,7 +64,7 @@ public class GnssSatellite {
     return (n == this.system.satelliteid(this.index));
   }
 
-  // object that has same RPN are equals for satellite.
+  // object that has same index are equals for satellite.
   @Override
   public int hashCode(){
     return this.index;
@@ -73,7 +79,7 @@ public class GnssSatellite {
       return false;
     }
     GnssSatellite sat = (GnssSatellite)o;
-    return sat.hashCode() == this.index;
+    return sat.getIndex() == this.index;
   }
 
   public void setStatus(float elevation, float azimuth, float snr){
@@ -100,7 +106,7 @@ public class GnssSatellite {
     }
   }
 
-  public String getSystemPrefix(){
+  public String getSystemId(){
     return this.system.prefix(2);
   }
   public String getSystemPrefix(int len){

@@ -71,7 +71,7 @@ public class GnssStatus {
   /******************************************************************************
    * 
    * GnssSatellite list in view
-   * satellites PRN list in fix
+   * satellites index list in fix
    *
    */
   private HashMap<Integer, GnssSatellite> gnssSatellitesList = new HashMap<Integer, GnssSatellite>();
@@ -79,32 +79,42 @@ public class GnssStatus {
   // satallite list
   // accessor
   public void addSatellite(GnssSatellite sat){
-    gnssSatellitesList.put(sat.getRpn(), sat);
+    gnssSatellitesList.put(sat.getIndex(), sat);
   }
   // clear list at all
   public void clearSatellitesList(){
     gnssSatellitesList.clear();
   }
   // clear list except for ones in activeList
-  public void clearSatellitesList(ArrayList<Integer> activeList){
+  public void clearSatellitesList(String systemid, ArrayList<Integer> activeList){
     ArrayList<Integer> currentRpnList = new ArrayList<Integer>();
-    for (Integer rpn: gnssSatellitesList.keySet()){
-      currentRpnList.add(rpn);
+
+    GnssSystem sys = GnssSystem.UNKNOWN;
+    for (GnssSystem system: GnssSystem.values()){
+        if (systemid.equals(system.prefix(2))){
+            sys = system;
+        }
     }
-    for (Integer i : currentRpnList){
-      if (!activeList.contains(i)) {
-        removeSatellite(i);
+
+    for (GnssSatellite sat: gnssSatellitesList.values()){
+        if (systemid.equals(sat.getSystemId())) {
+            currentRpnList.add(sat.getRpn());
+        }
+    }
+    for (Integer rpn : currentRpnList){
+      if (!activeList.contains(rpn)) {
+        removeSatellite(sys.index(rpn));
       }
     }
   }
 
   // remove sat data, return cleared satellite
-  public GnssSatellite removeSatellite(int rpn){
-    return gnssSatellitesList.remove(rpn);
+  public GnssSatellite removeSatellite(int index){
+    return gnssSatellitesList.remove(index);
   }
   // get sat data with index
-  public GnssSatellite getSatellite(int rpn){
-    return gnssSatellitesList.get(rpn);
+  public GnssSatellite getSatellite(int index){
+    return gnssSatellitesList.get(index);
   }
   // get iterator
   public Iterator<Entry<Integer, GnssSatellite>> getSatellitesIter(){
