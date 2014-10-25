@@ -151,6 +151,8 @@ public class BluetoothGnssManager {
       } catch (IOException e) {
         Log.e(LOG_TAG, "error while getting data", e);
         mockProvider.setMockLocationProviderOutOfService();
+      } catch (Throwable t) {
+        Log.e(LOG_TAG,"Unexpected error", t);
       } finally {
         // cleanly closing everything...
         this.close();
