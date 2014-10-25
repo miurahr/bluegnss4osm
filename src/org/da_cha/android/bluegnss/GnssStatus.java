@@ -216,7 +216,10 @@ public class GnssStatus {
    */
   public Location getFixLocation(){
     Location fix = new Location(LocationManager.GPS_PROVIDER);
-    fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+
+    if (android.os.Build.VERSION.SDK_INT >= 17)
+        fix.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+
     fix.setLatitude(this.latitude);
     fix.setLongitude(this.longitude);
     fix.setAccuracy(this.HDOP*this.precision);
